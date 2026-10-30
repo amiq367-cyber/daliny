@@ -200,6 +200,9 @@
     max-width: 58%; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--bg); color: var(--fg); font-family: inherit; font-size: 1rem;
   }
+  .seg { display: flex; gap: 6px; }
+  .seg button { flex: 1; padding: 11px 8px; border-radius: 10px; background: var(--line); font-weight: 500; }
+  .seg button.on { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
   .set-btn { padding: 12px 18px; border-radius: 12px; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
   .set-note { color: var(--muted); font-size: .9rem; line-height: 1.7; margin: 12px 4px; }
   details { margin-top: 10px; }
@@ -265,7 +268,7 @@
     <div class="big" id="navDist">—</div>
     <div id="navText">—</div>
   </div>
-  <div class="speed"><b id="spd">0</b><small>كم/س</small></div>
+  <div class="speed" id="navSpeed"><b id="spd">0</b><small id="spdUnit">كم/س</small></div>
 </header>
 
 <div class="bottom">
@@ -317,6 +320,26 @@
   <div class="set-body">
     <div id="setMain">
       <button class="set-row" data-page="sound"><span>الصوت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="set-row" data-page="display"><span>العرض</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </div>
+    <div id="setDisplay" hidden>
+      <div class="set-row col">
+        <span>المظهر</span>
+        <div class="seg" id="themeSeg">
+          <button data-theme="auto">تلقائي</button>
+          <button data-theme="light">نهاري</button>
+          <button data-theme="dark">ليلي</button>
+        </div>
+      </div>
+      <div class="set-row col">
+        <span>الوحدات</span>
+        <div class="seg" id="unitsSeg">
+          <button data-units="km">كيلومتر</button>
+          <button data-units="mi">ميل</button>
+        </div>
+      </div>
+      <label class="set-row" for="speedoSwitch"><span>عداد السرعة أثناء الملاحة</span><input type="checkbox" id="speedoSwitch" class="switch"></label>
+      <p class="set-note">المظهر التلقائي يتبع إعداد جوالك (نهاري أو ليلي). زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.</p>
     </div>
     <div id="setSound" hidden>
       <label class="set-row" for="voiceSwitch"><span>التوجيه الصوتي</span><input type="checkbox" id="voiceSwitch" class="switch"></label>
@@ -344,8 +367,13 @@
     user: null, follow: false, watchId: null,
     dest: null, route: null, coords: [],
     navigating: false, stepIdx: 0, offCount: 0, rerouting: false,
-    sim: null, voice: true, wake: null
+    sim: null, wake: null
   };
+
+  // الإعدادات المحفوظة على الجهاز
+  const settings = { voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
+  function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
 
   function toast(msg, ms) {
     const t = $('toast');
@@ -353,10 +381,25 @@
     clearTimeout(toast._t);
     toast._t = setTimeout(() => { t.hidden = true; }, ms || 2800);
   }
+  const MILE = 1609.344, FOOT = 3.28084;
   function fmtDist(m) {
+    if (settings.units === 'mi') {
+      if (m < 160) return Math.max(50, Math.round(m * FOOT / 50) * 50) + ' قدم';
+      const mi = m / MILE;
+      return mi.toFixed(mi < 10 ? 1 : 0) + ' ميل';
+    }
     if (m < 1000) return Math.max(10, Math.round(m / 10) * 10) + ' م';
     return (m / 1000).toFixed(m < 10000 ? 1 : 0) + ' كم';
   }
+  // المسافة بصيغة تنطق بالصوت
+  function spokenDist(m) {
+    if (settings.units === 'mi') {
+      if (m < 160) return Math.max(50, Math.round(m * FOOT / 50) * 50) + ' قدم';
+      return (m / MILE).toFixed(1) + ' ميل';
+    }
+    return m < 1000 ? Math.max(10, Math.round(m / 10) * 10) + ' متر' : (m / 1000).toFixed(1) + ' كيلومتر';
+  }
+  function speedUnitLabel() { return settings.units === 'mi' ? 'ميل/س' : 'كم/س'; }
   function fmtTime(s) {
     const mins = Math.max(1, Math.round(s / 60));
     if (mins < 60) return mins + ' دقيقة';
@@ -405,20 +448,24 @@
   });
   lightTiles.addTo(map);
 
-  let dark = false;
-  try {
-    const saved = localStorage.getItem('khareetati-dark');
-    dark = saved === null ? window.matchMedia('(prefers-color-scheme: dark)').matches : saved === '1';
-  } catch (e) {}
+  const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function isDark() {
+    if (settings.theme === 'dark') return true;
+    if (settings.theme === 'light') return false;
+    return !!(darkQuery && darkQuery.matches); // تلقائي: يتبع إعداد الجهاز
+  }
   function applyTheme() {
+    const dark = isDark();
     document.documentElement.classList.toggle('dark', dark);
     $('btnTheme').classList.toggle('on', dark);
   }
   applyTheme();
+  if (darkQuery && darkQuery.addEventListener) {
+    darkQuery.addEventListener('change', () => { if (settings.theme === 'auto') applyTheme(); });
+  }
   $('btnTheme').onclick = () => {
-    dark = !dark;
-    try { localStorage.setItem('khareetati-dark', dark ? '1' : '0'); } catch (e) {}
-    applyTheme();
+    settings.theme = isDark() ? 'light' : 'dark';
+    saveSettings(); applyTheme(); syncSettingsUI();
   };
 
   map.on('dragstart', () => { state.follow = false; $('btnLocate').classList.remove('on'); });
@@ -630,11 +677,6 @@
   }
 
   /* ================= الصوت ================= */
-  // الإعدادات المحفوظة على الجهاز
-  const settings = { voice: true, volume: 1, voiceURI: '' };
-  try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
-  function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
-
   function speak(text, force) {
     if ((!settings.voice && !force) || !('speechSynthesis' in window)) return;
     try {
@@ -654,13 +696,14 @@
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت' };
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض' };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
     $('setTitle').textContent = SET_TITLES[p];
     $('setMain').hidden = p !== 'main';
     $('setSound').hidden = p !== 'sound';
+    $('setDisplay').hidden = p !== 'display';
   }
   function syncSettingsUI() {
     const pct = Math.round(settings.volume * 100);
@@ -668,7 +711,26 @@
     $('volRange').value = pct;
     $('volVal').textContent = pct + '%';
     $('voiceBtn').classList.toggle('off', !settings.voice);
+    // العرض
+    document.querySelectorAll('#themeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.theme === settings.theme));
+    document.querySelectorAll('#unitsSeg button').forEach((b) => b.classList.toggle('on', b.dataset.units === settings.units));
+    $('speedoSwitch').checked = settings.speedo;
+    $('navSpeed').hidden = !settings.speedo;
+    $('spdUnit').textContent = speedUnitLabel();
   }
+  document.querySelectorAll('#themeSeg button').forEach((b) => {
+    b.onclick = () => { settings.theme = b.dataset.theme; saveSettings(); applyTheme(); syncSettingsUI(); };
+  });
+  document.querySelectorAll('#unitsSeg button').forEach((b) => {
+    b.onclick = () => {
+      settings.units = b.dataset.units; saveSettings(); syncSettingsUI();
+      if (state.route) { // نحدّث الأرقام الظاهرة
+        $('sumDist').textContent = fmtDist(state.route.distance);
+        if (state.navigating) navUpdate();
+      }
+    };
+  });
+  $('speedoSwitch').onchange = () => { settings.speedo = $('speedoSwitch').checked; saveSettings(); syncSettingsUI(); };
   $('btnSettings').onclick = () => { showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
   $('setBack').onclick = () => { if (setPage === 'main') $('settings').hidden = true; else showSetPage('main'); };
   document.querySelectorAll('#setMain [data-page]').forEach((b) => { b.onclick = () => showSetPage(b.dataset.page); });
@@ -758,8 +820,8 @@
     const p = [state.user.lat, state.user.lng];
 
     // السرعة
-    const kmh = state.user.speed ? Math.round(state.user.speed * 3.6) : 0;
-    $('spd').textContent = kmh;
+    const spdVal = state.user.speed ? Math.round(state.user.speed * (settings.units === 'mi' ? 2.23694 : 3.6)) : 0;
+    $('spd').textContent = spdVal;
 
     // التقدّم بالخطوات
     let idx = state.stepIdx;
@@ -781,7 +843,7 @@
     // تنبيه صوتي قبل المنعطف
     if (d < 300 && !up._said) {
       up._said = true;
-      speak('بعد ' + (d < 1000 ? Math.round(d / 10) * 10 + ' متر' : (d / 1000).toFixed(1) + ' كيلومتر') + '، ' + arInstr(up));
+      speak('بعد ' + spokenDist(d) + '، ' + arInstr(up));
     }
 
     // المتبقي
@@ -941,7 +1003,7 @@
       const d = haversine(p, [h.lat, h.lng]);
       if (d < 350 && distToRoute([h.lat, h.lng]) < 60) {
         hazardAlerted[h.id] = true;
-        const msg = HZ[h.type].label + ' أمامك بعد ' + Math.round(d / 10) * 10 + ' متر';
+        const msg = HZ[h.type].label + ' أمامك بعد ' + spokenDist(d);
         toast(msg, 4500); speak(msg);
       }
     });

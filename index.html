@@ -196,6 +196,10 @@
   }
   .switch:checked { background: var(--accent); }
   .switch:checked::after { left: 25px; }
+  .set-row select {
+    max-width: 58%; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--fg); font-family: inherit; font-size: 1rem;
+  }
   .set-btn { padding: 12px 18px; border-radius: 12px; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
   .set-note { color: var(--muted); font-size: .9rem; line-height: 1.7; margin: 12px 4px; }
   details { margin-top: 10px; }
@@ -320,6 +324,8 @@
         <div class="line"><span>مستوى الصوت</span><b id="volVal">100%</b></div>
         <input type="range" id="volRange" min="0" max="100" step="5" aria-label="مستوى الصوت">
       </div>
+      <div class="set-row"><span>نوع الصوت</span><select id="voiceSel" aria-label="نوع الصوت"><option value="">تلقائي (حسب الجهاز)</option></select></div>
+      <p class="set-note" id="voiceNote" hidden></p>
       <div class="set-row"><span>جرّب الصوت الحالي</span><button id="testVoice" class="set-btn">اختبار</button></div>
       <p class="set-note">يشمل تعليمات المنعطفات وتنبيهات البلاغات. بعض أجهزة الايفون تحدد شدة الصوت من أزرار الجهاز، فقد لا يؤثر المنزلق عليها.</p>
     </div>
@@ -625,7 +631,7 @@
 
   /* ================= الصوت ================= */
   // الإعدادات المحفوظة على الجهاز
-  const settings = { voice: true, volume: 1 };
+  const settings = { voice: true, volume: 1, voiceURI: '' };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
 
@@ -634,6 +640,8 @@
     try {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'ar-SA';
+      const chosen = settings.voiceURI && window.speechSynthesis.getVoices().find((v) => v.voiceURI === settings.voiceURI);
+      if (chosen) { u.voice = chosen; u.lang = chosen.lang; }
       u.volume = settings.volume;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
@@ -671,6 +679,33 @@
     saveSettings();
   };
   $('testVoice').onclick = () => speak('هذا اختبار للصوت. دليني يوجّهك بالطريق.', true);
+
+  // قائمة الأصوات العربية الموجودة بالجهاز
+  function loadVoices() {
+    if (!('speechSynthesis' in window)) return;
+    const sel = $('voiceSel');
+    const arVoices = window.speechSynthesis.getVoices().filter((v) => (v.lang || '').toLowerCase().startsWith('ar'));
+    sel.innerHTML = '';
+    const auto = document.createElement('option');
+    auto.value = ''; auto.textContent = 'تلقائي (حسب الجهاز)';
+    sel.appendChild(auto);
+    arVoices.forEach((v) => {
+      const o = document.createElement('option');
+      o.value = v.voiceURI; o.textContent = v.name + ' (' + v.lang + ')';
+      sel.appendChild(o);
+    });
+    sel.value = arVoices.some((v) => v.voiceURI === settings.voiceURI) ? settings.voiceURI : '';
+    const note = $('voiceNote');
+    note.hidden = false;
+    note.textContent = arVoices.length
+      ? 'جرّب كل صوت بزر الاختبار حتى تلقى الذكوري. المتصفح ما يعرض نوع الصوت، فالاسم هو الدليل.'
+      : 'ما لقيت أصوات عربية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم العربية، وحمّل صوت.';
+  }
+  $('voiceSel').onchange = () => { settings.voiceURI = $('voiceSel').value; saveSettings(); };
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+  }
   syncSettingsUI();
 
   /* ================= الملاحة ================= */

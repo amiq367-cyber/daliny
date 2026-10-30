@@ -159,6 +159,45 @@
   .sheet.navmode .actions button { padding: 9px 13px; flex: none; }
   .sheet.navmode .actions .danger { flex: none; }
   #voiceBtn.off { text-decoration: line-through; opacity: .6; }
+
+  /* ---------- شاشة الإعدادات ---------- */
+  #settings {
+    position: fixed; inset: 0; z-index: 3000; background: var(--bg); color: var(--fg);
+    display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .set-head {
+    display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line);
+    padding: 10px max(12px, env(safe-area-inset-right, 0px)) 10px max(12px, env(safe-area-inset-left, 0px));
+  }
+  .set-head h2 { margin: 0; font-size: 1.2rem; }
+  .set-head button { width: 44px; height: 44px; border-radius: 50%; background: var(--line); display: grid; place-items: center; flex: none; }
+  .set-head svg, .chev { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .set-body {
+    flex: 1; overflow-y: auto; padding-top: 6px; padding-bottom: 24px;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px));
+  }
+  .set-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;
+    padding: 16px 4px; border: 0; border-bottom: 1px solid var(--line); background: transparent;
+    color: inherit; font-size: 1.05rem; text-align: right;
+  }
+  .set-row.col { flex-direction: column; align-items: stretch; gap: 10px; }
+  .set-row .line { display: flex; justify-content: space-between; }
+  .set-row .line b { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .set-row input[type=range] { width: 100%; accent-color: var(--accent); }
+  .switch {
+    -webkit-appearance: none; appearance: none; width: 52px; height: 30px; border-radius: 15px;
+    background: var(--line); position: relative; flex: none; transition: background .2s; cursor: pointer; margin: 0;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: left .2s;
+  }
+  .switch:checked { background: var(--accent); }
+  .switch:checked::after { left: 25px; }
+  .set-btn { padding: 12px 18px; border-radius: 12px; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+  .set-note { color: var(--muted); font-size: .9rem; line-height: 1.7; margin: 12px 4px; }
   details { margin-top: 10px; }
   summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
   ol.steps { margin: 6px 0 0; padding: 0 22px 0 0; max-height: 28vh; overflow-y: auto; line-height: 1.6; }
@@ -236,6 +275,9 @@
     <button class="fab" id="btnTheme" aria-label="الوضع الليلي">
       <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>
     </button>
+    <button class="fab" id="btnSettings" aria-label="الإعدادات">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
   </div>
 
   <div class="panel" id="reportPanel" hidden>
@@ -260,6 +302,28 @@
       <ol class="steps" id="steps"></ol>
     </details>
   </section>
+</div>
+
+<!-- شاشة الإعدادات -->
+<div id="settings" hidden role="dialog" aria-label="الإعدادات">
+  <div class="set-head">
+    <button id="setBack" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    <h2 id="setTitle">الإعدادات</h2>
+  </div>
+  <div class="set-body">
+    <div id="setMain">
+      <button class="set-row" data-page="sound"><span>الصوت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </div>
+    <div id="setSound" hidden>
+      <label class="set-row" for="voiceSwitch"><span>التوجيه الصوتي</span><input type="checkbox" id="voiceSwitch" class="switch"></label>
+      <div class="set-row col">
+        <div class="line"><span>مستوى الصوت</span><b id="volVal">100%</b></div>
+        <input type="range" id="volRange" min="0" max="100" step="5" aria-label="مستوى الصوت">
+      </div>
+      <div class="set-row"><span>جرّب الصوت الحالي</span><button id="testVoice" class="set-btn">اختبار</button></div>
+      <p class="set-note">يشمل تعليمات المنعطفات وتنبيهات البلاغات. بعض أجهزة الايفون تحدد شدة الصوت من أزرار الجهاز، فقد لا يؤثر المنزلق عليها.</p>
+    </div>
+  </div>
 </div>
 
 <div id="toast" hidden></div>
@@ -560,20 +624,54 @@
   }
 
   /* ================= الصوت ================= */
-  function speak(text) {
-    if (!state.voice || !('speechSynthesis' in window)) return;
+  // الإعدادات المحفوظة على الجهاز
+  const settings = { voice: true, volume: 1 };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
+  function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
+
+  function speak(text, force) {
+    if ((!settings.voice && !force) || !('speechSynthesis' in window)) return;
     try {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'ar-SA';
+      u.volume = settings.volume;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
     } catch (e) {}
   }
   $('voiceBtn').onclick = () => {
-    state.voice = !state.voice;
-    $('voiceBtn').classList.toggle('off', !state.voice);
-    if (state.voice) speak('تم تشغيل الصوت');
+    settings.voice = !settings.voice;
+    saveSettings(); syncSettingsUI();
+    if (settings.voice) speak('تم تشغيل الصوت');
   };
+
+  /* ================= شاشة الإعدادات ================= */
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت' };
+  let setPage = 'main';
+  function showSetPage(p) {
+    setPage = p;
+    $('setTitle').textContent = SET_TITLES[p];
+    $('setMain').hidden = p !== 'main';
+    $('setSound').hidden = p !== 'sound';
+  }
+  function syncSettingsUI() {
+    const pct = Math.round(settings.volume * 100);
+    $('voiceSwitch').checked = settings.voice;
+    $('volRange').value = pct;
+    $('volVal').textContent = pct + '%';
+    $('voiceBtn').classList.toggle('off', !settings.voice);
+  }
+  $('btnSettings').onclick = () => { showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
+  $('setBack').onclick = () => { if (setPage === 'main') $('settings').hidden = true; else showSetPage('main'); };
+  document.querySelectorAll('#setMain [data-page]').forEach((b) => { b.onclick = () => showSetPage(b.dataset.page); });
+  $('voiceSwitch').onchange = () => { settings.voice = $('voiceSwitch').checked; saveSettings(); syncSettingsUI(); };
+  $('volRange').oninput = () => {
+    settings.volume = $('volRange').value / 100;
+    $('volVal').textContent = Math.round(settings.volume * 100) + '%';
+    saveSettings();
+  };
+  $('testVoice').onclick = () => speak('هذا اختبار للصوت. دليني يوجّهك بالطريق.', true);
+  syncSettingsUI();
 
   /* ================= الملاحة ================= */
   async function keepAwake() {

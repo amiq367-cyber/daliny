@@ -341,6 +341,14 @@
       <button class="set-row" data-page="display"><span>العرض</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="hazards"><span>البلاغات</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </div>
+    <div id="setOffline" hidden>
+      <p class="set-note">الأماكن اللي تتصفحها بالخريطة تنحفظ تلقائياً على جوالك، وتظهر لك حتى لو انقطع الإنترنت. المناطق اللي ما شفتها قبل ما تظهر بدون إنترنت.</p>
+      <div class="set-row"><span>الأجزاء المحفوظة</span><b id="tileCount">—</b></div>
+      <div class="set-row"><span>المساحة المستخدمة بالتطبيق</span><b id="tileSize">—</b></div>
+      <div class="set-row"><span>مسح الخرائط المحفوظة</span><button id="tileClear" class="set-btn">مسح</button></div>
+      <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. وما نكدر ننزّل مناطق كاملة مسبقاً لأن خرائط OpenStreetMap المجانية تمنع التنزيل المسبق.</p>
     </div>
     <div id="setFavs" hidden>
       <div id="favList"></div>
@@ -485,10 +493,27 @@
   /* ================= الخريطة ================= */
   const map = L.map('map', { zoomControl: false, tap: true }).setView([33.3152, 44.3661], 13);
 
-  const lightTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, attribution: '© OpenStreetMap'
-  });
+  // نطلب الأجزاء بصيغة CORS حتى يكدر التطبيق يحفظ اللي تشوفه فقط لاستخدامه بدون إنترنت.
+  // إذا فشل هذا الأسلوب بجهاز معين، نرجع تلقائياً للأسلوب العادي.
+  const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  let lightTiles = L.tileLayer(TILE_URL, { maxZoom: 19, attribution: '© OpenStreetMap', crossOrigin: true });
   lightTiles.addTo(map);
+  (function corsFailsafe() {
+    let ok = 0, bad = 0, done = false;
+    const onLoad = () => { ok++; };
+    const onErr = () => {
+      bad++;
+      if (!done && ok === 0 && bad >= 4) {
+        done = true;
+        map.removeLayer(lightTiles);
+        lightTiles = L.tileLayer(TILE_URL, { maxZoom: 19, attribution: '© OpenStreetMap' });
+        lightTiles.addTo(map);
+      }
+    };
+    lightTiles.on('tileload', onLoad);
+    lightTiles.on('tileerror', onErr);
+    setTimeout(() => { done = true; }, 15000);
+  })();
 
   const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   function isDark() {
@@ -900,7 +925,7 @@
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة' };
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', offline: 'الخرائط بدون إنترنت' };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
@@ -910,8 +935,31 @@
     $('setDisplay').hidden = p !== 'display';
     $('setHazards').hidden = p !== 'hazards';
     $('setFavs').hidden = p !== 'favs';
+    $('setOffline').hidden = p !== 'offline';
     if (p === 'favs') { favEditing = null; renderFavList(); }
+    if (p === 'offline') refreshTileStats();
   }
+
+  /* ---- الخرائط المحفوظة (يحفظها ملف sw.js تلقائياً) ---- */
+  const TILE_CACHE = 'daliny-tiles-v1';
+  async function refreshTileStats() {
+    try {
+      if (!('caches' in window)) { $('tileCount').textContent = 'غير مدعوم'; return; }
+      const c = await caches.open(TILE_CACHE);
+      const keys = await c.keys();
+      $('tileCount').textContent = keys.length;
+      if (navigator.storage && navigator.storage.estimate) {
+        const e = await navigator.storage.estimate();
+        $('tileSize').textContent = (e.usage / 1048576).toFixed(1) + ' ميغا';
+      } else $('tileSize').textContent = '—';
+    } catch (e) { $('tileCount').textContent = '—'; }
+  }
+  $('tileClear').onclick = async () => {
+    try { await caches.delete(TILE_CACHE); toast('انمسحت الخرائط المحفوظة'); } catch (e) { toast('ما كدرت أمسح'); }
+    refreshTileStats();
+  };
+  window.addEventListener('offline', () => toast('انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت', 5000));
+  window.addEventListener('online', () => toast('رجع الإنترنت'));
   function syncSettingsUI() {
     const pct = Math.round(settings.volume * 100);
     $('voiceSwitch').checked = settings.voice;

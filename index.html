@@ -949,7 +949,7 @@
   function addPackLayer(p) {
     if (packLayers[p.id] || !window.protomapsL) return;
     try {
-      const l = protomapsL.leafletLayer({ url: packKey(p), flavor: 'light', lang: 'ar', maxDataZoom: p.maxZoom });
+      const l = protomapsL.leafletLayer({ url: packKey(p), flavor: 'light', lang: 'ar', maxDataZoom: p.maxZoom, maxNativeZoom: p.maxZoom, maxZoom: 19 });
       l.on('tileload', () => { diagTiles.ok++; });
       l.on('tileerror', () => { diagTiles.bad++; });
       l.addTo(map);
@@ -1074,7 +1074,22 @@
       out.push('magic: ' + String.fromCharCode.apply(null, b.slice(0, 7)) + ' v' + b[7]);
     } catch (e) { out.push('range err: ' + e.message); }
     out.push('zoom: ' + map.getZoom() + ' | vector tiles ok/bad: ' + diagTiles.ok + '/' + diagTiles.bad);
-    try { out.push('protomapsL keys: ' + Object.keys(window.protomapsL).join(',')); } catch (e) {}
+    try { out.push('protomapsL keys: ' + Object.keys(window.protomapsL).join(', ')); } catch (e) {}
+    try {
+      const Src = window.protomapsL.PmtilesSource;
+      if (!Src) out.push('PmtilesSource: missing');
+      else {
+        const src = new Src(packKey(p), false);
+        const c = map.getCenter(), z = 12, n = Math.pow(2, z);
+        const x = Math.floor((c.lng + 180) / 360 * n);
+        const lr = c.lat * Math.PI / 180;
+        const y = Math.floor((1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n);
+        out.push('test tile ' + z + '/' + x + '/' + y);
+        const t = await src.get({ x: x, y: y, z: z }, 256);
+        if (t && t.forEach) { const parts = []; t.forEach((v, k) => parts.push(k + ':' + (v && v.length))); out.push('layers: ' + (parts.join(', ') || 'EMPTY')); }
+        else out.push('result: ' + typeof t);
+      }
+    } catch (e) { out.push('tile test error: ' + (e && e.message) + ' | ' + String(e && e.stack).slice(0, 200)); }
     out.push('errors: ' + (diagErrs.slice(-4).join(' || ') || 'none'));
     $('diagOut').textContent = out.join('\n');
   }

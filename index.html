@@ -353,6 +353,7 @@
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
       <div id="packList"></div>
       <div class="set-row"><span>فحص الخريطة المنزّلة</span><button id="packDiag" class="set-btn">فحص</button></div>
+      <div class="set-row"><span>اختبار: إخفاء الخريطة العادية</span><button id="rasterToggle" class="set-btn">إخفاء</button></div>
       <pre id="diagOut" style="white-space:pre-wrap;direction:ltr;text-align:left;font-size:.8rem;margin:8px 4px;color:var(--muted)"></pre>
       <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.</p>
     </div>
@@ -940,6 +941,7 @@
   let packsInstalled = [];
   try { packsInstalled = JSON.parse(localStorage.getItem(PACK_KEY) || '[]'); } catch (e) {}
   const packLayers = {};
+  const diagTiles = { ok: 0, bad: 0 };
   const packBusy = {}; // id -> { ctrl, pct }
   const packKey = (p) => new URL(p.url, location.href).href;
   function savePacks() { try { localStorage.setItem(PACK_KEY, JSON.stringify(packsInstalled)); } catch (e) {} }
@@ -948,6 +950,8 @@
     if (packLayers[p.id] || !window.protomapsL) return;
     try {
       const l = protomapsL.leafletLayer({ url: packKey(p), flavor: 'light', lang: 'ar', maxDataZoom: p.maxZoom });
+      l.on('tileload', () => { diagTiles.ok++; });
+      l.on('tileerror', () => { diagTiles.bad++; });
       l.addTo(map);
       packLayers[p.id] = l;
     } catch (e) { console.warn('pack layer', e); }
@@ -1069,11 +1073,16 @@
       out.push('range0: status ' + r.status + ', ' + b.length + ' bytes, cr=' + r.headers.get('content-range'));
       out.push('magic: ' + String.fromCharCode.apply(null, b.slice(0, 7)) + ' v' + b[7]);
     } catch (e) { out.push('range err: ' + e.message); }
-    out.push('zoom: ' + map.getZoom());
+    out.push('zoom: ' + map.getZoom() + ' | vector tiles ok/bad: ' + diagTiles.ok + '/' + diagTiles.bad);
+    try { out.push('protomapsL keys: ' + Object.keys(window.protomapsL).join(',')); } catch (e) {}
     out.push('errors: ' + (diagErrs.slice(-4).join(' || ') || 'none'));
     $('diagOut').textContent = out.join('\n');
   }
   $('packDiag').onclick = diagPack;
+  $('rasterToggle').onclick = () => {
+    if (map.hasLayer(lightTiles)) { map.removeLayer(lightTiles); $('rasterToggle').textContent = 'إظهار'; }
+    else { lightTiles.addTo(map); lightTiles.bringToBack(); $('rasterToggle').textContent = 'إخفاء'; }
+  };
   function refreshTileStats() { renderPacks(); }
   window.addEventListener('offline', () => toast('انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت', 5000));
   window.addEventListener('online', () => toast('رجع الإنترنت'));

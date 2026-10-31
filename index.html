@@ -931,7 +931,7 @@
      كل دولة ملف PMTiles واحد. نضيف دول جديدة بإضافة سطر هنا فقط.
      url: رابط الملف (نسبي = داخل نفس الموقع). maxZoom: أعلى مستوى تفاصيل بالملف. */
   const PACKS = [
-    { id: 'iraq', name: 'العراق', url: 'packs/iraq.pmtiles', maxZoom: 13 }
+    { id: 'iraq', name: 'العراق', url: 'packs/iraq.pmtiles', maxZoom: 12 }
   ];
   const PACK_CACHE = 'daliny-packs-v1';
   const PACK_KEY = 'daliny-packs';
@@ -999,6 +999,7 @@
   }
   async function deletePack(p) {
     try { const c = await caches.open(PACK_CACHE); await c.delete(packKey(p)); } catch (e) {}
+    try { if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage('pack-reset'); } catch (e) {}
     packsInstalled = packsInstalled.filter((x) => x !== p.id);
     savePacks();
     removePackLayer(p);

@@ -1,5 +1,5 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
-const CACHE = 'daliny-v3';
+const CACHE = 'daliny-v4';
 const LIBS = 'daliny-libs-v1';
 const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
@@ -18,12 +18,20 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+const packBlobs = {};
+
+self.addEventListener('message', (e) => { if (e.data === 'pack-reset') { for (const k in packBlobs) delete packBlobs[k]; } });
+
 // يرجّع الجزء المطلوب (Range) من ملف الخريطة المحفوظ
 async function packResponse(req, key) {
-  const cache = await caches.open(PACK_CACHE);
-  const hit = await cache.match(key);
-  if (!hit) return fetch(req);
-  const blob = await hit.blob();
+  let blob = packBlobs[key];
+  if (!blob) {
+    const cache = await caches.open(PACK_CACHE);
+    const hit = await cache.match(key);
+    if (!hit) return fetch(req);
+    blob = await hit.blob();
+    packBlobs[key] = blob; // نبقيه بالذاكرة حتى ما نقرأه من جديد مع كل جزء خريطة
+  }
   const range = req.headers.get('range');
   const headers = { 'Content-Type': 'application/octet-stream', 'Accept-Ranges': 'bytes' };
   if (!range) {

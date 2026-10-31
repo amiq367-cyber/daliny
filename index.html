@@ -352,6 +352,8 @@
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
       <div id="packList"></div>
+      <div class="set-row"><span>فحص الخريطة المنزّلة</span><button id="packDiag" class="set-btn">فحص</button></div>
+      <pre id="diagOut" style="white-space:pre-wrap;direction:ltr;text-align:left;font-size:.8rem;margin:8px 4px;color:var(--muted)"></pre>
       <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.</p>
     </div>
     <div id="setFavs" hidden>
@@ -1047,6 +1049,31 @@
       box.appendChild(row);
     }
   }
+  const diagErrs = [];
+  window.addEventListener('error', (e) => { diagErrs.push('err: ' + (e.message || e)); });
+  window.addEventListener('unhandledrejection', (e) => { diagErrs.push('rej: ' + ((e.reason && e.reason.message) || e.reason)); });
+  async function diagPack() {
+    const out = [];
+    const p = PACKS[0];
+    out.push('SW controller: ' + (navigator.serviceWorker && navigator.serviceWorker.controller ? 'yes' : 'NO'));
+    out.push('protomapsL: ' + (window.protomapsL ? 'yes' : 'NO'));
+    out.push('installed: ' + packsInstalled.join(',') + ' | layer: ' + (packLayers[p.id] ? 'yes' : 'NO'));
+    try {
+      const c = await caches.open(PACK_CACHE);
+      const r = await c.match(packKey(p));
+      if (r) { const bl = await r.blob(); out.push('cached size: ' + bl.size); } else out.push('cached: NO');
+    } catch (e) { out.push('cache err: ' + e.message); }
+    try {
+      const r = await fetch(packKey(p), { headers: { Range: 'bytes=0-15' } });
+      const b = new Uint8Array(await r.arrayBuffer());
+      out.push('range0: status ' + r.status + ', ' + b.length + ' bytes, cr=' + r.headers.get('content-range'));
+      out.push('magic: ' + String.fromCharCode.apply(null, b.slice(0, 7)) + ' v' + b[7]);
+    } catch (e) { out.push('range err: ' + e.message); }
+    out.push('zoom: ' + map.getZoom());
+    out.push('errors: ' + (diagErrs.slice(-4).join(' || ') || 'none'));
+    $('diagOut').textContent = out.join('\n');
+  }
+  $('packDiag').onclick = diagPack;
   function refreshTileStats() { renderPacks(); }
   window.addEventListener('offline', () => toast('انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت', 5000));
   window.addEventListener('online', () => toast('رجع الإنترنت'));

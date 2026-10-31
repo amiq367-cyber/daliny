@@ -139,7 +139,16 @@
     display: grid; place-items: center; font-weight: 800; font-size: .9rem; flex: none;
   }
 
-  .sheet .dest { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+  .sheet .dest { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .sheet .dest #destName { min-width: 0; }
+  .favbtn { width: 38px; height: 38px; border-radius: 50%; background: var(--line); display: grid; place-items: center; flex: none; }
+  .favbtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+  .favbtn.on svg { fill: #f5b301; stroke: #f5b301; }
+  .set-row.fav { gap: 8px; }
+  .favgo { flex: 1; min-width: 0; text-align: right; background: transparent; padding: 0; font-size: 1.05rem; }
+  .favact { padding: 8px 12px; border-radius: 10px; background: var(--line); font-size: .9rem; flex: none; }
+  .favact.danger { color: var(--danger); }
+  .fav-input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-family: inherit; font-size: 1rem; }
   .sheet .sum { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; color: var(--muted); }
   .sheet .sum b { font-size: 1.6rem; color: var(--accent); font-variant-numeric: tabular-nums; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
@@ -297,7 +306,12 @@
   </div>
 
   <section class="sheet" id="sheet" hidden>
-    <div class="dest" id="destName"></div>
+    <div class="dest">
+      <span id="destName"></span>
+      <button class="favbtn" id="favBtn" aria-label="حفظ بالمفضلة">
+        <svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.5 6 .8-4.4 4.1 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg>
+      </button>
+    </div>
     <div class="sum"><b id="sumTime">—</b><span id="sumDist"></span><span id="sumEta"></span></div>
     <div class="actions" id="planActions">
       <button class="primary" id="startBtn">ابدأ الملاحة</button>
@@ -326,6 +340,11 @@
       <button class="set-row" data-page="sound"><span>الصوت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="display"><span>العرض</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="hazards"><span>البلاغات</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </div>
+    <div id="setFavs" hidden>
+      <div id="favList"></div>
+      <p class="set-note">الأماكن تنحفظ على جوالك بس. اضغط اسم المكان حتى تروح له. تحفظ المكان من النجمة اللي تظهر جنب اسم الوجهة بعد البحث.</p>
     </div>
     <div id="setHazards" hidden>
       <p class="set-note">اختر أنواع البلاغات اللي تظهر على الخريطة وتنبّهك:</p>
@@ -562,7 +581,104 @@
 
   /* ================= البحث ================= */
   const resultsEl = $('results');
-  function hideResults() { resultsEl.hidden = true; resultsEl.innerHTML = ''; }
+  let favDropdownOn = false;
+  function hideResults() { resultsEl.hidden = true; resultsEl.innerHTML = ''; favDropdownOn = false; }
+
+  /* ================= المفضلة ================= */
+  const FAV_KEY = 'daliny-favs';
+  let favs = [];
+  try {
+    const raw = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+    if (Array.isArray(raw)) favs = raw.filter((f) => f && typeof f.lat === 'number' && typeof f.lng === 'number');
+  } catch (e) {}
+  function saveFavs() {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); return true; }
+    catch (e) { toast('ما كدرت أحفظ، مساحة التخزين بالجهاز ممتلئة'); return false; }
+  }
+  function findFav(lat, lng) { return favs.find((f) => haversine([f.lat, f.lng], [lat, lng]) < 30); }
+  function addFav(d) {
+    if (findFav(d.lat, d.lng)) return false;
+    favs.unshift({ id: String(Date.now()), name: d.name || 'مكان محفوظ', lat: d.lat, lng: d.lng });
+    if (!saveFavs()) { favs.shift(); return false; }
+    return true;
+  }
+  function syncFavUI() {
+    $('favBtn').classList.toggle('on', !!(state.dest && findFav(state.dest.lat, state.dest.lng)));
+  }
+  $('favBtn').onclick = () => {
+    if (!state.dest) return;
+    const f = findFav(state.dest.lat, state.dest.lng);
+    if (f) { favs = favs.filter((x) => x !== f); saveFavs(); toast('انحذف من المفضلة'); }
+    else if (addFav(state.dest)) toast('انحفظ بالمفضلة');
+    syncFavUI(); renderFavList();
+  };
+  function goFav(f) {
+    if (state.navigating) { toast('أنهِ الملاحة الحالية أول'); return; }
+    $('settings').hidden = true; hideResults();
+    map.setView([f.lat, f.lng], 15);
+    chooseDest({ lat: f.lat, lng: f.lng, name: f.name });
+  }
+  let favEditing = null;
+  function renderFavList() {
+    const box = $('favList');
+    box.innerHTML = '';
+    if (!favs.length) {
+      const p = document.createElement('p');
+      p.className = 'set-note';
+      p.textContent = 'ما اكو أماكن محفوظة. ابحث عن مكان واضغط النجمة جنب اسمه حتى تحفظه.';
+      box.appendChild(p);
+      return;
+    }
+    favs.forEach((f) => {
+      const row = document.createElement('div');
+      row.className = 'set-row fav';
+      if (favEditing === f.id) {
+        const inp = document.createElement('input');
+        inp.className = 'fav-input'; inp.value = f.name; inp.maxLength = 40;
+        inp.setAttribute('aria-label', 'اسم المكان');
+        const ok = document.createElement('button');
+        ok.className = 'favact'; ok.textContent = 'حفظ';
+        const save = () => {
+          const v = inp.value.trim();
+          if (v) { f.name = v; saveFavs(); }
+          favEditing = null; renderFavList(); syncFavUI();
+        };
+        ok.onclick = save;
+        inp.onkeydown = (e) => { if (e.key === 'Enter') save(); };
+        row.append(inp, ok);
+        box.appendChild(row);
+        setTimeout(() => inp.focus(), 0);
+        return;
+      }
+      const go = document.createElement('button');
+      go.className = 'favgo'; go.textContent = f.name; go.onclick = () => goFav(f);
+      const ed = document.createElement('button');
+      ed.className = 'favact'; ed.textContent = 'تعديل';
+      ed.onclick = () => { favEditing = f.id; renderFavList(); };
+      const del = document.createElement('button');
+      del.className = 'favact danger'; del.textContent = 'حذف';
+      del.onclick = () => { favs = favs.filter((x) => x !== f); saveFavs(); renderFavList(); syncFavUI(); };
+      row.append(go, ed, del);
+      box.appendChild(row);
+    });
+  }
+  // لما تضغط خانة البحث وهي فاضية: تظهر أماكنك المحفوظة
+  function showFavDropdown() {
+    if ($('q').value.trim() || !favs.length) return;
+    resultsEl.hidden = false; resultsEl.innerHTML = ''; favDropdownOn = true;
+    favs.slice(0, 6).forEach((f) => {
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = f.name;
+      const s = document.createElement('small'); s.textContent = 'مكان محفوظ';
+      li.append(b, s);
+      li.onclick = () => { hideResults(); chooseDest({ lat: f.lat, lng: f.lng, name: f.name }); };
+      resultsEl.appendChild(li);
+    });
+  }
+  $('q').addEventListener('focus', showFavDropdown);
+  $('q').addEventListener('input', () => {
+    if ($('q').value.trim()) { if (favDropdownOn) hideResults(); } else showFavDropdown();
+  });
 
   async function nominatim(q, iraqOnly) {
     const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=ar&q=' +
@@ -577,6 +693,7 @@
     const q = $('q').value.trim();
     if (!q) return;
     $('q').blur();
+    favDropdownOn = false;
     resultsEl.hidden = false;
     resultsEl.innerHTML = '<li>جاري البحث...</li>';
     try {
@@ -609,11 +726,20 @@
     const html = document.createElement('div');
     const btn = document.createElement('button');
     btn.textContent = 'اذهب إلى هنا';
-    html.appendChild(btn);
+    const btnFav = document.createElement('button');
+    btnFav.textContent = 'حفظ بالمفضلة';
+    btnFav.style.marginRight = '6px';
+    html.append(btn, btnFav);
     const pop = L.popup({ closeButton: false }).setLatLng(e.latlng).setContent(html).openOn(map);
     btn.onclick = () => {
       map.closePopup(pop);
       chooseDest({ lat: e.latlng.lat, lng: e.latlng.lng, name: 'نقطة على الخريطة' });
+    };
+    btnFav.onclick = () => {
+      map.closePopup(pop);
+      if (addFav({ lat: e.latlng.lat, lng: e.latlng.lng, name: 'نقطة على الخريطة' })) {
+        toast('انحفظ. تكدر تغيّر اسمه من الإعدادات، الأماكن المفضلة', 4000);
+      } else toast('هذا المكان محفوظ من قبل');
     };
   });
 
@@ -689,6 +815,7 @@
     const r = state.route;
     $('sheet').hidden = false;
     $('destName').textContent = state.dest ? state.dest.name : '';
+    syncFavUI();
     $('sumTime').textContent = fmtTime(r.duration);
     $('sumDist').textContent = fmtDist(r.distance);
     $('sumEta').textContent = 'الوصول ' + fmtClock(r.duration);
@@ -773,7 +900,7 @@
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات' };
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة' };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
@@ -782,6 +909,8 @@
     $('setSound').hidden = p !== 'sound';
     $('setDisplay').hidden = p !== 'display';
     $('setHazards').hidden = p !== 'hazards';
+    $('setFavs').hidden = p !== 'favs';
+    if (p === 'favs') { favEditing = null; renderFavList(); }
   }
   function syncSettingsUI() {
     const pct = Math.round(settings.volume * 100);

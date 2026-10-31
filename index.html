@@ -224,16 +224,15 @@
   }
 
   /* ---------- علامات الخريطة ---------- */
-  .me { position: relative; width: 30px; height: 30px; }
-  .me .halo { position: absolute; inset: 0; border-radius: 50%; background: rgba(10,127,143,.25); }
-  .me .dot {
-    position: absolute; inset: 7px; border-radius: 50%; background: #0a7f8f;
-    border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0,0,0,.4);
+  /* موقعي: مثلث مجسّم، الظل ثابت تحته والمثلث يدور مع اتجاه الحركة */
+  .me3d { position: relative; width: 44px; height: 52px; }
+  .me3d .shd {
+    position: absolute; left: 7px; right: 7px; bottom: 1px; height: 11px;
+    border-radius: 50%; background: rgba(0,0,0,.38); filter: blur(3px);
   }
-  .me i { position: absolute; inset: 0; transition: transform .3s; }
-  .me i::before {
-    content: ""; position: absolute; top: -7px; left: 9px;
-    border: 6px solid transparent; border-bottom: 9px solid #0a7f8f; border-top: 0;
+  .me3d .arrow {
+    position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+    transform-origin: 50% 50%; transition: transform .3s ease-out;
   }
   .hz {
     width: 30px; height: 30px; border-radius: 50%; color: #fff; display: grid; place-items: center;
@@ -495,11 +494,26 @@
   map.on('dragstart', () => { state.follow = false; $('btnLocate').classList.remove('on'); });
 
   /* ================= موقعي ================= */
+  // مثلث بثلاثة أوجه: وجه أيسر فاتح، ووجه أيمن غامق، وسماكة تحتهما
+  const ME_SVG =
+    '<svg class="arrow" viewBox="0 0 44 52" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="meL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fe6f2"/><stop offset="1" stop-color="#25b0c6"/></linearGradient>' +
+        '<linearGradient id="meR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12a0b6"/><stop offset="1" stop-color="#066877"/></linearGradient>' +
+      '</defs>' +
+      '<polygon points="5,40 22,32 22,37 5,45" fill="#05505c"/>' +
+      '<polygon points="22,32 39,40 39,45 22,37" fill="#033a44"/>' +
+      '<polygon points="22,4 5,40 22,32" fill="url(#meL)"/>' +
+      '<polygon points="22,4 22,32 39,40" fill="url(#meR)"/>' +
+      '<polyline points="22,4 22,32" fill="none" stroke="#ffffff" stroke-opacity=".65" stroke-width="1"/>' +
+      '<polygon points="22,4 39,40 39,45 22,37 5,45 5,40" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round"/>' +
+    '</svg>';
   const meIcon = L.divIcon({
-    className: '', iconSize: [30, 30], iconAnchor: [15, 15],
-    html: '<div class="me"><div class="halo"></div><i></i><div class="dot"></div></div>'
+    className: '', iconSize: [44, 52], iconAnchor: [22, 26],
+    html: '<div class="me3d"><div class="shd"></div>' + ME_SVG + '</div>'
   });
   let meMarker = null;
+  let meAngle = 0; // زاوية تراكمية حتى ما يلف المثلث لفة كاملة عند عبور الشمال
 
   function setUser(lat, lng, heading, speed) {
     state.user = { lat, lng, heading: heading, speed: speed };
@@ -507,8 +521,11 @@
     else meMarker.setLatLng([lat, lng]);
     const el = meMarker.getElement();
     if (el && typeof heading === 'number' && !isNaN(heading)) {
-      const arrow = el.querySelector('i');
-      if (arrow) arrow.style.transform = 'rotate(' + heading + 'deg)';
+      const arrow = el.querySelector('.arrow');
+      if (arrow) {
+        meAngle += ((heading - meAngle) % 360 + 540) % 360 - 180;
+        arrow.style.transform = 'rotate(' + meAngle + 'deg)';
+      }
     }
     if (state.follow) map.panTo([lat, lng], { animate: true, duration: 0.4 });
   }

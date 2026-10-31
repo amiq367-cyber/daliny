@@ -949,7 +949,7 @@
   function addPackLayer(p) {
     if (packLayers[p.id] || !window.protomapsL) return;
     try {
-      const l = protomapsL.leafletLayer({ url: packKey(p), flavor: 'light', lang: 'ar', maxDataZoom: p.maxZoom, maxNativeZoom: p.maxZoom, maxZoom: 19 });
+      const l = protomapsL.leafletLayer({ url: packKey(p), flavor: 'light', theme: 'light', lang: 'ar', maxDataZoom: p.maxZoom, maxNativeZoom: p.maxZoom, maxZoom: 19 });
       l.on('tileload', () => { diagTiles.ok++; });
       l.on('tileerror', () => { diagTiles.bad++; });
       l.addTo(map);
@@ -1090,6 +1090,13 @@
         else out.push('result: ' + typeof t);
       }
     } catch (e) { out.push('tile test error: ' + (e && e.message) + ' | ' + String(e && e.stack).slice(0, 200)); }
+    try {
+      const L0 = packLayers[p.id];
+      if (L0) {
+        out.push('layer keys: ' + Object.keys(L0).join(', '));
+        out.push('paintRules: ' + (L0.paintRules && L0.paintRules.length) + ' | labelRules: ' + (L0.labelRules && L0.labelRules.length) + ' | options: ' + Object.keys(L0.options || {}).join(','));
+      }
+    } catch (e) { out.push('layer introspect err: ' + e.message); }
     out.push('errors: ' + (diagErrs.slice(-4).join(' || ') || 'none'));
     $('diagOut').textContent = out.join('\n');
   }

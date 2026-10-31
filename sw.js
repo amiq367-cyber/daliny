@@ -1,8 +1,8 @@
-// خدمة بسيطة: تحفظ ملفات التطبيق، وتحفظ أجزاء الخريطة اللي تشوفها فقط (بدون تنزيل مسبق)
-const CACHE = 'daliny-v2';
+// يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
+const CACHE = 'daliny-v3';
+const LIBS = 'daliny-libs-v1';
+const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
-const TILE_CACHE = 'daliny-tiles-v1';
-const MAX_TILES = 6000; // سقف عدد الأجزاء المحفوظة، والأقدم يُمسح أول
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -11,39 +11,61 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== TILE_CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys
+        .filter((k) => k !== CACHE && k !== LIBS && k !== PACK_CACHE)
+        .map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-async function trimTiles(cache) {
-  const keys = await cache.keys();
-  if (keys.length > MAX_TILES) {
-    const extra = keys.length - MAX_TILES + 200; // نمسح زيادة قليلة حتى ما نكرر التنظيف
-    await Promise.all(keys.slice(0, extra).map((k) => cache.delete(k)));
+// يرجّع الجزء المطلوب (Range) من ملف الخريطة المحفوظ
+async function packResponse(req, key) {
+  const cache = await caches.open(PACK_CACHE);
+  const hit = await cache.match(key);
+  if (!hit) return fetch(req);
+  const blob = await hit.blob();
+  const range = req.headers.get('range');
+  const headers = { 'Content-Type': 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+  if (!range) {
+    headers['Content-Length'] = String(blob.size);
+    return new Response(blob, { status: 200, headers });
   }
-}
-
-// الإنترنت أول (والمتصفح يحترم قواعد التخزين المؤقت للسيرفر)، وإذا انقطع نستخدم المحفوظ
-async function tileFetch(req) {
-  const cache = await caches.open(TILE_CACHE);
-  try {
-    const res = await fetch(req);
-    if (res && res.ok && res.type !== 'opaque') {
-      cache.put(req, res.clone()).then(() => { if (Math.random() < 0.02) trimTiles(cache); }).catch(() => {});
-    }
-    return res;
-  } catch (err) {
-    const hit = await cache.match(req);
-    return hit || new Response('', { status: 504 });
-  }
+  const m = /bytes=(\d*)-(\d*)/.exec(range);
+  let start = m && m[1] ? parseInt(m[1], 10) : 0;
+  let end = m && m[2] ? parseInt(m[2], 10) : blob.size - 1;
+  if (m && !m[1] && m[2]) { start = Math.max(0, blob.size - parseInt(m[2], 10)); end = blob.size - 1; }
+  end = Math.min(end, blob.size - 1);
+  headers['Content-Range'] = 'bytes ' + start + '-' + end + '/' + blob.size;
+  headers['Content-Length'] = String(end - start + 1);
+  return new Response(blob.slice(start, end + 1), { status: 206, headers });
 }
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.hostname === 'tile.openstreetmap.org') { e.respondWith(tileFetch(req)); return; }
+
+  // ملفات الخرائط المنزّلة (التنزيل نفسه يستخدم ?dl=1 فيمر بدون تدخل)
+  if (url.pathname.endsWith('.pmtiles')) {
+    if (url.searchParams.has('dl')) return;
+    e.respondWith(packResponse(req, url.origin + url.pathname));
+    return;
+  }
+
+  // مكتبات التطبيق (Leaflet وغيرها): من الذاكرة أول حتى يفتح التطبيق بدون إنترنت
+  if (url.hostname === 'unpkg.com') {
+    e.respondWith(
+      caches.open(LIBS).then(async (c) => {
+        const hit = await c.match(req);
+        if (hit) return hit;
+        const res = await fetch(req);
+        if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone());
+        return res;
+      })
+    );
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
   e.respondWith(
     fetch(req)

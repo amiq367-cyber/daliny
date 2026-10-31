@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/protomaps-leaflet@4.0.1/dist/protomaps-leaflet.js"></script>
 
 <style>
   :root {
@@ -218,6 +219,11 @@
   .seg button { flex: 1; padding: 11px 8px; border-radius: 10px; background: var(--line); font-weight: 500; }
   .seg button.on { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
   .set-btn { padding: 12px 18px; border-radius: 12px; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+  .pack-row { gap: 12px; }
+  .pack-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .pack-info small { color: var(--muted); }
+  .pack-bar { height: 6px; border-radius: 3px; background: rgba(128,128,128,.25); overflow: hidden; }
+  .pack-bar i { display: block; height: 100%; background: var(--accent); }
   .set-note { color: var(--muted); font-size: .9rem; line-height: 1.7; margin: 12px 4px; }
   details { margin-top: 10px; }
   summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
@@ -344,11 +350,9 @@
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
     </div>
     <div id="setOffline" hidden>
-      <p class="set-note">الأماكن اللي تتصفحها بالخريطة تنحفظ تلقائياً على جوالك، وتظهر لك حتى لو انقطع الإنترنت. المناطق اللي ما شفتها قبل ما تظهر بدون إنترنت.</p>
-      <div class="set-row"><span>الأجزاء المحفوظة</span><b id="tileCount">—</b></div>
-      <div class="set-row"><span>المساحة المستخدمة بالتطبيق</span><b id="tileSize">—</b></div>
-      <div class="set-row"><span>مسح الخرائط المحفوظة</span><button id="tileClear" class="set-btn">مسح</button></div>
-      <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. وما نكدر ننزّل مناطق كاملة مسبقاً لأن خرائط OpenStreetMap المجانية تمنع التنزيل المسبق.</p>
+      <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
+      <div id="packList"></div>
+      <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.</p>
     </div>
     <div id="setFavs" hidden>
       <div id="favList"></div>
@@ -493,27 +497,10 @@
   /* ================= الخريطة ================= */
   const map = L.map('map', { zoomControl: false, tap: true }).setView([33.3152, 44.3661], 13);
 
-  // نطلب الأجزاء بصيغة CORS حتى يكدر التطبيق يحفظ اللي تشوفه فقط لاستخدامه بدون إنترنت.
-  // إذا فشل هذا الأسلوب بجهاز معين، نرجع تلقائياً للأسلوب العادي.
-  const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  let lightTiles = L.tileLayer(TILE_URL, { maxZoom: 19, attribution: '© OpenStreetMap', crossOrigin: true });
+  const lightTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '© OpenStreetMap'
+  });
   lightTiles.addTo(map);
-  (function corsFailsafe() {
-    let ok = 0, bad = 0, done = false;
-    const onLoad = () => { ok++; };
-    const onErr = () => {
-      bad++;
-      if (!done && ok === 0 && bad >= 4) {
-        done = true;
-        map.removeLayer(lightTiles);
-        lightTiles = L.tileLayer(TILE_URL, { maxZoom: 19, attribution: '© OpenStreetMap' });
-        lightTiles.addTo(map);
-      }
-    };
-    lightTiles.on('tileload', onLoad);
-    lightTiles.on('tileerror', onErr);
-    setTimeout(() => { done = true; }, 15000);
-  })();
 
   const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   function isDark() {
@@ -940,24 +927,126 @@
     if (p === 'offline') refreshTileStats();
   }
 
-  /* ---- الخرائط المحفوظة (يحفظها ملف sw.js تلقائياً) ---- */
-  const TILE_CACHE = 'daliny-tiles-v1';
-  async function refreshTileStats() {
+  /* ---- حزم الخرائط (دول) ----
+     كل دولة ملف PMTiles واحد. نضيف دول جديدة بإضافة سطر هنا فقط.
+     url: رابط الملف (نسبي = داخل نفس الموقع). maxZoom: أعلى مستوى تفاصيل بالملف. */
+  const PACKS = [
+    { id: 'iraq', name: 'العراق', url: 'packs/iraq.pmtiles', maxZoom: 13 }
+  ];
+  const PACK_CACHE = 'daliny-packs-v1';
+  const PACK_KEY = 'daliny-packs';
+  let packsInstalled = [];
+  try { packsInstalled = JSON.parse(localStorage.getItem(PACK_KEY) || '[]'); } catch (e) {}
+  const packLayers = {};
+  const packBusy = {}; // id -> { ctrl, pct }
+  const packKey = (p) => new URL(p.url, location.href).href;
+  function savePacks() { try { localStorage.setItem(PACK_KEY, JSON.stringify(packsInstalled)); } catch (e) {} }
+
+  function addPackLayer(p) {
+    if (packLayers[p.id] || !window.protomapsL) return;
     try {
-      if (!('caches' in window)) { $('tileCount').textContent = 'غير مدعوم'; return; }
-      const c = await caches.open(TILE_CACHE);
-      const keys = await c.keys();
-      $('tileCount').textContent = keys.length;
-      if (navigator.storage && navigator.storage.estimate) {
-        const e = await navigator.storage.estimate();
-        $('tileSize').textContent = (e.usage / 1048576).toFixed(1) + ' ميغا';
-      } else $('tileSize').textContent = '—';
-    } catch (e) { $('tileCount').textContent = '—'; }
+      const l = protomapsL.leafletLayer({ url: packKey(p), flavor: 'light', lang: 'ar', maxDataZoom: p.maxZoom });
+      l.addTo(map);
+      packLayers[p.id] = l;
+    } catch (e) { console.warn('pack layer', e); }
   }
-  $('tileClear').onclick = async () => {
-    try { await caches.delete(TILE_CACHE); toast('انمسحت الخرائط المحفوظة'); } catch (e) { toast('ما كدرت أمسح'); }
-    refreshTileStats();
-  };
+  function removePackLayer(p) {
+    if (packLayers[p.id]) { map.removeLayer(packLayers[p.id]); delete packLayers[p.id]; }
+  }
+  PACKS.forEach((p) => { if (packsInstalled.includes(p.id)) addPackLayer(p); });
+
+  function fmtMB(n) { return (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' ميغا'; }
+
+  async function downloadPack(p) {
+    if (!('caches' in window) || !navigator.serviceWorker || !navigator.serviceWorker.controller) {
+      toast('أغلق التطبيق وافتحه مرة ثانية، وبعدها جرّب التنزيل', 5000); return;
+    }
+    const ctrl = new AbortController();
+    packBusy[p.id] = { ctrl, pct: 0, text: 'جاري البدء...' };
+    renderPacks();
+    try {
+      if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+      const res = await fetch(packKey(p) + '?dl=1', { signal: ctrl.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const total = +res.headers.get('content-length') || 0;
+      const reader = res.body.getReader();
+      let got = 0;
+      const stream = new ReadableStream({
+        async pull(c) {
+          const { done, value } = await reader.read();
+          if (done) { c.close(); return; }
+          got += value.length;
+          packBusy[p.id].pct = total ? got / total : 0;
+          packBusy[p.id].text = fmtMB(got) + (total ? ' من ' + fmtMB(total) : '');
+          renderPacks();
+          c.enqueue(value);
+        },
+        cancel() { reader.cancel(); }
+      });
+      const cache = await caches.open(PACK_CACHE);
+      await cache.put(packKey(p), new Response(stream, { headers: { 'Content-Type': 'application/octet-stream' } }));
+      if (!packsInstalled.includes(p.id)) packsInstalled.push(p.id);
+      savePacks();
+      addPackLayer(p);
+      toast('تم تنزيل خريطة ' + p.name);
+    } catch (e) {
+      try { const c = await caches.open(PACK_CACHE); await c.delete(packKey(p)); } catch (_) {}
+      if (e && e.name === 'AbortError') toast('انلغى التنزيل');
+      else toast('فشل التنزيل. تأكد من الإنترنت والمساحة وجرّب مرة ثانية', 5000);
+    }
+    delete packBusy[p.id];
+    renderPacks();
+  }
+  async function deletePack(p) {
+    try { const c = await caches.open(PACK_CACHE); await c.delete(packKey(p)); } catch (e) {}
+    packsInstalled = packsInstalled.filter((x) => x !== p.id);
+    savePacks();
+    removePackLayer(p);
+    toast('انحذفت خريطة ' + p.name);
+    renderPacks();
+  }
+  async function renderPacks() {
+    const box = $('packList');
+    if (!box) return;
+    box.innerHTML = '';
+    for (const p of PACKS) {
+      const row = document.createElement('div');
+      row.className = 'set-row pack-row';
+      const busy = packBusy[p.id];
+      const has = packsInstalled.includes(p.id);
+      let sub = 'غير منزّلة';
+      if (busy) sub = busy.text;
+      else if (has) {
+        sub = 'منزّلة';
+        try {
+          const c = await caches.open(PACK_CACHE);
+          const r = await c.match(packKey(p));
+          if (r) { const n = +r.headers.get('content-length'); if (n) sub += ' • ' + fmtMB(n); }
+        } catch (e) {}
+      }
+      const info = document.createElement('div');
+      info.className = 'pack-info';
+      info.innerHTML = '<b></b><small></small>';
+      info.firstChild.textContent = p.name;
+      info.lastChild.textContent = sub;
+      if (busy) {
+        const bar = document.createElement('div');
+        bar.className = 'pack-bar';
+        bar.innerHTML = '<i></i>';
+        bar.firstChild.style.width = Math.round(busy.pct * 100) + '%';
+        info.appendChild(bar);
+      }
+      const btn = document.createElement('button');
+      btn.className = 'set-btn';
+      if (busy) { btn.textContent = 'إلغاء'; btn.onclick = () => busy.ctrl.abort(); }
+      else if (has) { btn.textContent = 'حذف'; btn.onclick = () => deletePack(p); }
+      else { btn.textContent = 'تنزيل'; btn.onclick = () => downloadPack(p); }
+      row.appendChild(info);
+      row.appendChild(btn);
+      box.appendChild(row);
+    }
+  }
+  function refreshTileStats() { renderPacks(); }
   window.addEventListener('offline', () => toast('انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت', 5000));
   window.addEventListener('online', () => toast('رجع الإنترنت'));
   function syncSettingsUI() {

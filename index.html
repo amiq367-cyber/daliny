@@ -200,6 +200,11 @@
     max-width: 58%; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--bg); color: var(--fg); font-family: inherit; font-size: 1rem;
   }
+  .hzname { display: flex; align-items: center; gap: 10px; }
+  .hzname i {
+    width: 26px; height: 26px; border-radius: 50%; color: #fff; font-style: normal; flex: none;
+    display: grid; place-items: center; font-weight: 800; font-size: .9rem;
+  }
   .seg { display: flex; gap: 6px; }
   .seg button { flex: 1; padding: 11px 8px; border-radius: 10px; background: var(--line); font-weight: 500; }
   .seg button.on { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
@@ -321,6 +326,22 @@
     <div id="setMain">
       <button class="set-row" data-page="sound"><span>الصوت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="display"><span>العرض</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="set-row" data-page="hazards"><span>البلاغات</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </div>
+    <div id="setHazards" hidden>
+      <p class="set-note">اختر أنواع البلاغات اللي تظهر على الخريطة وتنبّهك:</p>
+      <div id="hazList"></div>
+      <label class="set-row" for="hazAlertSwitch"><span>تنبيه عند الاقتراب من بلاغ على طريقك</span><input type="checkbox" id="hazAlertSwitch" class="switch"></label>
+      <div class="set-row col">
+        <span>مسافة التنبيه</span>
+        <div class="seg" id="hazDistSeg">
+          <button data-dist="200">200 م</button>
+          <button data-dist="350">350 م</button>
+          <button data-dist="500">500 م</button>
+          <button data-dist="1000">1 كم</button>
+        </div>
+      </div>
+      <p class="set-note">التنبيه يظهر بالشاشة وينطق بالصوت أثناء الملاحة فقط، للبلاغات اللي على مسارك.</p>
     </div>
     <div id="setDisplay" hidden>
       <div class="set-row col">
@@ -371,7 +392,10 @@
   };
 
   // الإعدادات المحفوظة على الجهاز
-  const settings = { voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true };
+  const settings = {
+    voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
+    hazShow: {}, hazAlert: true, hazDist: 350
+  };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
 
@@ -696,7 +720,7 @@
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض' };
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات' };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
@@ -704,6 +728,7 @@
     $('setMain').hidden = p !== 'main';
     $('setSound').hidden = p !== 'sound';
     $('setDisplay').hidden = p !== 'display';
+    $('setHazards').hidden = p !== 'hazards';
   }
   function syncSettingsUI() {
     const pct = Math.round(settings.volume * 100);
@@ -717,7 +742,15 @@
     $('speedoSwitch').checked = settings.speedo;
     $('navSpeed').hidden = !settings.speedo;
     $('spdUnit').textContent = speedUnitLabel();
+    // البلاغات
+    document.querySelectorAll('#hazList input').forEach((i) => { i.checked = settings.hazShow[i.dataset.type] !== false; });
+    $('hazAlertSwitch').checked = settings.hazAlert;
+    document.querySelectorAll('#hazDistSeg button').forEach((b) => b.classList.toggle('on', Number(b.dataset.dist) === settings.hazDist));
   }
+  $('hazAlertSwitch').onchange = () => { settings.hazAlert = $('hazAlertSwitch').checked; saveSettings(); };
+  document.querySelectorAll('#hazDistSeg button').forEach((b) => {
+    b.onclick = () => { settings.hazDist = Number(b.dataset.dist); saveSettings(); syncSettingsUI(); };
+  });
   document.querySelectorAll('#themeSeg button').forEach((b) => {
     b.onclick = () => { settings.theme = b.dataset.theme; saveSettings(); applyTheme(); syncSettingsUI(); };
   });
@@ -949,6 +982,7 @@
   function drawHazards() {
     hazardLayer.clearLayers();
     hazards.forEach((h) => {
+      if (settings.hazShow[h.type] === false) return; // النوع مخفي من الإعدادات
       const def = HZ[h.type];
       const icon = L.divIcon({
         className: '', iconSize: [30, 30], iconAnchor: [15, 15],
@@ -997,11 +1031,27 @@
   loadHazards(false);
   setInterval(() => { if (!document.hidden) loadHazards(true); }, 20000);
 
+  // أسطر إعدادات أنواع البلاغات (تظهر بشاشة الإعدادات)
+  Object.keys(HZ).forEach((k) => {
+    const row = document.createElement('label');
+    row.className = 'set-row'; row.htmlFor = 'hz_' + k;
+    const name = document.createElement('span'); name.className = 'hzname';
+    const dot = document.createElement('i'); dot.style.background = HZ[k].color; dot.textContent = HZ[k].glyph;
+    name.appendChild(dot); name.appendChild(document.createTextNode(HZ[k].label));
+    const sw = document.createElement('input');
+    sw.type = 'checkbox'; sw.className = 'switch'; sw.id = 'hz_' + k; sw.dataset.type = k;
+    sw.onchange = () => { settings.hazShow[k] = sw.checked; saveSettings(); drawHazards(); };
+    row.appendChild(name); row.appendChild(sw);
+    $('hazList').appendChild(row);
+  });
+  syncSettingsUI();
+
   function hazardCheck(p) {
+    if (!settings.hazAlert) return;
     hazards.forEach((h) => {
-      if (hazardAlerted[h.id]) return;
+      if (hazardAlerted[h.id] || settings.hazShow[h.type] === false) return;
       const d = haversine(p, [h.lat, h.lng]);
-      if (d < 350 && distToRoute([h.lat, h.lng]) < 60) {
+      if (d < settings.hazDist && distToRoute([h.lat, h.lng]) < 60) {
         hazardAlerted[h.id] = true;
         const msg = HZ[h.type].label + ' أمامك بعد ' + spokenDist(d);
         toast(msg, 4500); speak(msg);

@@ -229,9 +229,9 @@
   .poi-cats button { padding: 10px 14px; border-radius: 999px; background: var(--line); font-weight: 500; }
   .poi-cats button.on { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
   .poi { padding: 12px 4px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
-  .poi .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; cursor: pointer; }
-  .poi .top b { min-width: 0; }
-  .poi .top span { color: var(--accent); font-variant-numeric: tabular-nums; flex: none; font-weight: 700; }
+  .poi .ptop { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; cursor: pointer; }
+  .poi .ptop b { min-width: 0; }
+  .poi .ptop span { color: var(--accent); font-variant-numeric: tabular-nums; flex: none; font-weight: 700; }
   .poi small { color: var(--muted); line-height: 1.6; }
   .poi .acts { display: flex; gap: 6px; flex-wrap: wrap; }
   .poi .acts button, .poi .acts a { padding: 8px 14px; border-radius: 10px; background: var(--line); font-size: .9rem; color: inherit; text-decoration: none; }
@@ -360,7 +360,7 @@
       <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 12</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 13</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1137,7 +1137,7 @@
       const row = document.createElement('div');
       row.className = 'poi';
       const top = document.createElement('div');
-      top.className = 'top';
+      top.className = 'ptop';
       const nm = document.createElement('b'); nm.textContent = it.name;
       const ds = document.createElement('span'); ds.textContent = fmtDist(it.d);
       top.append(nm, ds);

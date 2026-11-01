@@ -1,5 +1,5 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
-const CACHE = 'daliny-v5';
+const CACHE = 'daliny-v6';
 const LIBS = 'daliny-libs-v1';
 const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];

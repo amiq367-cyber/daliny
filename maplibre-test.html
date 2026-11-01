@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تجربة خريطة دليني (MapLibre)</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif; }
+  #map { position: fixed; inset: 0; }
+  #panel {
+    position: fixed; z-index: 5; right: 8px; left: 8px;
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    background: rgba(255,255,255,.94); color: #14232b; border-radius: 14px; padding: 10px 12px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.25); font-size: 14px; line-height: 1.6;
+  }
+  #panel b { color: #0a7f8f; }
+  #btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  #btns button { padding: 9px 12px; border: 0; border-radius: 10px; background: #dbe4e8; font: inherit; font-weight: 600; }
+  #btns button.go { background: #0a7f8f; color: #fff; }
+  #log { margin: 4px 0 0; padding: 6px 8px; background: #f1f5f7; border-radius: 8px; font: 12px/1.5 ui-monospace, Menlo, monospace;
+         white-space: pre-wrap; direction: ltr; text-align: left; max-height: 120px; overflow: auto; }
+  #toggle { float: left; border: 0; background: none; font-size: 18px; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <button id="toggle" aria-label="إخفاء">▾</button>
+  <div><a href="./" style="float:left;margin-right:10px;color:#0a7f8f;font-weight:700">رجوع للتطبيق</a><b>تجربة محرك الخريطة الجديد</b> (MapLibre)</div>
+  <div id="stat">جاري التحميل...</div>
+  <div id="body">
+    <div id="btns">
+      <button data-ll="43.13,36.34,14">الموصل</button>
+      <button data-ll="44.40,33.31,15">بغداد</button>
+      <button data-ll="44.42,32.48,14">الحلة</button>
+      <button data-ll="44.00,33.00,6">العراق كله</button>
+      <button class="go" id="northBtn">اتجاه الشمال</button>
+    </div>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+<script src="https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const logEl = $('log');
+  const logLines = [];
+  function log(t) {
+    logLines.push(t);
+    while (logLines.length > 40) logLines.shift();
+    logEl.textContent = logLines.join('\n');
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  window.addEventListener('error', (e) => log('ERR ' + (e.message || e)));
+  window.addEventListener('unhandledrejection', (e) => log('REJ ' + ((e.reason && e.reason.message) || e.reason)));
+
+  if (!window.maplibregl || !window.pmtiles || !window.basemaps) {
+    $('stat').textContent = 'تعذّر تحميل المكتبات. تأكد من الإنترنت (أول مرة فقط) وحدّث الصفحة.';
+    log('maplibregl=' + !!window.maplibregl + ' pmtiles=' + !!window.pmtiles + ' basemaps=' + !!window.basemaps);
+    return;
+  }
+
+  // ----- الحزم: العراق عام (كل المستويات) + المحافظات المنزّلة (من مستوى 13) -----
+  const PACKS = [
+    ['iraq', 'العراق', 'packs/iraq.pmtiles'],
+    ['baghdad', 'بغداد', 'packs/baghdad.pmtiles'], ['basra', 'البصرة', 'packs/basra.pmtiles'],
+    ['nineveh', 'نينوى', 'packs/nineveh.pmtiles'], ['erbil', 'أربيل', 'packs/erbil.pmtiles'],
+    ['sulaymaniyah', 'السليمانية', 'packs/sulaymaniyah.pmtiles'], ['duhok', 'دهوك', 'packs/duhok.pmtiles'],
+    ['kirkuk', 'كركوك', 'packs/kirkuk.pmtiles'], ['diyala', 'ديالى', 'packs/diyala.pmtiles'],
+    ['salahaddin', 'صلاح الدين', 'packs/salahaddin.pmtiles'], ['anbar', 'الأنبار', 'packs/anbar.pmtiles'],
+    ['babil', 'بابل', 'packs/babil.pmtiles'], ['karbala', 'كربلاء', 'packs/karbala.pmtiles'],
+    ['najaf', 'النجف', 'packs/najaf.pmtiles'], ['qadisiyah', 'القادسية', 'packs/qadisiyah.pmtiles'],
+    ['muthanna', 'المثنى', 'packs/muthanna.pmtiles'], ['dhiqar', 'ذي قار', 'packs/dhiqar.pmtiles'],
+    ['maysan', 'ميسان', 'packs/maysan.pmtiles'], ['wasit', 'واسط', 'packs/wasit.pmtiles']
+  ].map((a) => ({ id: a[0], name: a[1], url: new URL(a[2], location.href).href }));
+
+  let installed = [];
+  try { installed = JSON.parse(localStorage.getItem('daliny-packs') || '[]'); } catch (e) {}
+  const useIds = ['iraq'].concat(installed.filter((id) => id !== 'iraq' && PACKS.some((p) => p.id === id)));
+  const used = PACKS.filter((p) => useIds.includes(p.id));
+
+  const protocol = new pmtiles.Protocol();
+  maplibregl.addProtocol('pmtiles', protocol.tile);
+  // الكتابة العربية (حروف متصلة من اليمين لليسار)
+  maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true);
+
+  const FONT_BASE = 'https://protomaps.github.io/basemaps-assets/';
+  const flavor = basemaps.namedFlavor('light');
+  const sources = {}, layers = [];
+  used.forEach((p, i) => {
+    const src = 'pm-' + p.id;
+    sources[src] = {
+      type: 'vector', url: 'pmtiles://' + p.url,
+      attribution: '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>'
+    };
+    basemaps.layers(src, flavor, { lang: 'ar' }).forEach((l) => {
+      if (l.type === 'background' && i > 0) return;           // خلفية واحدة فقط
+      const o = Object.assign({}, l, { id: src + '-' + l.id });
+      if (l.type !== 'background') {
+        o.source = src;
+        if (i > 0) o.minzoom = Math.max(l.minzoom || 0, 13);  // المحافظات تظهر من مستوى 13 فوق العراق العام
+      }
+      layers.push(o);
+    });
+  });
+
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: { version: 8, glyphs: FONT_BASE + 'fonts/{fontstack}/{range}.pbf', sprite: FONT_BASE + 'sprites/v4/light', sources: sources, layers: layers },
+    center: [44.37, 33.31], zoom: 12, maxZoom: 20, attributionControl: { compact: true }
+  });
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'bottom-left');
+
+  const errs = {};
+  map.on('error', (e) => {
+    const m = (e && e.error && (e.error.message || String(e.error))) || 'error';
+    const k = m.slice(0, 90);
+    errs[k] = (errs[k] || 0) + 1;
+    if (errs[k] <= 2) log('ERR ' + k);
+  });
+  function status() {
+    const z = map.getZoom().toFixed(1);
+    const b = Math.round(map.getBearing());
+    $('stat').textContent = 'المستوى ' + z + ' | الدوران ' + b + '° | الحزم: ' + used.map((p) => p.name).join('، ') +
+      ' | الكتابة العربية: ' + maplibregl.getRTLTextPluginStatus() + ' | ' + (navigator.onLine ? 'متصل' : 'بدون إنترنت');
+  }
+  map.on('moveend', status); map.on('idle', status); window.addEventListener('online', status); window.addEventListener('offline', status);
+  status();
+  log('MapLibre ' + maplibregl.getVersion() + ' | حزم مستعملة: ' + useIds.join(','));
+
+  document.querySelectorAll('#btns button[data-ll]').forEach((b) => {
+    b.onclick = () => { const a = b.dataset.ll.split(',').map(Number); map.jumpTo({ center: [a[1], a[0]], zoom: a[2] }); };
+  });
+  $('northBtn').onclick = () => map.easeTo({ bearing: 0, pitch: 0 });
+  $('toggle').onclick = () => { const h = $('body').style.display === 'none'; $('body').style.display = h ? '' : 'none'; $('toggle').textContent = h ? '▾' : '▴'; };
+
+  // ----- نحفظ الخطوط والرموز للعمل بدون إنترنت (يحفظها الـ service worker) -----
+  if (navigator.onLine) {
+    const stacks = ['Noto Sans Regular', 'Noto Sans Medium', 'Noto Sans Italic'];
+    const ranges = ['0-255', '256-511', '512-767', '1536-1791', '1792-2047', '8192-8447', '64256-64511', '64512-64767', '65024-65279', '65280-65535'];
+    const urls = ['sprites/v4/light.json', 'sprites/v4/light.png', 'sprites/v4/light@2x.json', 'sprites/v4/light@2x.png']
+      .map((u) => FONT_BASE + u);
+    stacks.forEach((s) => ranges.forEach((r) => urls.push(FONT_BASE + 'fonts/' + encodeURIComponent(s) + '/' + r + '.pbf')));
+    let ok = 0, bad = 0;
+    Promise.all(urls.map((u) => fetch(u).then((r) => { r.ok ? ok++ : bad++; return r.arrayBuffer(); }).catch(() => { bad++; })))
+      .then(() => log('حفظ الخطوط والرموز: ' + ok + ' ناجح، ' + bad + ' فشل'));
+  }
+})();
+</script>
+</body>
+</html>

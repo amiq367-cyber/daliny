@@ -1,5 +1,5 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
-const CACHE = 'daliny-v7';
+const CACHE = 'daliny-v8';
 const LIBS = 'daliny-libs-v1';
 const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
@@ -115,7 +115,7 @@ self.addEventListener('fetch', (e) => {
   }
 
   // مكتبات التطبيق (Leaflet وغيرها): من الذاكرة أول حتى يفتح التطبيق بدون إنترنت
-  if (url.hostname === 'unpkg.com') {
+  if (url.hostname === 'unpkg.com' || url.hostname === 'protomaps.github.io') {
     e.respondWith(
       caches.open(LIBS).then(async (c) => {
         const hit = await c.match(req);

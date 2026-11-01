@@ -958,17 +958,17 @@
 
   /* ================= أماكن مهمة ================= */
   const POI_CATS = [
-    { id: 'hospital', name: 'مستشفيات', one: 'مستشفى', q: ['nwr["amenity"="hospital"]'] },
-    { id: 'pharmacy', name: 'صيدليات', one: 'صيدلية', q: ['nwr["amenity"="pharmacy"]'] },
-    { id: 'police', name: 'شرطة', one: 'مركز شرطة', q: ['nwr["amenity"="police"]'] },
-    { id: 'fuel', name: 'محطات وقود', one: 'محطة وقود', q: ['nwr["amenity"="fuel"]'] },
-    { id: 'mosque', name: 'جوامع', one: 'جامع', q: ['nwr["amenity"="place_of_worship"]["religion"="muslim"]', 'nwr["building"="mosque"]'], exclude: /حسيني|husse?ini|husain|hussain/i },
-    { id: 'husseiniya', name: 'حسينيات', one: 'حسينية', q: ['nwr["amenity"="place_of_worship"]["name"~"حسينية|حسينيه|husseiniya|hussainiya|husainiya|hussainia|husseiniyah",i]', 'nwr["name:ar"~"حسينية"]'] },
-    { id: 'shrine', name: 'مراقد ومقامات', one: 'مرقد', q: ['nwr["amenity"="place_of_worship"]["name"~"مرقد|مقام|ضريح|حرم"]', 'nwr["historic"~"^(shrine|tomb)$"]'] },
-    { id: 'tourist', name: 'أماكن سياحية', one: 'مكان سياحي', q: ['nwr["tourism"~"^(attraction|museum|zoo|theme_park|gallery|viewpoint)$"]', 'nwr["historic"~"^(monument|archaeological_site|castle|ruins|memorial|fort)$"]'] },
-    { id: 'mall', name: 'مولات', one: 'مول', q: ['nwr["shop"="mall"]'] },
-    { id: 'hotel', name: 'فنادق', one: 'فندق', q: ['nwr["tourism"~"^(hotel|motel|guest_house)$"]'] },
-    { id: 'food', name: 'مطاعم ومقاهي', one: 'مطعم', q: ['nwr["amenity"~"^(restaurant|fast_food|cafe)$"]'] }
+    { id: 'hospital', name: 'مستشفيات', one: 'مستشفى', q: ['nwr["amenity"="hospital"]'], nq: ['hospital','مستشفى'] },
+    { id: 'pharmacy', name: 'صيدليات', one: 'صيدلية', q: ['nwr["amenity"="pharmacy"]'], nq: ['pharmacy','صيدلية'] },
+    { id: 'police', name: 'شرطة', one: 'مركز شرطة', q: ['nwr["amenity"="police"]'], nq: ['police','مركز شرطة'] },
+    { id: 'fuel', name: 'محطات وقود', one: 'محطة وقود', q: ['nwr["amenity"="fuel"]'], nq: ['fuel station','محطة وقود'] },
+    { id: 'mosque', name: 'جوامع', one: 'جامع', q: ['nwr["amenity"="place_of_worship"]["religion"="muslim"]', 'nwr["building"="mosque"]'], exclude: /حسيني|husse?ini|husain|hussain/i, nq: ['mosque','جامع'] },
+    { id: 'husseiniya', name: 'حسينيات', one: 'حسينية', q: ['nwr["amenity"="place_of_worship"]["name"~"حسينية|حسينيه|husseiniya|hussainiya|husainiya|hussainia|husseiniyah",i]', 'nwr["name:ar"~"حسينية"]'], nq: ['حسينية'] },
+    { id: 'shrine', name: 'مراقد ومقامات', one: 'مرقد', q: ['nwr["amenity"="place_of_worship"]["name"~"مرقد|مقام|ضريح|حرم"]', 'nwr["historic"~"^(shrine|tomb)$"]'], nq: ['مرقد','مقام'] },
+    { id: 'tourist', name: 'أماكن سياحية', one: 'مكان سياحي', q: ['nwr["tourism"~"^(attraction|museum|zoo|theme_park|gallery|viewpoint)$"]', 'nwr["historic"~"^(monument|archaeological_site|castle|ruins|memorial|fort)$"]'], nq: ['tourist attraction','museum','متحف'] },
+    { id: 'mall', name: 'مولات', one: 'مول', q: ['nwr["shop"="mall"]'], nq: ['mall','مول'] },
+    { id: 'hotel', name: 'فنادق', one: 'فندق', q: ['nwr["tourism"~"^(hotel|motel|guest_house)$"]'], nq: ['hotel','فندق'] },
+    { id: 'food', name: 'مطاعم ومقاهي', one: 'مطعم', q: ['nwr["amenity"~"^(restaurant|fast_food|cafe)$"]'], nq: ['restaurant','cafe'] }
   ];
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
   let poiCat = null, poiRadius = 5000, poiReq = 0, poiMarker = null;
@@ -1006,30 +1006,86 @@
     p.className = 'set-note'; p.textContent = t; p.style.whiteSpace = 'pre-wrap'; p.style.direction = 'rtl';
     const box = $('poiList'); box.innerHTML = ''; box.appendChild(p);
   }
-  async function overpassQuery(ql) {
-    const errs = [];
-    for (const ep of OVERPASS) {
-      const host = ep.split('/')[2];
-      let to;
+  // يطلب من كل الخوادم بنفس الوقت ويأخذ أول رد صالح
+  function overpassQuery(ql) {
+    return new Promise((resolve, reject) => {
+      const errs = [];
+      let left = OVERPASS.length, done = false;
+      OVERPASS.forEach(async (ep) => {
+        const host = ep.split('/')[2];
+        let to;
+        try {
+          const ctrl = new AbortController();
+          to = setTimeout(() => ctrl.abort(), 12000);
+          const r = await fetch(ep + '?data=' + encodeURIComponent(ql), { signal: ctrl.signal });
+          const txt = await r.text();
+          clearTimeout(to);
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          let j;
+          try { j = JSON.parse(txt); } catch (_) { throw new Error('رد غير مفهوم'); }
+          if (j.remark && !(j.elements && j.elements.length)) throw new Error(String(j.remark).slice(0, 60));
+          if (!done) { done = true; resolve(j); }
+        } catch (e) {
+          clearTimeout(to);
+          errs.push(host + ': ' + (e && e.name === 'AbortError' ? 'انتهى الوقت' : (e && e.message) || e));
+        }
+        if (--left === 0 && !done) { const err = new Error('overpass'); err.detail = errs.join('\n'); reject(err); }
+      });
+    });
+  }
+  // خطة بديلة: خدمة Nominatim (نفس خدمة البحث بالتطبيق)
+  async function nominatimPlaces(cat, o) {
+    const dLat = poiRadius / 111320, dLng = poiRadius / (111320 * Math.cos(o.lat * Math.PI / 180));
+    const vb = [o.lng - dLng, o.lat + dLat, o.lng + dLng, o.lat - dLat].map((n) => n.toFixed(5)).join(',');
+    const out = [], seen = {};
+    for (let i = 0; i < cat.nq.length; i++) {
+      if (i) await new Promise((r) => setTimeout(r, 1100));
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=40&addressdetails=1&extratags=1&accept-language=ar&bounded=1&viewbox=' + vb + '&q=' + encodeURIComponent(cat.nq[i]);
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 15000);
       try {
-        const ctrl = new AbortController();
-        to = setTimeout(() => ctrl.abort(), 25000);
-        const r = await fetch(ep + '?data=' + encodeURIComponent(ql), { signal: ctrl.signal });
-        const txt = await r.text();
-        clearTimeout(to);
+        const r = await fetch(url, { signal: ctrl.signal });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        let j;
-        try { j = JSON.parse(txt); } catch (_) { throw new Error('رد غير مفهوم: ' + txt.replace(/\s+/g, ' ').slice(0, 60)); }
-        if (j.remark && !(j.elements && j.elements.length)) throw new Error(String(j.remark).slice(0, 60));
-        return j;
-      } catch (e) {
-        clearTimeout(to);
-        errs.push(host + ': ' + (e && e.name === 'AbortError' ? 'انتهى الوقت' : (e && e.message) || e));
+        const arr = await r.json();
+        arr.forEach((it) => {
+          const id = 'n' + it.place_id;
+          if (seen[id]) return;
+          seen[id] = 1;
+          const a = it.address || {}, x = it.extratags || {};
+          out.push({
+            id, lat: parseFloat(it.lat), lng: parseFloat(it.lon),
+            tags: {
+              name: it.name || (it.display_name || '').split('،')[0],
+              phone: x.phone || x['contact:phone'],
+              'addr:street': a.road, 'addr:suburb': a.suburb || a.neighbourhood || a.city_district,
+              'addr:city': a.city || a.town || a.village || a.state
+            }
+          });
+        });
+      } finally { clearTimeout(to); }
+    }
+    return out;
+  }
+  async function poiFetchEls(cat, o) {
+    const ql = '[out:json][timeout:25];(' +
+      cat.q.map((q) => q + '(around:' + poiRadius + ',' + o.lat.toFixed(5) + ',' + o.lng.toFixed(5) + ');').join('') +
+      ');out center 500;';
+    try {
+      const j = await overpassQuery(ql);
+      return (j.elements || []).map((el) => ({
+        id: el.type + el.id,
+        lat: el.lat !== undefined ? el.lat : el.center && el.center.lat,
+        lng: el.lon !== undefined ? el.lon : el.center && el.center.lon,
+        tags: el.tags || {}
+      }));
+    } catch (e1) {
+      try { return await nominatimPlaces(cat, o); }
+      catch (e2) {
+        const err = new Error('poi');
+        err.detail = (e1.detail || String(e1.message || e1)) + '\nnominatim: ' + (e2 && e2.name === 'AbortError' ? 'انتهى الوقت' : (e2 && e2.message) || e2);
+        throw err;
       }
     }
-    const err = new Error(errs.join(' | '));
-    err.detail = errs.join('\n');
-    throw err;
   }
   async function poiLoad() {
     const cat = POI_CATS.find((c) => c.id === poiCat);
@@ -1041,23 +1097,20 @@
     let items = poiCache[key];
     if (!items) {
       poiMsg('جاري البحث عن ' + cat.name + '...');
-      const ql = '[out:json][timeout:25];(' +
-        cat.q.map((q) => q + '(around:' + poiRadius + ',' + o.lat.toFixed(5) + ',' + o.lng.toFixed(5) + ');').join('') +
-        ');out center 500;';
       try {
-        const j = await overpassQuery(ql);
+        const els = await poiFetchEls(cat, o);
         if (my !== poiReq) return;
         items = [];
-        (j.elements || []).forEach((el) => {
-          const lat = el.lat !== undefined ? el.lat : el.center && el.center.lat;
-          const lng = el.lon !== undefined ? el.lon : el.center && el.center.lon;
-          if (typeof lat !== 'number' || typeof lng !== 'number') return;
+        els.forEach((el) => {
+          const lat = el.lat, lng = el.lng;
+          if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) return;
           const t = el.tags || {};
           const named = t['name:ar'] || t.name || t['name:en'] || t['name:ku'] || '';
           if (cat.exclude && cat.exclude.test(named + ' ' + (t.name || '') + ' ' + (t['name:en'] || ''))) return;
           const d = haversine([o.lat, o.lng], [lat, lng]);
+          if (d > poiRadius * 1.05) return;
           if (items.some((x) => x.name === named && named && haversine([x.lat, x.lng], [lat, lng]) < 80)) return;
-          items.push({ id: el.type + el.id, lat, lng, name: named || (cat.one + ' (بدون اسم)'), d, tags: t });
+          items.push({ id: el.id, lat, lng, name: named || (cat.one + ' (بدون اسم)'), d, tags: t });
         });
         items.sort((a, b) => a.d - b.d);
         items = items.slice(0, 40);

@@ -19,7 +19,7 @@
   #btns button { padding: 9px 12px; border: 0; border-radius: 10px; background: #dbe4e8; font: inherit; font-weight: 600; }
   #btns button.go { background: #0a7f8f; color: #fff; }
   #log { margin: 4px 0 0; padding: 6px 8px; background: #f1f5f7; border-radius: 8px; font: 12px/1.5 ui-monospace, Menlo, monospace;
-         white-space: pre-wrap; direction: ltr; text-align: left; max-height: 120px; overflow: auto; }
+         white-space: pre-wrap; direction: ltr; text-align: left; max-height: 220px; overflow: auto; }
   #toggle { float: left; border: 0; background: none; font-size: 18px; }
 </style>
 </head>
@@ -37,7 +37,9 @@
       <button data-ll="44.00,33.00,6">العراق كله</button>
       <button class="go" id="northBtn">اتجاه الشمال</button>
       <button id="diagBtn">فحص</button>
+      <button id="paintBtn">اختبار الرسم</button>
     </div>
+    <div id="errbox" style="color:#b00020;font:12px/1.5 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;white-space:pre-wrap;margin-top:4px"></div>
     <div id="log"></div>
   </div>
 </div>
@@ -123,6 +125,8 @@
     const k = m.slice(0, 90);
     errs[k] = (errs[k] || 0) + 1;
     if (errs[k] <= 2) log('ERR ' + k);
+    const keys = Object.keys(errs);
+    $('errbox').textContent = 'أخطاء المحرك (' + keys.length + '):\n' + keys.slice(0, 4).join('\n');
   });
   function status() {
     const z = map.getZoom().toFixed(1);
@@ -158,6 +162,29 @@
       log(out.join('\n'));
     } catch (e) { log('diag error: ' + (e && e.message || e)); }
   }
+  $('paintBtn').onclick = () => {
+    try {
+      const c = map.getCenter();
+      const L0 = map.getStyle().layers;
+      const pick = (re) => L0.find((l) => re.test(l.id));
+      const e = pick(/^pm-iraq-earth/), w = pick(/^pm-iraq-water/), b = pick(/background/);
+      log('bg=' + (b && b.id) + ' paint=' + JSON.stringify(b && b.paint));
+      log('earth=' + (e && e.id) + ' ' + (e && e.type) + ' paint=' + JSON.stringify(e && e.paint) + ' minz=' + (e && e.minzoom));
+      log('water=' + (w && w.id) + ' paint=' + JSON.stringify(w && w.paint));
+      if (b) map.setPaintProperty(b.id, 'background-color', '#ff0000');
+      if (e) map.setPaintProperty(e.id, 'fill-color', '#00aa00');
+      if (w) map.setPaintProperty(w.id, 'fill-color', '#0000ff');
+      if (!map.getSource('tst')) {
+        map.addSource('tst', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Point', coordinates: [c.lng, c.lat] } } });
+        map.addLayer({ id: 'tst-c', type: 'circle', source: 'tst', paint: { 'circle-radius': 40, 'circle-color': '#ffff00', 'circle-stroke-width': 4, 'circle-stroke-color': '#000' } });
+      }
+      const cv = map.getCanvas();
+      log('canvas ' + cv.width + 'x' + cv.height + ' css ' + cv.clientWidth + 'x' + cv.clientHeight + ' dpr=' + window.devicePixelRatio);
+      const gl = cv.getContext('webgl2') || cv.getContext('webgl');
+      log('gl ' + (gl ? gl.getParameter(gl.VERSION) : 'NONE') + (gl && gl.isContextLost() ? ' LOST' : ''));
+      log('الخلفية صارت حمراء والأرض خضراء والماء أزرق ودائرة صفراء بالوسط؟ شوف الخريطة');
+    } catch (err) { log('paint test error: ' + (err && err.message || err)); }
+  };
   let diagDone = false;
   map.on('idle', () => { if (!diagDone) { diagDone = true; setTimeout(diag, 1500); } });
   $('diagBtn').onclick = diag;

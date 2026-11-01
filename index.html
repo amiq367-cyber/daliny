@@ -970,7 +970,7 @@
     { id: 'hotel', name: 'فنادق', one: 'فندق', q: ['nwr["tourism"~"^(hotel|motel|guest_house)$"]'] },
     { id: 'food', name: 'مطاعم ومقاهي', one: 'مطعم', q: ['nwr["amenity"~"^(restaurant|fast_food|cafe)$"]'] }
   ];
-  const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+  const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
   let poiCat = null, poiRadius = 5000, poiReq = 0, poiMarker = null;
   const poiCache = {}, poiAddr = {};
 
@@ -1003,22 +1003,33 @@
   }
   function poiMsg(t) {
     const p = document.createElement('p');
-    p.className = 'set-note'; p.textContent = t;
+    p.className = 'set-note'; p.textContent = t; p.style.whiteSpace = 'pre-wrap'; p.style.direction = 'rtl';
     const box = $('poiList'); box.innerHTML = ''; box.appendChild(p);
   }
   async function overpassQuery(ql) {
-    let lastErr;
+    const errs = [];
     for (const ep of OVERPASS) {
+      const host = ep.split('/')[2];
+      let to;
       try {
         const ctrl = new AbortController();
-        const to = setTimeout(() => ctrl.abort(), 30000);
-        const r = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(ql), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctrl.signal });
+        to = setTimeout(() => ctrl.abort(), 25000);
+        const r = await fetch(ep + '?data=' + encodeURIComponent(ql), { signal: ctrl.signal });
+        const txt = await r.text();
         clearTimeout(to);
-        if (!r.ok) throw new Error('overpass ' + r.status);
-        return await r.json();
-      } catch (e) { lastErr = e; }
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        let j;
+        try { j = JSON.parse(txt); } catch (_) { throw new Error('رد غير مفهوم: ' + txt.replace(/\s+/g, ' ').slice(0, 60)); }
+        if (j.remark && !(j.elements && j.elements.length)) throw new Error(String(j.remark).slice(0, 60));
+        return j;
+      } catch (e) {
+        clearTimeout(to);
+        errs.push(host + ': ' + (e && e.name === 'AbortError' ? 'انتهى الوقت' : (e && e.message) || e));
+      }
     }
-    throw lastErr;
+    const err = new Error(errs.join(' | '));
+    err.detail = errs.join('\n');
+    throw err;
   }
   async function poiLoad() {
     const cat = POI_CATS.find((c) => c.id === poiCat);
@@ -1032,7 +1043,7 @@
       poiMsg('جاري البحث عن ' + cat.name + '...');
       const ql = '[out:json][timeout:25];(' +
         cat.q.map((q) => q + '(around:' + poiRadius + ',' + o.lat.toFixed(5) + ',' + o.lng.toFixed(5) + ');').join('') +
-        ');out center tags 500;';
+        ');out center 500;';
       try {
         const j = await overpassQuery(ql);
         if (my !== poiReq) return;
@@ -1053,7 +1064,7 @@
         poiCache[key] = items;
       } catch (e) {
         if (my !== poiReq) return;
-        poiMsg('ما كدرت أجيب النتائج الآن. تأكد من الإنترنت وجرّب مرة ثانية.');
+        poiMsg('ما كدرت أجيب النتائج الآن. جرّب مرة ثانية بعد شوية.' + (e && e.detail ? '\n\nالسبب:\n' + e.detail : ''));
         return;
       }
     }

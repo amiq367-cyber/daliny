@@ -984,56 +984,132 @@
 
   function fmtMB(n) { return (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' ميغا'; }
 
+  const CHUNK = 4 * 1048576;
+  const packSizes = {};
+  const packRefs = {};
+  async function packStoredSize(p) {
+    try {
+      const c = await caches.open(PACK_CACHE);
+      const m = await c.match(packKey(p) + '?meta');
+      if (m) return (await m.json()).size;
+      const r = await c.match(packKey(p));
+      if (r) { const n = +r.headers.get('content-length'); if (n) return n; return (await r.blob()).size; }
+    } catch (e) {}
+    return 0;
+  }
+  async function loadPackSizes() {
+    for (const p of PACKS) if (packsInstalled.includes(p.id) && !packSizes[p.id]) packSizes[p.id] = await packStoredSize(p);
+    renderPacks();
+  }
+  function updatePackProgress(p) {
+    const b = packBusy[p.id], r = packRefs[p.id];
+    if (!b || !r) return;
+    r.sub.textContent = b.text;
+    if (r.bar) r.bar.style.width = Math.round(b.pct * 100) + '%';
+  }
+
   async function downloadPack(p) {
     if (!('caches' in window) || !navigator.serviceWorker || !navigator.serviceWorker.controller) {
       toast('أغلق التطبيق وافتحه مرة ثانية، وبعدها جرّب التنزيل', 5000); return;
     }
     const ctrl = new AbortController();
-    packBusy[p.id] = { ctrl, pct: 0, text: 'جاري البدء...' };
+    const busy = { ctrl, pct: 0, text: 'جاري البدء...' };
+    packBusy[p.id] = busy;
     renderPacks();
+    const key = packKey(p);
     try {
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
-      const res = await fetch(packKey(p) + '?dl=1', { signal: ctrl.signal });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const total = +res.headers.get('content-length') || 0;
-      const reader = res.body.getReader();
-      let got = 0;
-      const stream = new ReadableStream({
-        async pull(c) {
-          const { done, value } = await reader.read();
-          if (done) { c.close(); return; }
-          got += value.length;
-          packBusy[p.id].pct = total ? got / total : 0;
-          packBusy[p.id].text = fmtMB(got) + (total ? ' من ' + fmtMB(total) : '');
-          renderPacks();
-          c.enqueue(value);
-        },
-        cancel() { reader.cancel(); }
-      });
       const cache = await caches.open(PACK_CACHE);
-      await cache.put(packKey(p), new Response(stream, { headers: { 'Content-Type': 'application/octet-stream' } }));
+      let total = 0, got = 0, lastUi = 0;
+      const progress = (extra) => {
+        const now = Date.now();
+        if (now - lastUi < 250) return;
+        lastUi = now;
+        const cur = got + (extra || 0);
+        busy.pct = total ? Math.min(1, cur / total) : 0;
+        busy.text = fmtMB(cur) + (total ? ' من ' + fmtMB(total) : '');
+        updatePackProgress(p);
+      };
+      // ينزّل قطعة واحدة (Range) ويرجعها كـ Blob، مع إعادة المحاولة عند انقطاع الشبكة
+      const fetchChunk = async (i) => {
+        let lastErr;
+        for (let t = 0; t < 4; t++) {
+          try {
+            const res = await fetch(key + '?dl=1', {
+              headers: { Range: 'bytes=' + (i * CHUNK) + '-' + ((i + 1) * CHUNK - 1) },
+              signal: ctrl.signal, cache: 'no-store'
+            });
+            if (res.status !== 206) throw new Error('range status ' + res.status);
+            const m = /\/(\d+)\s*$/.exec(res.headers.get('content-range') || '');
+            if (!m) throw new Error('no content-range');
+            const reader = res.body.getReader();
+            const parts = []; let len = 0;
+            for (;;) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              parts.push(value); len += value.length;
+              progress(len);
+            }
+            return { blob: new Blob(parts), total: +m[1] };
+          } catch (e) {
+            if (e && e.name === 'AbortError') throw e;
+            lastErr = e;
+            await new Promise((r) => setTimeout(r, 800 * (t + 1)));
+          }
+        }
+        throw lastErr;
+      };
+      const first = await fetchChunk(0);
+      total = first.total;
+      const n = Math.ceil(total / CHUNK);
+      await cache.put(key + '?c=0', new Response(first.blob));
+      got = first.blob.size;
+      lastUi = 0; progress(0);
+      for (let i = 1; i < n; i++) {
+        const want = i < n - 1 ? CHUNK : total - (n - 1) * CHUNK;
+        const ck = key + '?c=' + i;
+        const have = await cache.match(ck);
+        let size = 0;
+        if (have) { size = (await have.blob()).size; }
+        if (size !== want) {
+          const r = await fetchChunk(i);
+          if (r.blob.size !== want) throw new Error('bad chunk size');
+          await cache.put(ck, new Response(r.blob));
+          size = r.blob.size;
+        }
+        got += size;
+        lastUi = 0; progress(0);
+      }
+      await cache.put(key + '?meta', new Response(JSON.stringify({ size: total, chunk: CHUNK, n }), { headers: { 'Content-Type': 'application/json' } }));
+      try { if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage('pack-reset'); } catch (_) {}
+      packSizes[p.id] = total;
       if (!packsInstalled.includes(p.id)) packsInstalled.push(p.id);
       savePacks();
       addPackLayer(p);
       toast('تم تنزيل خريطة ' + p.name);
     } catch (e) {
-      try { const c = await caches.open(PACK_CACHE); await c.delete(packKey(p)); } catch (_) {}
-      if (e && e.name === 'AbortError') toast('انلغى التنزيل');
-      else toast('فشل التنزيل. تأكد من الإنترنت والمساحة وجرّب مرة ثانية', 5000);
+      if (e && e.name === 'AbortError') toast('انوقف التنزيل. إذا نزّلت مرة ثانية يكمل من نفس المكان');
+      else toast('فشل التنزيل. تأكد من الإنترنت والمساحة وجرّب مرة ثانية (يكمل من نفس المكان)', 5000);
     }
     delete packBusy[p.id];
     renderPacks();
   }
   async function deletePack(p) {
-    try { const c = await caches.open(PACK_CACHE); await c.delete(packKey(p)); } catch (e) {}
+    try {
+      const c = await caches.open(PACK_CACHE);
+      const key = packKey(p);
+      const keys = await c.keys();
+      for (const k of keys) if (k.url === key || k.url.startsWith(key + '?')) await c.delete(k);
+    } catch (e) {}
     try { if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage('pack-reset'); } catch (e) {}
     packsInstalled = packsInstalled.filter((x) => x !== p.id);
+    delete packSizes[p.id];
     savePacks();
     removePackLayer(p);
     toast('انحذفت خريطة ' + p.name);
     renderPacks();
   }
-  async function renderPacks() {
+  function renderPacks() {
     const box = $('packList');
     if (!box) return;
     box.innerHTML = '';
@@ -1044,25 +1120,20 @@
       const has = packsInstalled.includes(p.id);
       let sub = 'غير منزّلة • حوالي ' + p.mb + ' ميغا';
       if (busy) sub = busy.text;
-      else if (has) {
-        sub = 'منزّلة';
-        try {
-          const c = await caches.open(PACK_CACHE);
-          const r = await c.match(packKey(p));
-          if (r) { const n = +r.headers.get('content-length'); if (n) sub += ' • ' + fmtMB(n); }
-        } catch (e) {}
-      }
+      else if (has) sub = 'منزّلة' + (packSizes[p.id] ? ' • ' + fmtMB(packSizes[p.id]) : '');
       const info = document.createElement('div');
       info.className = 'pack-info';
       info.innerHTML = '<b></b><small></small>';
       info.firstChild.textContent = p.name;
       info.lastChild.textContent = sub;
+      packRefs[p.id] = { sub: info.lastChild, bar: null };
       if (busy) {
         const bar = document.createElement('div');
         bar.className = 'pack-bar';
         bar.innerHTML = '<i></i>';
         bar.firstChild.style.width = Math.round(busy.pct * 100) + '%';
         info.appendChild(bar);
+        packRefs[p.id].bar = bar.firstChild;
       }
       const btn = document.createElement('button');
       btn.className = 'set-btn';
@@ -1074,6 +1145,7 @@
       box.appendChild(row);
     }
   }
+  loadPackSizes();
   const diagErrs = [];
   window.addEventListener('error', (e) => { diagErrs.push('err: ' + (e.message || e)); });
   window.addEventListener('unhandledrejection', (e) => { diagErrs.push('rej: ' + ((e.reason && e.reason.message) || e.reason)); });

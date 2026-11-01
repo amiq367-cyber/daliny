@@ -1,5 +1,5 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
-const CACHE = 'daliny-v4';
+const CACHE = 'daliny-v5';
 const LIBS = 'daliny-libs-v1';
 const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
@@ -19,14 +19,68 @@ self.addEventListener('activate', (e) => {
 });
 
 const packBlobs = {};
+const chunkMeta = {};
+let recent = [];
 
-self.addEventListener('message', (e) => { if (e.data === 'pack-reset') { for (const k in packBlobs) delete packBlobs[k]; } });
+self.addEventListener('message', (e) => {
+  if (e.data === 'pack-reset') {
+    for (const k in packBlobs) delete packBlobs[k];
+    for (const k in chunkMeta) delete chunkMeta[k];
+    recent = [];
+  }
+});
+
+async function getMeta(cache, key) {
+  if (chunkMeta[key]) return chunkMeta[key];
+  const r = await cache.match(key + '?meta');
+  if (!r) return null;
+  const m = await r.json();
+  chunkMeta[key] = m;
+  return m;
+}
+async function getChunk(cache, key, i) {
+  const k = key + '?c=' + i;
+  const hit = recent.find((x) => x.k === k);
+  if (hit) return hit.b;
+  const r = await cache.match(k);
+  if (!r) return null;
+  const b = await r.blob();
+  recent.push({ k, b });
+  if (recent.length > 4) recent.shift();
+  return b;
+}
 
 // يرجّع الجزء المطلوب (Range) من ملف الخريطة المحفوظ
 async function packResponse(req, key) {
+  const cache0 = await caches.open(PACK_CACHE);
+  const meta = await getMeta(cache0, key);
+  if (meta) {
+    const size = meta.size, CH = meta.chunk;
+    const range = req.headers.get('range');
+    const headers = { 'Content-Type': 'application/octet-stream', 'Accept-Ranges': 'bytes' };
+    let start = 0, end = size - 1, status = 200;
+    if (range) {
+      const m = /bytes=(\d*)-(\d*)/.exec(range);
+      if (m && m[1]) start = parseInt(m[1], 10);
+      if (m && m[2]) end = parseInt(m[2], 10);
+      if (m && !m[1] && m[2]) { start = Math.max(0, size - parseInt(m[2], 10)); end = size - 1; }
+      end = Math.min(end, size - 1);
+      status = 206;
+      headers['Content-Range'] = 'bytes ' + start + '-' + end + '/' + size;
+    }
+    const first = Math.floor(start / CH), last = Math.floor(end / CH);
+    const parts = [];
+    for (let i = first; i <= last; i++) {
+      const b = await getChunk(cache0, key, i);
+      if (!b) return fetch(req);
+      parts.push(b.slice(i === first ? start - i * CH : 0, i === last ? end - i * CH + 1 : b.size));
+    }
+    headers['Content-Length'] = String(end - start + 1);
+    return new Response(new Blob(parts), { status, headers });
+  }
   let blob = packBlobs[key];
   if (!blob) {
-    const cache = await caches.open(PACK_CACHE);
+    const cache = cache0;
     const hit = await cache.match(key);
     if (!hit) return fetch(req);
     blob = await hit.blob();

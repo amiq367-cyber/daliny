@@ -36,6 +36,7 @@
       <button data-ll="44.42,32.48,14">الحلة</button>
       <button data-ll="44.00,33.00,6">العراق كله</button>
       <button class="go" id="northBtn">اتجاه الشمال</button>
+      <button id="diagBtn">فحص</button>
     </div>
     <div id="log"></div>
   </div>
@@ -132,6 +133,34 @@
   map.on('moveend', status); map.on('idle', status); window.addEventListener('online', status); window.addEventListener('offline', status);
   status();
   log('MapLibre ' + maplibregl.getVersion() + ' | حزم مستعملة: ' + useIds.join(','));
+
+  // ----- فحص تلقائي: شنو وصل من البيانات وشنو انرسم -----
+  async function diag() {
+    try {
+      const out = [];
+      out.push('style loaded=' + map.isStyleLoaded() + ' layers=' + map.getStyle().layers.length + ' tilesLoaded=' + map.areTilesLoaded());
+      const p = used[0];
+      const pm = new pmtiles.PMTiles(p.url);
+      const hd = await pm.getHeader();
+      out.push('header: z' + hd.minZoom + '-' + hd.maxZoom + ' tiles=' + hd.numAddressedTiles + ' type=' + hd.tileType + ' comp=' + hd.tileCompression);
+      const z = Math.min(8, hd.maxZoom), n = Math.pow(2, z);
+      const c = map.getCenter();
+      const x = Math.floor((c.lng + 180) / 360 * n);
+      const y = Math.floor((1 - Math.log(Math.tan(c.lat * Math.PI / 180) + 1 / Math.cos(c.lat * Math.PI / 180)) / Math.PI) / 2 * n);
+      const t = await pm.getZxy(z, x, y);
+      out.push('tile ' + z + '/' + x + '/' + y + ': ' + (t && t.data ? t.data.byteLength + ' bytes' : 'EMPTY'));
+      const f = map.querySourceFeatures('pm-' + p.id);
+      const by = {}; f.forEach((q) => { by[q.sourceLayer] = (by[q.sourceLayer] || 0) + 1; });
+      out.push('features in source: ' + f.length + ' ' + JSON.stringify(by));
+      out.push('rendered features: ' + map.queryRenderedFeatures().length);
+      const src = map.getSource('pm-' + p.id);
+      out.push('source: ' + (src ? src.type + ' z' + src.minzoom + '-' + src.maxzoom : 'MISSING'));
+      log(out.join('\n'));
+    } catch (e) { log('diag error: ' + (e && e.message || e)); }
+  }
+  let diagDone = false;
+  map.on('idle', () => { if (!diagDone) { diagDone = true; setTimeout(diag, 1500); } });
+  $('diagBtn').onclick = diag;
 
   document.querySelectorAll('#btns button[data-ll]').forEach((b) => {
     b.onclick = () => { const a = b.dataset.ll.split(',').map(Number); map.jumpTo({ center: [a[1], a[0]], zoom: a[2] }); };

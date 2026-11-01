@@ -1,11 +1,29 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
-const CACHE = 'daliny-v8';
-const LIBS = 'daliny-libs-v1';
+const CACHE = 'daliny-v9';
+const LIBS = 'daliny-libs-v2';
 const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
+const LIB_URLS = [
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://unpkg.com/protomaps-leaflet@5.0.0/dist/protomaps-leaflet.js'
+];
+
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    Promise.all([
+      caches.open(CACHE).then((c) => c.addAll(SHELL)),
+      // نحفظ مكتبات التطبيق من البداية حتى يشتغل بدون إنترنت حتى لو انفتح أول مرة بعد التحديث
+      caches.open(LIBS).then((c) => Promise.all(LIB_URLS.map(async (u) => {
+        try {
+          if (await c.match(u)) return;
+          const r = await fetch(u, { mode: 'cors', credentials: 'omit' });
+          if (r && r.ok) await c.put(u, r);
+        } catch (err) { /* نحاول لاحقاً عند أول فتح */ }
+      })))
+    ]).then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (e) => {
@@ -114,15 +132,22 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // مكتبات التطبيق (Leaflet وغيرها): من الذاكرة أول حتى يفتح التطبيق بدون إنترنت
+  // مكتبات التطبيق والخطوط: من الذاكرة أول حتى يفتح التطبيق بدون إنترنت.
+  // نجيبها بوضع CORS (مو opaque) لأن importScripts داخل الـ worker يرفض الرد المغلق.
   if (url.hostname === 'unpkg.com' || url.hostname === 'protomaps.github.io') {
     e.respondWith(
       caches.open(LIBS).then(async (c) => {
-        const hit = await c.match(req);
-        if (hit) return hit;
-        const res = await fetch(req);
-        if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone());
-        return res;
+        const key = req.url;
+        const hit = await c.match(key);
+        if (hit && hit.type !== 'opaque') return hit;
+        try {
+          const res = await fetch(req.url, { mode: 'cors', credentials: 'omit' });
+          if (res && res.ok) c.put(key, res.clone());
+          return res;
+        } catch (err) {
+          if (hit) return hit; // بدون إنترنت: نرجع النسخة المحفوظة القديمة
+          throw err;
+        }
       })
     );
     return;

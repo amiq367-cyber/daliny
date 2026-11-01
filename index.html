@@ -373,7 +373,7 @@
       <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 15</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 16</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -416,6 +416,7 @@
         </div>
       </div>
       <label class="set-row" for="hazAltSwitch"><span>اقتراح مسار بديل عند وجود حادث أو طريق مغلق أو زحمة</span><input type="checkbox" id="hazAltSwitch" class="switch"></label>
+      <label class="set-row" for="hazAltPoliceSwitch"><span>اقتراح مسار بديل عند نقطة تفتيش أيضاً</span><input type="checkbox" id="hazAltPoliceSwitch" class="switch"></label>
       <p class="set-note">التنبيه يظهر بالشاشة وينطق بالصوت أثناء الملاحة فقط، للبلاغات اللي على مسارك. كل ما كبرت المسافة يصير عندك وقت أكثر تغيّر فيه المسار. المسار البديل يظهر فقط إذا لقيت طريق يتجنب البلاغ.</p>
     </div>
     <div id="setDisplay" hidden>
@@ -474,7 +475,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
@@ -1471,10 +1472,12 @@
     document.querySelectorAll('#hazList input').forEach((i) => { i.checked = settings.hazShow[i.dataset.type] !== false; });
     $('hazAlertSwitch').checked = settings.hazAlert;
     $('hazAltSwitch').checked = settings.hazAlt !== false;
+    $('hazAltPoliceSwitch').checked = settings.hazAltPolice !== false;
     document.querySelectorAll('#hazDistSeg button').forEach((b) => b.classList.toggle('on', Number(b.dataset.dist) === settings.hazDist));
   }
   $('hazAlertSwitch').onchange = () => { settings.hazAlert = $('hazAlertSwitch').checked; saveSettings(); };
   $('hazAltSwitch').onchange = () => { settings.hazAlt = $('hazAltSwitch').checked; saveSettings(); };
+  $('hazAltPoliceSwitch').onchange = () => { settings.hazAltPolice = $('hazAltPoliceSwitch').checked; saveSettings(); };
   document.querySelectorAll('#hazDistSeg button').forEach((b) => {
     b.onclick = () => { settings.hazDist = Number(b.dataset.dist); saveSettings(); syncSettingsUI(); };
   });
@@ -1787,7 +1790,7 @@
         hazardAlerted[h.id] = true;
         const msg = HZ[h.type].label + ' أمامك بعد ' + spokenDist(d);
         toast(msg, 4500); speak(msg);
-        if (settings.hazAlt !== false && ALT_TYPES.indexOf(h.type) >= 0) offerAlternative(h);
+        if (settings.hazAlt !== false && (ALT_TYPES.indexOf(h.type) >= 0 || (h.type === 'police' && settings.hazAltPolice !== false))) offerAlternative(h);
       }
     });
   }

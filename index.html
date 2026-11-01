@@ -242,6 +242,19 @@
   ol.steps li { padding: 4px 0; border-bottom: 1px dashed var(--line); }
   ol.steps small { color: var(--muted); margin-right: 6px; }
 
+  .altbox {
+    position: fixed; z-index: 1500;
+    top: calc(env(safe-area-inset-top, 0px) + 100px);
+    right: max(10px, env(safe-area-inset-right, 0px)); left: max(10px, env(safe-area-inset-left, 0px));
+    background: var(--bg); color: var(--fg); border-radius: 16px; box-shadow: var(--shadow);
+    padding: 12px 14px; border-right: 6px solid #e8590c; display: flex; flex-direction: column; gap: 4px;
+  }
+  .altbox small { color: var(--muted); line-height: 1.5; }
+  .altbox .altacts { display: flex; gap: 8px; margin-top: 6px; }
+  .altbox .altacts button { flex: 1; padding: 11px 8px; border-radius: 10px; background: var(--line); font-weight: 600; }
+  .altbox .altacts .go { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+  #hazDistSeg { flex-wrap: wrap; }
+  #hazDistSeg button { flex: 1 0 22%; }
   #toast {
     position: fixed; z-index: 2000; left: 50%; transform: translateX(-50%);
     top: calc(env(safe-area-inset-top, 0px) + 84px);
@@ -360,7 +373,7 @@
       <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 13</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 14</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -396,10 +409,14 @@
           <button data-dist="200">200 م</button>
           <button data-dist="350">350 م</button>
           <button data-dist="500">500 م</button>
+          <button data-dist="800">800 م</button>
           <button data-dist="1000">1 كم</button>
+          <button data-dist="1500">1.5 كم</button>
+          <button data-dist="2000">2 كم</button>
         </div>
       </div>
-      <p class="set-note">التنبيه يظهر بالشاشة وينطق بالصوت أثناء الملاحة فقط، للبلاغات اللي على مسارك.</p>
+      <label class="set-row" for="hazAltSwitch"><span>اقتراح مسار بديل عند وجود حادث أو طريق مغلق أو زحمة</span><input type="checkbox" id="hazAltSwitch" class="switch"></label>
+      <p class="set-note">التنبيه يظهر بالشاشة وينطق بالصوت أثناء الملاحة فقط، للبلاغات اللي على مسارك. كل ما كبرت المسافة يصير عندك وقت أكثر تغيّر فيه المسار. المسار البديل يظهر فقط إذا لقيت طريق يتجنب البلاغ.</p>
     </div>
     <div id="setDisplay" hidden>
       <div class="set-row col">
@@ -435,6 +452,11 @@
 </div>
 
 <div id="toast" hidden></div>
+<div class="altbox" id="altBox" hidden>
+  <b id="altTitle"></b>
+  <small id="altSub"></small>
+  <div class="altacts"><button class="go" id="altGo">غيّر المسار</button><button id="altNo">لا، أكمل</button></div>
+</div>
 
 <script>
 (function () {
@@ -452,7 +474,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
@@ -769,11 +791,19 @@
     const btnFav = document.createElement('button');
     btnFav.textContent = 'حفظ بالمفضلة';
     btnFav.style.marginRight = '6px';
-    html.append(btn, btnFav);
+    const btnHz = document.createElement('button');
+    btnHz.textContent = 'بلاغ هنا';
+    btnHz.style.marginRight = '6px';
+    html.append(btn, btnFav, btnHz);
     const pop = L.popup({ closeButton: false }).setLatLng(e.latlng).setContent(html).openOn(map);
     btn.onclick = () => {
       map.closePopup(pop);
       chooseDest({ lat: e.latlng.lat, lng: e.latlng.lng, name: 'نقطة على الخريطة' });
+    };
+    btnHz.onclick = () => {
+      map.closePopup(pop);
+      state.reportAt = [e.latlng.lat, e.latlng.lng];
+      $('reportPanel').hidden = false;
     };
     btnFav.onclick = () => {
       map.closePopup(pop);
@@ -804,6 +834,17 @@
     const j = await r.json();
     if (j.code !== 'Ok' || !j.routes.length) throw new Error('noroute');
     return j.routes[0];
+  }
+
+  async function fetchRoutes(from, to) {
+    const url = 'https://router.project-osrm.org/route/v1/driving/' +
+      from[1] + ',' + from[0] + ';' + to[1] + ',' + to[0] +
+      '?overview=full&geometries=geojson&steps=true&alternatives=true';
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('route');
+    const j = await r.json();
+    if (j.code !== 'Ok' || !j.routes.length) throw new Error('noroute');
+    return j.routes;
   }
 
   function drawRoute(route) {
@@ -1419,9 +1460,11 @@
     // البلاغات
     document.querySelectorAll('#hazList input').forEach((i) => { i.checked = settings.hazShow[i.dataset.type] !== false; });
     $('hazAlertSwitch').checked = settings.hazAlert;
+    $('hazAltSwitch').checked = settings.hazAlt !== false;
     document.querySelectorAll('#hazDistSeg button').forEach((b) => b.classList.toggle('on', Number(b.dataset.dist) === settings.hazDist));
   }
   $('hazAlertSwitch').onchange = () => { settings.hazAlert = $('hazAlertSwitch').checked; saveSettings(); };
+  $('hazAltSwitch').onchange = () => { settings.hazAlt = $('hazAltSwitch').checked; saveSettings(); };
   document.querySelectorAll('#hazDistSeg button').forEach((b) => {
     b.onclick = () => { settings.hazDist = Number(b.dataset.dist); saveSettings(); syncSettingsUI(); };
   });
@@ -1505,6 +1548,7 @@
 
   function endNav(msg) {
     state.navigating = false;
+    hideAlt();
     stopSim();
     $('nav').hidden = true; $('top').hidden = false;
     $('sheet').classList.remove('navmode');
@@ -1558,6 +1602,7 @@
     // المتبقي
     let remD = d, remT = 0;
     for (let j = idx + 1; j < steps.length; j++) { remD += steps[j].distance; remT += steps[j].duration; }
+    state.remT = remT;
     $('sumTime').textContent = fmtTime(remT || 60);
     $('sumDist').textContent = fmtDist(remD);
     $('sumEta').textContent = 'الوصول ' + fmtClock(remT);
@@ -1688,7 +1733,8 @@
     const b = document.createElement('button');
     b.innerHTML = '<i style="background:' + HZ[k].color + '">' + HZ[k].glyph + '</i>' + HZ[k].label;
     b.onclick = async () => {
-      const pos = state.user ? [state.user.lat, state.user.lng] : [map.getCenter().lat, map.getCenter().lng];
+      const pos = state.reportAt || (state.user ? [state.user.lat, state.user.lng] : [map.getCenter().lat, map.getCenter().lng]);
+      state.reportAt = null;
       const rec = { type: k, lat: pos[0], lng: pos[1], t: Date.now() };
       $('reportPanel').hidden = true;
       try {
@@ -1731,9 +1777,67 @@
         hazardAlerted[h.id] = true;
         const msg = HZ[h.type].label + ' أمامك بعد ' + spokenDist(d);
         toast(msg, 4500); speak(msg);
+        if (settings.hazAlt !== false && ALT_TYPES.indexOf(h.type) >= 0) offerAlternative(h);
       }
     });
   }
+
+  /* ---------- اقتراح مسار بديل يتجنب البلاغ ---------- */
+  const ALT_TYPES = ['closed', 'accident', 'traffic'];
+  let altOffer = null, altTimer = null;
+  function minDistToPath(coords, pt) {
+    let best = Infinity;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const d = segDist(pt, coords[i], coords[i + 1]);
+      if (d < best) best = d;
+    }
+    return best;
+  }
+  function hideAlt() {
+    altOffer = null; clearTimeout(altTimer);
+    const b = $('altBox'); if (b) b.hidden = true;
+  }
+  async function offerAlternative(h) {
+    if (state.altBusy || !state.navigating || !state.user || !state.dest) return;
+    state.altBusy = true;
+    try {
+      const routes = await fetchRoutes([state.user.lat, state.user.lng], [state.dest.lat, state.dest.lng]);
+      if (!state.navigating) return;
+      let best = null;
+      routes.forEach((r) => {
+        const coords = r.geometry.coordinates.map((c) => [c[1], c[0]]);
+        if (minDistToPath(coords, [h.lat, h.lng]) < 150) return; // لسه يمر من البلاغ
+        if (!best || r.duration < best.duration) best = r;
+      });
+      if (!best) return;
+      const extra = best.duration - (state.remT || 0);
+      if (h.type !== 'closed' && extra > 600) return; // أطول بكثير، ما يستاهل
+      const label = HZ[h.type].label;
+      const mins = Math.round(Math.abs(extra) / 60);
+      const diff = extra >= 60 ? 'يزيد ' + mins + ' دقيقة' : extra <= -60 ? 'أسرع بـ ' + mins + ' دقيقة' : 'بنفس الوقت تقريباً';
+      altOffer = { route: best };
+      $('altTitle').textContent = 'مسار بديل يتجنب ' + label;
+      $('altSub').textContent = diff + ' • ' + fmtDist(best.distance);
+      $('altBox').hidden = false;
+      speak('في مسار بديل يتجنب ' + label + '، ' + diff + '. اضغط تغيير المسار إذا تريد.');
+      clearTimeout(altTimer);
+      altTimer = setTimeout(hideAlt, 45000);
+    } catch (e) { /* ما لقينا بديل، يكفي التحذير */ }
+    finally { state.altBusy = false; }
+  }
+  $('altNo').onclick = hideAlt;
+  $('altGo').onclick = () => {
+    if (!altOffer) return;
+    const route = altOffer.route;
+    hideAlt();
+    route.legs[0].steps.forEach((s) => { s._said = false; });
+    drawRoute(route);
+    state.stepIdx = 0; state.offCount = 0;
+    if (state.sim) { stopSim(); startSim(); }
+    speak('تم تغيير المسار');
+    toast('تم تغيير المسار');
+    navUpdate();
+  };
 
   /* ================= بداية ================= */
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideResults(); });

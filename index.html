@@ -934,7 +934,25 @@
      كل دولة ملف PMTiles واحد. نضيف دول جديدة بإضافة سطر هنا فقط.
      url: رابط الملف (نسبي = داخل نفس الموقع). maxZoom: أعلى مستوى تفاصيل بالملف. */
   const PACKS = [
-    { id: 'iraq', name: 'العراق', url: 'packs/iraq.pmtiles', maxZoom: 12 }
+    { id: 'iraq', name: 'العراق (خريطة عامة)', url: 'packs/iraq.pmtiles', maxZoom: 12, mb: 61 },
+    { id: 'baghdad', name: 'بغداد', url: 'packs/baghdad.pmtiles', maxZoom: 15, mb: 19, bbox: [43.9, 32.8, 44.9, 33.8] },
+    { id: 'basra', name: 'البصرة', url: 'packs/basra.pmtiles', maxZoom: 15, mb: 36, bbox: [46.4, 29.05, 48.6, 31.2] },
+    { id: 'nineveh', name: 'نينوى', url: 'packs/nineveh.pmtiles', maxZoom: 15, mb: 81, bbox: [40.9, 35.2, 44.1, 37.4] },
+    { id: 'erbil', name: 'أربيل', url: 'packs/erbil.pmtiles', maxZoom: 15, mb: 47, bbox: [43.4, 35.7, 45.1, 37.2] },
+    { id: 'sulaymaniyah', name: 'السليمانية', url: 'packs/sulaymaniyah.pmtiles', maxZoom: 15, mb: 41, bbox: [44.5, 34.6, 46.3, 36.3] },
+    { id: 'duhok', name: 'دهوك', url: 'packs/duhok.pmtiles', maxZoom: 15, mb: 33, bbox: [42.2, 36.5, 44.3, 37.4] },
+    { id: 'kirkuk', name: 'كركوك', url: 'packs/kirkuk.pmtiles', maxZoom: 15, mb: 20, bbox: [43.2, 34.8, 44.9, 35.9] },
+    { id: 'diyala', name: 'ديالى', url: 'packs/diyala.pmtiles', maxZoom: 15, mb: 29, bbox: [44.3, 33.2, 46.2, 34.7] },
+    { id: 'salahaddin', name: 'صلاح الدين', url: 'packs/salahaddin.pmtiles', maxZoom: 15, mb: 15, bbox: [42.9, 33.7, 44.5, 35.3] },
+    { id: 'anbar', name: 'الأنبار', url: 'packs/anbar.pmtiles', maxZoom: 14, mb: 31, bbox: [38.8, 30.6, 44.3, 34.8] },
+    { id: 'babil', name: 'بابل', url: 'packs/babil.pmtiles', maxZoom: 15, mb: 23, bbox: [44.0, 32.0, 45.1, 33.3] },
+    { id: 'karbala', name: 'كربلاء', url: 'packs/karbala.pmtiles', maxZoom: 15, mb: 14, bbox: [43.2, 32.0, 44.5, 33.0] },
+    { id: 'najaf', name: 'النجف', url: 'packs/najaf.pmtiles', maxZoom: 15, mb: 21, bbox: [42.2, 29.5, 45.0, 32.5] },
+    { id: 'qadisiyah', name: 'القادسية', url: 'packs/qadisiyah.pmtiles', maxZoom: 15, mb: 11, bbox: [44.3, 31.5, 45.6, 32.4] },
+    { id: 'muthanna', name: 'المثنى', url: 'packs/muthanna.pmtiles', maxZoom: 15, mb: 12, bbox: [43.6, 29.0, 46.2, 31.6] },
+    { id: 'dhiqar', name: 'ذي قار', url: 'packs/dhiqar.pmtiles', maxZoom: 15, mb: 12, bbox: [45.6, 30.4, 47.2, 31.9] },
+    { id: 'maysan', name: 'ميسان', url: 'packs/maysan.pmtiles', maxZoom: 15, mb: 8, bbox: [46.5, 31.3, 47.9, 32.8] },
+    { id: 'wasit', name: 'واسط', url: 'packs/wasit.pmtiles', maxZoom: 15, mb: 10, bbox: [44.9, 32.0, 46.9, 33.5] },
   ];
   const PACK_CACHE = 'daliny-packs-v1';
   const PACK_KEY = 'daliny-packs';
@@ -949,7 +967,10 @@
   function addPackLayer(p) {
     if (packLayers[p.id] || !window.protomapsL) return;
     try {
-      const l = protomapsL.leafletLayer({ url: packKey(p), flavor: 'light', theme: 'light', lang: 'ar', maxDataZoom: p.maxZoom, maxNativeZoom: p.maxZoom, maxZoom: 19 });
+      const l = protomapsL.leafletLayer(Object.assign(
+        { url: packKey(p), flavor: 'light', theme: 'light', lang: 'ar', maxDataZoom: p.maxZoom, maxNativeZoom: p.maxZoom, maxZoom: 19 },
+        p.bbox ? { bounds: L.latLngBounds([p.bbox[1], p.bbox[0]], [p.bbox[3], p.bbox[2]]), minZoom: 13 } : {}
+      ));
       l.on('tileload', () => { diagTiles.ok++; });
       l.on('tileerror', () => { diagTiles.bad++; });
       l.addTo(map);
@@ -1021,7 +1042,7 @@
       row.className = 'set-row pack-row';
       const busy = packBusy[p.id];
       const has = packsInstalled.includes(p.id);
-      let sub = 'غير منزّلة';
+      let sub = 'غير منزّلة • حوالي ' + p.mb + ' ميغا';
       if (busy) sub = busy.text;
       else if (has) {
         sub = 'منزّلة';

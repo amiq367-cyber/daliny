@@ -163,7 +163,7 @@
   $('diagBtn').onclick = diag;
 
   document.querySelectorAll('#btns button[data-ll]').forEach((b) => {
-    b.onclick = () => { const a = b.dataset.ll.split(',').map(Number); map.jumpTo({ center: [a[1], a[0]], zoom: a[2] }); };
+    b.onclick = () => { const a = b.dataset.ll.split(',').map(Number); map.jumpTo({ center: [a[0], a[1]], zoom: a[2] }); };
   });
   $('northBtn').onclick = () => map.easeTo({ bearing: 0, pitch: 0 });
   $('toggle').onclick = () => { const h = $('body').style.display === 'none'; $('body').style.display = h ? '' : 'none'; $('toggle').textContent = h ? '▾' : '▴'; };

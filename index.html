@@ -373,7 +373,7 @@
       <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 16</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 17</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1810,16 +1810,26 @@
     altOffer = null; clearTimeout(altTimer);
     const b = $('altBox'); if (b) b.hidden = true;
   }
-  function avoids(r, h) {
+  // أقل مسافة بين المسار والبلاغ بالمتر
+  function pathDist(r, h) {
     const coords = r.geometry.coordinates.map((c) => [c[1], c[0]]);
-    return minDistToPath(coords, [h.lat, h.lng]) >= 150;
+    return minDistToPath(coords, [h.lat, h.lng]);
   }
+  // المسافة اللازمة بين المسار البديل والبلاغ حسب نوعه
+  const AVOID_M = { closed: 40, accident: 80, police: 60, traffic: 150 };
   // يجيب مسارات تتجنب البلاغ: أول البدائل الجاهزة، وإذا ما لقى يجرب مسارات تلف من جنب البلاغ
   async function altCandidates(h) {
     const from = [state.user.lat, state.user.lng], to = [state.dest.lat, state.dest.lng];
-    let good = [];
-    try { good = (await fetchRoutes(from, to)).filter((r) => avoids(r, h)); } catch (e) {}
-    if (good.length) return good;
+    const need = AVOID_M[h.type] || 80;
+    const info = { good: [], tried: 0, failed: 0, bestGap: 0, need };
+    const consider = (r) => {
+      info.tried++;
+      const d = pathDist(r, h);
+      if (d > info.bestGap) info.bestGap = d;
+      if (d >= need) info.good.push(r);
+    };
+    try { (await fetchRoutes(from, to)).forEach(consider); } catch (e) { info.failed++; }
+    if (info.good.length) return info;
     const c = state.coords;
     let bi = 0, bd = Infinity;
     for (let i = 0; i < c.length - 1; i++) {
@@ -1829,24 +1839,28 @@
     const br = bearing(c[bi], c[bi + 1]);
     const wps = [];
     [90, -90].forEach((turn) => {
-      [450, 900].forEach((dist) => {
+      [150, 300, 600].forEach((dist) => {
         const th = (br + turn) * Math.PI / 180;
         wps.push([h.lat + dist * Math.cos(th) / 111320, h.lng + dist * Math.sin(th) / (111320 * Math.cos(h.lat * Math.PI / 180))]);
       });
     });
     const res = await Promise.all(wps.map((w) => fetchRouteVia([from, w, to]).catch(() => null)));
-    return res.filter((r) => r && avoids(r, h));
+    res.forEach((r) => { if (r) consider(r); else info.failed++; });
+    return info;
   }
   async function offerAlternative(h) {
     if (state.altBusy || !state.navigating || !state.user || !state.dest) return;
     state.altBusy = true;
     try {
-      const routes = await altCandidates(h);
+      const info = await altCandidates(h);
       if (!state.navigating) return;
       let best = null;
-      routes.forEach((r) => { if (!best || r.duration < best.duration) best = r; });
+      info.good.forEach((r) => { if (!best || r.duration < best.duration) best = r; });
       const label0 = HZ[h.type].label;
-      if (!best) { toast('ما لقيت مسار بديل يتجنب ' + label0 + '، كمّل على نفس الطريق بحذر', 5000); return; }
+      if (!best) {
+        toast('ما لقيت مسار بديل يتجنب ' + label0 + ' (جربت ' + info.tried + ' مسار، أبعدها ' + Math.round(info.bestGap) + ' م من البلاغ والمطلوب ' + info.need + ' م' + (info.failed ? '، فشل ' + info.failed + ' طلب' : '') + ')', 7000);
+        return;
+      }
       const extra = best.duration - (state.remT || 0);
       if (h.type !== 'closed' && extra > 1200) {
         toast('البديل يزيد ' + Math.round(extra / 60) + ' دقيقة، ما اقترحته. كمّل على نفس الطريق بحذر', 5000);

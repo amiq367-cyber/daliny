@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 30</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 31</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -642,6 +642,12 @@
   let trRemote = [];                     // عينات حقيقية (تأتي من القاعدة بالخطوة القادمة)
   let trLines = [];                      // أشرطة الزحام الحالية: {coords, cum, total, color}
   let trOff = 0, trLast = 0, trTimer = null;
+  const RW = [[10, 2], [14, 5], [16, 11], [18, 17], [20, 34]]; // عرض الشارع المرسوم تقريباً
+  function rwAt(z) {
+    if (z <= RW[0][0]) return RW[0][1];
+    for (let i = 1; i < RW.length; i++) if (z <= RW[i][0]) { const a = RW[i - 1], b = RW[i]; return a[1] + (b[1] - a[1]) * (z - a[0]) / (b[0] - a[0]); }
+    return RW[RW.length - 1][1];
+  }
   const EMPTY_FC = { type: 'FeatureCollection', features: [] };
   const toRad = (d) => d * Math.PI / 180;
   function bearing(a, b) { // a,b = {lat,lng} -> درجة 0..360
@@ -653,7 +659,8 @@
     const now = Date.now(), cells = {};
     trRemote.concat(trSim || []).forEach((q) => {
       if (!q || now - q.t > TR_TTL || !isFinite(q.lat) || !isFinite(q.lng) || !isFinite(q.v)) return;
-      const k = Math.floor(q.lng / TR_CELL) + '_' + Math.floor(q.lat / TR_CELL);
+      // الاتجاهات المتعاكسة تنفصل بخلايا مختلفة (حتى لا تختلط سيارات الذهاب والإياب)
+      const k = Math.floor(q.lng / TR_CELL) + '_' + Math.floor(q.lat / TR_CELL) + '_' + (isFinite(q.h) ? Math.round(q.h / 90) % 4 : 'n');
       const c = cells[k] || (cells[k] = { sl: 0, sg: 0, n: 0, hx: 0, hy: 0, hn: 0, users: {} });
       c.users[q.u || 'x'] = q.v; // آخر سرعة لكل سائق
       c.sl += q.lat; c.sg += q.lng; c.n++;
@@ -685,6 +692,7 @@
           for (let k = 0; k < n; k++) d.push({ lng: A[0] + (B[0] - A[0]) * k / n, lat: A[1] + (B[1] - A[1]) * k / n });
         }
         d.push({ lng: ln[ln.length - 1][0], lat: ln[ln.length - 1][1] });
+        d.nm = f.properties.name || '';
         out.push(d);
       });
     });
@@ -723,12 +731,27 @@
       }
       const cum = [0];
       for (let i = 1; i < seg.length; i++) cum.push(cum[i - 1] + haversine([seg[i - 1].lat, seg[i - 1].lng], [seg[i].lat, seg[i].lng]));
-      trLines.push({ coords: seg, cum: cum, total: cum[cum.length - 1], color: c.color });
+      // هل للشارع مسار موازي منفصل بنفس الاسم (على بعد 10-70 م)؟ إذا نعم كل مسار يرسم على خطه بدون إزاحة
+      let dual = false;
+      if (bl.nm) {
+        const ref = bl[bi], rb = bearing(bl[Math.max(0, bi - 1)], bl[Math.min(bl.length - 1, bi + 1)]);
+        roads.forEach((d) => {
+          if (dual || d === bl || d.nm !== bl.nm) return;
+          for (let i = 0; i < d.length; i += 2) {
+            const m = haversine([ref.lat, ref.lng], [d[i].lat, d[i].lng]);
+            if (m > 10 && m < 70) {
+              const lb = bearing(d[Math.max(0, i - 1)], d[Math.min(d.length - 1, i + 1)]), dd = Math.abs(((lb - rb + 540) % 360) - 180);
+              if (Math.min(dd, 180 - dd) < 30) { dual = true; break; }
+            }
+          }
+        });
+      }
+      trLines.push({ coords: seg, cum: cum, total: cum[cum.length - 1], color: c.color, o: dual ? 0 : 1 });
     });
   }
   function trGeo() {
     return { type: 'FeatureCollection', features: trLines.map((l) => ({
-      type: 'Feature', properties: { color: l.color }, geometry: { type: 'LineString', coordinates: l.coords.map((q) => [q.lng, q.lat]) }
+      type: 'Feature', properties: { color: l.color, o: l.o }, geometry: { type: 'LineString', coordinates: l.coords.map((q) => [q.lng, q.lat]) }
     })) };
   }
   // أسهم بيضاء تمشي ببطء على الأشرطة (المسافة بين الأسهم ~60 بكسل مهما كان التقريب)
@@ -736,18 +759,14 @@
     if (!trLines.length) return EMPTY_FC;
     const z = map.getZoom(), lat = map.getCenter().lat;
     const mpp = 156543.03 * Math.cos(toRad(lat)) / Math.pow(2, z), gap = 64 * mpp, off = (trOff * mpp) % gap;
-    const stops = [[10, 1], [14, 5], [16, 9], [18, 16], [20, 30]];
-    let offPx = stops[stops.length - 1][1];
-    if (z <= stops[0][0]) offPx = stops[0][1];
-    else for (let i = 1; i < stops.length; i++) if (z <= stops[i][0]) { const a0 = stops[i - 1], a1 = stops[i]; offPx = a0[1] + (a1[1] - a0[1]) * (z - a0[0]) / (a1[0] - a0[0]); break; }
-    const offM = offPx * mpp;
+    const offPx0 = 0.3 * rwAt(z);
     const feats = [];
     trLines.forEach((l) => {
       let seg = 0;
       for (let d = off; d < l.total; d += gap) {
         while (seg < l.cum.length - 2 && l.cum[seg + 1] < d) seg++;
         const A = l.coords[seg], B = l.coords[seg + 1], len = l.cum[seg + 1] - l.cum[seg] || 1, t = Math.min(1, Math.max(0, (d - l.cum[seg]) / len));
-        const bb = bearing(A, B), rb = toRad(bb + 90), pl = A.lat + (B.lat - A.lat) * t, pg = A.lng + (B.lng - A.lng) * t;
+        const bb = bearing(A, B), rb = toRad(bb + 90), pl = A.lat + (B.lat - A.lat) * t, pg = A.lng + (B.lng - A.lng) * t, offM = offPx0 * (l.o ? 1 : 0) * mpp;
         feats.push({ type: 'Feature', properties: { b: bb }, geometry: { type: 'Point', coordinates: [pg + offM * Math.sin(rb) / (111320 * Math.cos(toRad(pl))), pl + offM * Math.cos(rb) / 111320] } });
       }
     });
@@ -784,8 +803,8 @@
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
         { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: iraqHas ? 'none' : 'visible' }, paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
-        { id: 'traffic-glow', type: 'line', source: 'traffic', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.28, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 4, 14, 16, 16, 28, 18, 50, 20, 96], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, 1, 14, 5, 16, 9, 18, 16, 20, 30] } },
-        { id: 'traffic-line', type: 'line', source: 'traffic', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.92, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 8, 16, 15, 18, 27, 20, 52], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, 1, 14, 5, 16, 9, 18, 16, 20, 30] } },
+        { id: 'traffic-glow', type: 'line', source: 'traffic', layout: { 'line-cap': 'butt', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.22, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, ['*', 2, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 14, ['*', 5, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 16, ['*', 11, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 18, ['*', 17, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 20, ['*', 34, ['-', 1.15, ['*', 0.3, ['get', 'o']]]]], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, ['*', 0.6, ['get', 'o']], 14, ['*', 1.5, ['get', 'o']], 16, ['*', 3.3, ['get', 'o']], 18, ['*', 5.1, ['get', 'o']], 20, ['*', 10.2, ['get', 'o']]] } },
+        { id: 'traffic-line', type: 'line', source: 'traffic', layout: { 'line-cap': 'butt', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.9, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, ['*', 2, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 14, ['*', 5, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 16, ['*', 11, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 18, ['*', 17, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 20, ['*', 34, ['-', 0.85, ['*', 0.3, ['get', 'o']]]]], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, ['*', 0.6, ['get', 'o']], 14, ['*', 1.5, ['get', 'o']], 16, ['*', 3.3, ['get', 'o']], 18, ['*', 5.1, ['get', 'o']], 20, ['*', 10.2, ['get', 'o']]] } },
         { id: 'traffic-arrows', type: 'symbol', source: 'trarrows', minzoom: 14.5, layout: { 'icon-image': 'tr-arrow', 'icon-rotate': ['get', 'b'], 'icon-rotation-alignment': 'map', 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'icon-size': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 0.85, 18, 1.4, 20, 2.2] } },
         { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 11, 'line-opacity': 0.95 } },
         { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } }
@@ -1786,13 +1805,25 @@
       }));
       all = all.filter((q) => haversine([cen.lat, cen.lng], [q.lat, q.lng]) < 700);
       if (!all.length) return null;
-      // نفرز بمحور الشارع الأساسي حتى نعرف أي جهة قبل الوسط وأي جهة بعده
+      // محور الشارع: نفرز النقاط ونحدد جهة اليمين لكل نقطة
       let mnLa = 90, mxLa = -90, mnLo = 180, mxLo = -180;
       all.forEach((q) => { mnLa = Math.min(mnLa, q.lat); mxLa = Math.max(mxLa, q.lat); mnLo = Math.min(mnLo, q.lng); mxLo = Math.max(mxLo, q.lng); });
       const byLat = (mxLa - mnLa) * 111 > (mxLo - mnLo) * 93;
-      const key = (q) => (byLat ? q.lat : q.lng), ck = byLat ? cen.lat : cen.lng;
+      const key = (q) => (byLat ? q.lat : q.lng);
       all.sort((x, y) => key(x) - key(y));
-      all.forEach((q, i) => { q.after = key(q) >= ck; q.h = bearing(all[Math.max(0, i - 1)], all[Math.min(all.length - 1, i + 1)]); });
+      const B = bearing(all[0], all[all.length - 1]), cb = Math.cos(toRad(B)), sb = Math.sin(toRad(B)), kc = Math.cos(toRad(cen.lat)) * 111320;
+      all.forEach((q) => { q.side = ((q.lng - cen.lng) * kc) * cb - ((q.lat - cen.lat) * 111320) * sb; }); // + = يمين اتجاه B
+      const nR = all.filter((q) => q.side > 5).length, nL = all.filter((q) => q.side < -5).length;
+      const dual = nR >= 3 && nL >= 3; // مساران منفصلان
+      const ck = byLat ? cen.lat : cen.lng;
+      const lanes = dual ? [all.filter((q) => q.side >= 0), all.filter((q) => q.side < 0)] : [all];
+      lanes.forEach((ls, li) => {
+        ls.forEach((q, i) => {
+          const lb = bearing(ls[Math.max(0, i - 1)], ls[Math.min(ls.length - 1, i + 1)]);
+          if (dual) { q.h = li === 0 ? lb : (lb + 180) % 360; q.sv = li === 0 ? 6 : 19; } // اليمين أحمر باتجاه B، واليسار برتقالي بالعكس
+          else { const aft = key(q) >= ck; q.h = aft ? (lb + 180) % 360 : lb; q.sv = aft ? 19 : 6; }
+        });
+      });
       const pts = all;
       return pts.length ? pts : null;
     } catch (e) { return null; }
@@ -1802,13 +1833,12 @@
     let pts = trRoadPoints(), onRoad = !!pts;
     if (!pts) { pts = []; for (let i = 0; i < 10; i++) pts.push({ lng: c.lng + (i - 4) * 0.0008, lat: c.lat }); }
         pts.forEach((q, i) => {
-      const v = q.after === undefined ? (i < pts.length / 2 ? 6 : 19) : (q.after ? 19 : 6); // قبل الوسط شبه واقف، وبعده بطيء
-      const hh = q.after ? (q.h + 180) % 360 : q.h; // الجهة البرتقالية تسير بالاتجاه المعاكس
+      const v = q.sv !== undefined ? q.sv : (i < pts.length / 2 ? 6 : 19), hh = q.h;
       for (let u = 0; u < 3; u++) sim.push({ lat: q.lat, lng: q.lng, v: v + u, h: hh, t: now, u: 'sim' + i + '_' + u });
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v30 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v31 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');

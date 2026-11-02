@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 25</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 26</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -385,6 +385,7 @@
     <div id="setTraffic" hidden>
       <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
       <div class="set-row"><span>تجربة الزحام (سيارات وهمية قربك)</span><button id="trafficSim" class="set-btn">تجربة</button></div>
+      <p class="set-note" id="trStatus" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة. زر التجربة يعرض سيارات وهمية على جوالك فقط حتى تشوف الشكل، وتختفي بعد دقيقتين.</p>
     </div>
     <div id="setPlaces" hidden>
@@ -1677,8 +1678,16 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    $('settings').hidden = true;
-    toast(onRoad ? 'الزحام التجريبي على أقرب شارع لوسط الشاشة (يختفي بعد دقيقتين)' : 'ما لقيت شارع قرب وسط الشاشة، عرضت زحام تجريبي بخط مستقيم', 4500);
+    let info = 'v26 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    try {
+      const g = trGeo();
+      info += '\ncells=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
+      const ids = map.getStyle().layers.map((l) => l.id), iT = ids.indexOf('traffic-glow'), iP = ids.findIndex((x) => /^pm-/.test(x));
+      info += '\norder: traffic=' + iT + ' firstPack=' + iP + ' of ' + ids.length;
+      info += '\nzoom=' + map.getZoom().toFixed(1) + ' vis=' + map.getLayoutProperty('traffic-glow', 'visibility');
+      if (g.features[0]) info += '\nfirst=' + g.features[0].geometry.coordinates.map((n) => n.toFixed(4)).join(',') + ' center=' + c.lng.toFixed(4) + ',' + c.lat.toFixed(4);
+    } catch (e) { info += '\nERR ' + (e && e.message || e); }
+    $('trStatus').textContent = info;
   };
   document.querySelectorAll('#hazDistSeg button').forEach((b) => {
     b.onclick = () => { settings.hazDist = Number(b.dataset.dist); saveSettings(); syncSettingsUI(); };

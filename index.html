@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 31</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 32</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -673,7 +673,9 @@
       const avg = vs.reduce((a, b) => a + b, 0) / vs.length;
       const col = avg < 12 ? '#d6281c' : (avg < 25 ? '#f08c00' : null);
       if (!col) return;
-      out.push({ lat: c.sl / c.n, lng: c.sg / c.n, color: col, h: (c.hn && Math.hypot(c.hx, c.hy) / c.hn > 0.3) ? (Math.atan2(c.hx, c.hy) * 180 / Math.PI + 360) % 360 : null });
+      const hOk = c.hn && Math.hypot(c.hx, c.hy) / c.hn > 0.3;
+      if (c.hn && !hOk) return; // اتجاهات مختلطة بالخلية: لا نعرف أي شارع نلوّن
+      out.push({ lat: c.sl / c.n, lng: c.sg / c.n, color: col, h: hOk ? (Math.atan2(c.hx, c.hy) * 180 / Math.PI + 360) % 360 : null });
     });
     return out;
   }
@@ -712,7 +714,7 @@
         const m = haversine([c.lat, c.lng], [q.lat, q.lng]);
         if (m > 120) return;
         let pen = 0;
-        if (c.h !== null && d.length > 2) { // نفضّل الطريق الموازي لاتجاه السير، ونتجنب الشوارع المتقاطعة
+        if (c.h !== null && d.length >= 2) { // نفضّل الطريق الموازي لاتجاه السير، ونتجنب الشوارع المتقاطعة
           const lb = bearing(d[Math.max(0, i - 1)], d[Math.min(d.length - 1, i + 1)]);
           const dd = Math.abs(((lb - c.h + 540) % 360) - 180), ang = Math.min(dd, 180 - dd); // 0 = موازي (بأي جهة)
           pen = ang > 35 ? 1000 : ang;
@@ -1812,7 +1814,10 @@
       const key = (q) => (byLat ? q.lat : q.lng);
       all.sort((x, y) => key(x) - key(y));
       const B = bearing(all[0], all[all.length - 1]), cb = Math.cos(toRad(B)), sb = Math.sin(toRad(B)), kc = Math.cos(toRad(cen.lat)) * 111320;
-      all.forEach((q) => { q.side = ((q.lng - cen.lng) * kc) * cb - ((q.lat - cen.lat) * 111320) * sb; }); // + = يمين اتجاه B
+      let mLa = 0, mLo = 0;
+      all.forEach((q) => { mLa += q.lat; mLo += q.lng; });
+      mLa /= all.length; mLo /= all.length; // مركز نقاط الشارع (يقع بين المسارين إن وجد مساران)
+      all.forEach((q) => { q.side = ((q.lng - mLo) * kc) * cb - ((q.lat - mLa) * 111320) * sb; }); // + = يمين اتجاه B
       const nR = all.filter((q) => q.side > 5).length, nL = all.filter((q) => q.side < -5).length;
       const dual = nR >= 3 && nL >= 3; // مساران منفصلان
       const ck = byLat ? cen.lat : cen.lng;
@@ -1838,7 +1843,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v31 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v32 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');

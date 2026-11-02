@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 26</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 27</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1653,17 +1653,21 @@
         if (d < bd) { bd = d; best = f; }
       });
       const nm = best.properties.name;
-      let lines = [];
+      const lines = [];
       fs.forEach((f) => { if (f === best || (nm && f.properties.name === nm)) parts(f).forEach((ln) => lines.push(ln)); });
-      // نرتب الخطوط من الأطول، ونمشي على أطولها
-      lines.sort((x, y) => y.length - x.length);
-      const pts = [];
+      // نختار الخط الأقرب لوسط الشاشة، ونثبّت 10 نقاط قبل وبعد أقرب نقطة منه
+      let bl = null, bi = 0, bdist = 1e9, all = [];
       lines.forEach((ln) => {
+        const dense = [];
         for (let i = 0; i + 1 < ln.length; i++) {
           const A = ln[i], B = ln[i + 1], d = haversine([A[1], A[0]], [B[1], B[0]]), n = Math.max(1, Math.round(d / 80));
-          for (let k = 0; k < n; k++) pts.push({ lng: A[0] + (B[0] - A[0]) * k / n, lat: A[1] + (B[1] - A[1]) * k / n });
+          for (let k = 0; k < n; k++) dense.push({ lng: A[0] + (B[0] - A[0]) * k / n, lat: A[1] + (B[1] - A[1]) * k / n });
         }
+        if (ln.length) dense.push({ lng: ln[ln.length - 1][0], lat: ln[ln.length - 1][1] });
+        dense.forEach((q, i) => { const d = haversine([cen.lat, cen.lng], [q.lat, q.lng]); if (d < bdist) { bdist = d; bl = dense; bi = i; } });
       });
+      if (!bl) return null;
+      const pts = bl.slice(Math.max(0, bi - 10), bi + 11);
       return pts.length ? pts : null;
     } catch (e) { return null; }
   }
@@ -1671,14 +1675,13 @@
     const c = map.getCenter(), now = Date.now(), sim = [];
     let pts = trRoadPoints(), onRoad = !!pts;
     if (!pts) { pts = []; for (let i = 0; i < 10; i++) pts.push({ lng: c.lng + (i - 4) * 0.0008, lat: c.lat }); }
-    pts = pts.slice(0, 40);
-    pts.forEach((q, i) => {
+        pts.forEach((q, i) => {
       const v = i < pts.length / 2 ? 6 : 19; // النصف الأول شبه واقف، والباقي بطيء
       for (let u = 0; u < 3; u++) sim.push({ lat: q.lat, lng: q.lng, v: v + u, t: now, u: 'sim' + i + '_' + u });
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v26 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v27 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\ncells=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');

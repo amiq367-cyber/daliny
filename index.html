@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 27</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 28</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -645,12 +645,14 @@
     trRemote.concat(trSim || []).forEach((q) => {
       if (!q || now - q.t > TR_TTL || !isFinite(q.lat) || !isFinite(q.lng) || !isFinite(q.v)) return;
       const cx = Math.floor(q.lng / TR_CELL), cy = Math.floor(q.lat / TR_CELL), k = cx + '_' + cy;
-      const c = cells[k] || (cells[k] = { lng: (cx + 0.5) * TR_CELL, lat: (cy + 0.5) * TR_CELL, users: {} });
+      const c = cells[k] || (cells[k] = { sl: 0, sg: 0, n: 0, users: {} });
       c.users[q.u || 'x'] = q.v; // آخر سرعة لكل سائق
+      c.sl += q.lat; c.sg += q.lng; c.n++;
     });
     const out = [];
     Object.keys(cells).forEach((k) => {
       const c = cells[k], vs = Object.keys(c.users).map((u) => c.users[u]);
+      c.lat = c.sl / c.n; c.lng = c.sg / c.n;
       if (vs.length < 2) return; // نحتاج سيارتين على الأقل حتى ما نعتمد على سيارة وحدة
       const avg = vs.reduce((a, b) => a + b, 0) / vs.length;
       if (avg < 12) out.push({ lng: c.lng, lat: c.lat, color: '#d6281c', avg: avg });
@@ -682,7 +684,7 @@
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
         { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: iraqHas ? 'none' : 'visible' }, paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
-        { id: 'traffic-glow', type: 'circle', source: 'traffic', paint: { 'circle-color': ['get', 'color'], 'circle-opacity': 0.5, 'circle-blur': 0.6, 'circle-pitch-alignment': 'map', 'circle-radius': ['interpolate', ['exponential', 2], ['zoom'], 10, 0.8, 20, 800] } },
+        { id: 'traffic-glow', type: 'circle', source: 'traffic', paint: { 'circle-color': ['get', 'color'], 'circle-opacity': 0.55, 'circle-blur': 0.6, 'circle-pitch-alignment': 'map', 'circle-radius': ['interpolate', ['exponential', 2], ['zoom'], 10, 0.5, 20, 500] } },
         { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 11, 'line-opacity': 0.95 } },
         { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } }
       ]
@@ -1634,7 +1636,7 @@
   // يلتقط أقرب شارع حقيقي لوسط الشاشة ويرجع نقاطه كل ~80 م
   function trRoadPoints() {
     try {
-      const pt = map.project(map.getCenter()), R = 120;
+      const pt = map.project(map.getCenter()), R = 120, cv = map.getCanvas();
       const fs = map.queryRenderedFeatures([[pt.x - R, pt.y - R], [pt.x + R, pt.y + R]])
         .filter((f) => f.sourceLayer === 'roads' && f.geometry && /LineString/.test(f.geometry.type));
       if (!fs.length) return null;
@@ -1655,19 +1657,30 @@
       const nm = best.properties.name;
       const lines = [];
       fs.forEach((f) => { if (f === best || (nm && f.properties.name === nm)) parts(f).forEach((ln) => lines.push(ln)); });
-      // نختار الخط الأقرب لوسط الشاشة، ونثبّت 10 نقاط قبل وبعد أقرب نقطة منه
-      let bl = null, bi = 0, bdist = 1e9, all = [];
-      lines.forEach((ln) => {
-        const dense = [];
+      // كل خطوط نفس الشارع الظاهرة بالشاشة، نقاطها كل ~60 م وضمن 700 م من الوسط
+      let nameFs = fs.filter((f) => f === best || (nm && f.properties.name === nm));
+      if (nm) {
+        try {
+          const W = cv.clientWidth, H = cv.clientHeight;
+          nameFs = nameFs.concat(map.queryRenderedFeatures([[0, 0], [W, H]]).filter((f) => f.sourceLayer === 'roads' && f.properties.name === nm && f.geometry && /LineString/.test(f.geometry.type)));
+        } catch (e) {}
+      }
+      let all = [];
+      nameFs.forEach((f) => parts(f).forEach((ln) => {
         for (let i = 0; i + 1 < ln.length; i++) {
-          const A = ln[i], B = ln[i + 1], d = haversine([A[1], A[0]], [B[1], B[0]]), n = Math.max(1, Math.round(d / 80));
-          for (let k = 0; k < n; k++) dense.push({ lng: A[0] + (B[0] - A[0]) * k / n, lat: A[1] + (B[1] - A[1]) * k / n });
+          const A = ln[i], B = ln[i + 1], d = haversine([A[1], A[0]], [B[1], B[0]]), n = Math.max(1, Math.round(d / 60));
+          for (let k = 0; k < n; k++) all.push({ lng: A[0] + (B[0] - A[0]) * k / n, lat: A[1] + (B[1] - A[1]) * k / n });
         }
-        if (ln.length) dense.push({ lng: ln[ln.length - 1][0], lat: ln[ln.length - 1][1] });
-        dense.forEach((q, i) => { const d = haversine([cen.lat, cen.lng], [q.lat, q.lng]); if (d < bdist) { bdist = d; bl = dense; bi = i; } });
-      });
-      if (!bl) return null;
-      const pts = bl.slice(Math.max(0, bi - 10), bi + 11);
+      }));
+      all = all.filter((q) => haversine([cen.lat, cen.lng], [q.lat, q.lng]) < 700);
+      if (!all.length) return null;
+      // نفرز بمحور الشارع الأساسي حتى نعرف أي جهة قبل الوسط وأي جهة بعده
+      let mnLa = 90, mxLa = -90, mnLo = 180, mxLo = -180;
+      all.forEach((q) => { mnLa = Math.min(mnLa, q.lat); mxLa = Math.max(mxLa, q.lat); mnLo = Math.min(mnLo, q.lng); mxLo = Math.max(mxLo, q.lng); });
+      const byLat = (mxLa - mnLa) * 111 > (mxLo - mnLo) * 93;
+      const key = (q) => (byLat ? q.lat : q.lng), ck = byLat ? cen.lat : cen.lng;
+      all.forEach((q) => { q.after = key(q) >= ck; });
+      const pts = all;
       return pts.length ? pts : null;
     } catch (e) { return null; }
   }
@@ -1676,12 +1689,12 @@
     let pts = trRoadPoints(), onRoad = !!pts;
     if (!pts) { pts = []; for (let i = 0; i < 10; i++) pts.push({ lng: c.lng + (i - 4) * 0.0008, lat: c.lat }); }
         pts.forEach((q, i) => {
-      const v = i < pts.length / 2 ? 6 : 19; // النصف الأول شبه واقف، والباقي بطيء
+      const v = q.after === undefined ? (i < pts.length / 2 ? 6 : 19) : (q.after ? 19 : 6); // قبل الوسط شبه واقف، وبعده بطيء
       for (let u = 0; u < 3; u++) sim.push({ lat: q.lat, lng: q.lng, v: v + u, t: now, u: 'sim' + i + '_' + u });
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v27 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v28 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\ncells=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');

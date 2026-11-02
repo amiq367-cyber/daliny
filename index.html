@@ -12,10 +12,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon-180.png">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/protomaps-leaflet@5.0.0/dist/protomaps-leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+<script src="https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js"></script>
 
 <style>
   :root {
@@ -50,7 +51,6 @@
   }
   #map { position: fixed; inset: 0; z-index: 0; background: #e6ecef; }
   html.dark #map { background: #10181c; }
-  html.dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.92) contrast(.9); }
   button { font-family: inherit; font-size: 1rem; cursor: pointer; border: 0; color: inherit; }
   [hidden] { display: none !important; }
 
@@ -281,12 +281,12 @@
     width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
     background: var(--danger); border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0,0,0,.45);
   }
-  .leaflet-popup-content { font-family: var(--font); text-align: center; }
-  .leaflet-popup-content button {
+  .maplibregl-popup-content { font-family: var(--font); text-align: center; border-radius: 12px; padding: 10px 12px; }
+  .maplibregl-popup-content button {
     background: #0a7f8f; color: #fff; border-radius: 10px; padding: 9px 14px; font-weight: 700; margin-top: 4px;
   }
-  .leaflet-control-attribution { font-size: 10px; }
-  .leaflet-control-zoom { display: none; }
+  .maplibregl-ctrl-attrib { font-size: 10px; }
+  .maplibregl-marker { will-change: transform; }
 </style>
 </head>
 <body>
@@ -374,7 +374,7 @@
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 18</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 19</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -547,12 +547,7 @@
   }
 
   /* ================= الخريطة ================= */
-  const map = L.map('map', { zoomControl: false, tap: true }).setView([33.3152, 44.3661], 13);
-
-  const lightTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, attribution: '© OpenStreetMap'
-  });
-  lightTiles.addTo(map);
+  // الخريطة تنشأ بعد تعريف الثيم (أدناه)
 
   const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
   function isDark() {
@@ -564,7 +559,68 @@
     const dark = isDark();
     document.documentElement.classList.toggle('dark', dark);
     $('btnTheme').classList.toggle('on', dark);
+    const fl = dark ? 'dark' : 'light';
+    if (fl !== curFlavor) { curFlavor = fl; if (packsReady) rebuildStyle(); }
   }
+  /* ---- محرك الخريطة: MapLibre + حزم PMTiles ---- */
+  const FONT_BASE = 'https://protomaps.github.io/basemaps-assets/';
+  const hasGL = !!(window.maplibregl && window.pmtiles && window.basemaps);
+  if (!hasGL) {
+    document.getElementById('map').innerHTML = '<p style="padding:90px 20px;text-align:center">تعذّر تحميل محرك الخريطة. وصّل بالإنترنت (أول مرة فقط) وحدّث الصفحة.</p>';
+    throw new Error('map libs missing');
+  }
+  maplibregl.addProtocol('pmtiles', new pmtiles.Protocol().tile);
+  let curFlavor = isDark() ? 'dark' : 'light';
+  let routePts = [];
+  let packsReady = false;
+  function routeGeo() {
+    return { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: routePts.map((q) => [q[1], q[0]]) } };
+  }
+  function baseStyle(fl) {
+    const dark = fl === 'dark';
+    return {
+      version: 8,
+      glyphs: FONT_BASE + 'fonts/{fontstack}/{range}.pbf',
+      sprite: FONT_BASE + 'sprites/v4/' + fl,
+      sources: {
+        osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 19, attribution: '© OpenStreetMap' },
+        route: { type: 'geojson', data: routeGeo() }
+      },
+      layers: [
+        { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
+        { id: 'osm', type: 'raster', source: 'osm', paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
+        { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 11, 'line-opacity': 0.95 } },
+        { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } }
+      ]
+    };
+  }
+  const map = new maplibregl.Map({
+    container: 'map', style: baseStyle(curFlavor), center: [44.3661, 33.3152], zoom: 13, maxZoom: 20,
+    attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false
+  });
+  map.touchZoomRotate.disableRotation();
+  function setView(lat, lng, z) { map.jumpTo({ center: [lng, lat], zoom: z }); }
+  function setRoutePts(pts) {
+    routePts = pts;
+    const src = map.getSource('route');
+    if (src) src.setData(routeGeo());
+  }
+  function mkMarker(el, lat, lng, opts) {
+    return new maplibregl.Marker(Object.assign({ element: el }, opts || {})).setLngLat([lng, lat]).addTo(map);
+  }
+  function rebuildStyle() {
+    const st = baseStyle(curFlavor);
+    let at = st.layers.findIndex((l) => l.id === 'route-casing');
+    PACKS.filter((q) => packsInstalled.includes(q.id)).sort((a, b) => (a.id === 'iraq' ? -1 : 0) - (b.id === 'iraq' ? -1 : 0)).forEach((q) => {
+      const d = packDefs(q, curFlavor);
+      st.sources[d.src] = d.source;
+      st.layers.splice(at, 0, ...d.layers);
+      at += d.layers.length;
+      if (q.id === 'iraq') st.layers.find((l) => l.id === 'osm').layout = { visibility: 'none' };
+    });
+    map.setStyle(st, { diff: false });
+  }
+
   applyTheme();
   if (darkQuery && darkQuery.addEventListener) {
     darkQuery.addEventListener('change', () => { if (settings.theme === 'auto') applyTheme(); });
@@ -591,17 +647,17 @@
       '<polyline points="22,4 22,32" fill="none" stroke="#ffffff" stroke-opacity=".65" stroke-width="1"/>' +
       '<polygon points="22,4 39,40 39,45 22,37 5,45 5,40" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round"/>' +
     '</svg>';
-  const meIcon = L.divIcon({
-    className: '', iconSize: [44, 52], iconAnchor: [22, 26],
-    html: '<div class="me3d"><div class="shd"></div>' + ME_SVG + '</div>'
-  });
   let meMarker = null;
   let meAngle = 0; // زاوية تراكمية حتى ما يلف المثلث لفة كاملة عند عبور الشمال
 
   function setUser(lat, lng, heading, speed) {
     state.user = { lat, lng, heading: heading, speed: speed };
-    if (!meMarker) meMarker = L.marker([lat, lng], { icon: meIcon, interactive: false, zIndexOffset: 1000 }).addTo(map);
-    else meMarker.setLatLng([lat, lng]);
+    if (!meMarker) {
+      const mel = document.createElement('div');
+      mel.style.cssText = 'width:44px;height:52px;pointer-events:none;z-index:5';
+      mel.innerHTML = '<div class="me3d"><div class="shd"></div>' + ME_SVG + '</div>';
+      meMarker = mkMarker(mel, lat, lng, { anchor: 'center' });
+    } else meMarker.setLngLat([lng, lat]);
     const el = meMarker.getElement();
     if (el && typeof heading === 'number' && !isNaN(heading)) {
       const arrow = el.querySelector('.arrow');
@@ -610,7 +666,7 @@
         arrow.style.transform = 'rotate(' + meAngle + 'deg)';
       }
     }
-    if (state.follow) map.panTo([lat, lng], { animate: true, duration: 0.4 });
+    if (state.follow) map.easeTo({ center: [lng, lat], duration: 400 });
   }
 
   function onPosition(lat, lng, heading, speedMs) {
@@ -638,7 +694,7 @@
   $('btnLocate').onclick = () => {
     state.follow = true;
     $('btnLocate').classList.add('on');
-    if (state.user) map.setView([state.user.lat, state.user.lng], Math.max(map.getZoom(), 16));
+    if (state.user) setView(state.user.lat, state.user.lng, Math.max(map.getZoom(), 16));
     else toast('جاري تحديد موقعك...');
     startWatch();
   };
@@ -679,7 +735,7 @@
   function goFav(f) {
     if (state.navigating) { toast('أنهِ الملاحة الحالية أول'); return; }
     $('settings').hidden = true; hideResults();
-    map.setView([f.lat, f.lng], 15);
+    setView(f.lat, f.lng, 15);
     chooseDest({ lat: f.lat, lng: f.lng, name: f.name });
   }
   let favEditing = null;
@@ -784,6 +840,8 @@
 
   // الضغط على الخريطة
   map.on('click', (e) => {
+    const tg = e.originalEvent && e.originalEvent.target;
+    if (tg && tg.closest && tg.closest('.maplibregl-marker, .maplibregl-popup')) return;
     hideResults();
     $('reportPanel').hidden = true;
     if (state.navigating) return;
@@ -797,19 +855,19 @@
     btnHz.textContent = 'بلاغ هنا';
     btnHz.style.marginRight = '6px';
     html.append(btn, btnFav, btnHz);
-    const pop = L.popup({ closeButton: false }).setLatLng(e.latlng).setContent(html).openOn(map);
+    const pop = new maplibregl.Popup({ closeButton: false, offset: 8 }).setLngLat(e.lngLat).setDOMContent(html).addTo(map);
     btn.onclick = () => {
-      map.closePopup(pop);
-      chooseDest({ lat: e.latlng.lat, lng: e.latlng.lng, name: 'نقطة على الخريطة' });
+      pop.remove();
+      chooseDest({ lat: e.lngLat.lat, lng: e.lngLat.lng, name: 'نقطة على الخريطة' });
     };
     btnHz.onclick = () => {
-      map.closePopup(pop);
-      state.reportAt = [e.latlng.lat, e.latlng.lng];
+      pop.remove();
+      state.reportAt = [e.lngLat.lat, e.lngLat.lng];
       $('reportPanel').hidden = false;
     };
     btnFav.onclick = () => {
-      map.closePopup(pop);
-      if (addFav({ lat: e.latlng.lat, lng: e.latlng.lng, name: 'نقطة على الخريطة' })) {
+      pop.remove();
+      if (addFav({ lat: e.lngLat.lat, lng: e.lngLat.lng, name: 'نقطة على الخريطة' })) {
         toast('انحفظ. تكدر تغيّر اسمه من الإعدادات، الأماكن المفضلة', 4000);
       } else toast('هذا المكان محفوظ من قبل');
     };
@@ -820,10 +878,11 @@
 
   function chooseDest(d) {
     state.dest = d;
-    if (destMarker) map.removeLayer(destMarker);
-    destMarker = L.marker([d.lat, d.lng], {
-      icon: L.divIcon({ className: '', iconSize: [34, 34], iconAnchor: [4, 34], html: '<div class="flag"></div>' })
-    }).addTo(map);
+    if (destMarker) destMarker.remove();
+    const fel = document.createElement('div');
+    fel.style.cssText = 'width:34px;height:34px';
+    fel.innerHTML = '<div class="flag"></div>';
+    destMarker = mkMarker(fel, d.lat, d.lng, { anchor: 'bottom-left', offset: [-4, 0] });
     planRoute();
   }
 
@@ -862,10 +921,8 @@
   function drawRoute(route) {
     state.route = route;
     state.coords = route.geometry.coordinates.map((c) => [c[1], c[0]]);
-    if (routeCasing) map.removeLayer(routeCasing);
-    if (routeLine) map.removeLayer(routeLine);
-    routeCasing = L.polyline(state.coords, { color: '#ffffff', weight: 11, opacity: .95, lineCap: 'round' }).addTo(map);
-    routeLine = L.polyline(state.coords, { color: '#0a7f8f', weight: 6, opacity: 1, lineCap: 'round' }).addTo(map);
+    setRoutePts(state.coords);
+    routeLine = routeCasing = true;
     state.routeIdx = 0;
   }
 
@@ -895,13 +952,12 @@
     if (best.d > 70) return; // طلعت عن المسار، ننتظر إعادة الحساب
     state.routeIdx = best.i;
     const pts = [best.q].concat(state.coords.slice(best.i + 1));
-    routeLine.setLatLngs(pts);
-    routeCasing.setLatLngs(pts);
+    setRoutePts(pts);
   }
 
   function untrimRoute() {
     state.routeIdx = 0;
-    if (routeLine) { routeLine.setLatLngs(state.coords); routeCasing.setLatLngs(state.coords); }
+    if (routeLine) setRoutePts(state.coords);
   }
 
   function renderSheet() {
@@ -933,16 +989,17 @@
       $('planActions').hidden = false;
       $('navActions').hidden = true;
       $('top').hidden = false;
-      map.fitBounds(routeLine.getBounds(), { paddingTopLeft: [30, 120], paddingBottomRight: [30, 260] });
+      const rb = new maplibregl.LngLatBounds();
+      state.coords.forEach((c) => rb.extend([c[1], c[0]]));
+      map.fitBounds(rb, { padding: { top: 120, bottom: 260, left: 30, right: 30 }, maxZoom: 18, duration: 600 });
     } catch (e) {
       toast('ما كدرت ألقى طريق لهذا المكان', 4000);
     }
   }
 
   function clearRoute() {
-    if (routeCasing) map.removeLayer(routeCasing);
-    if (routeLine) map.removeLayer(routeLine);
-    if (destMarker) map.removeLayer(destMarker);
+    setRoutePts([]);
+    if (destMarker) destMarker.remove();
     routeCasing = routeLine = destMarker = null;
     state.route = null; state.coords = []; state.dest = null;
     $('sheet').hidden = true;
@@ -1217,11 +1274,16 @@
       const onMap = document.createElement('button'); onMap.textContent = 'على الخريطة';
       onMap.onclick = () => {
         $('settings').hidden = true;
-        map.setView([it.lat, it.lng], 16);
-        if (poiMarker) map.removeLayer(poiMarker);
-        poiMarker = L.circleMarker([it.lat, it.lng], { radius: 11, color: '#fff', weight: 3, fillColor: '#e0364b', fillOpacity: 1 }).addTo(map);
-        poiMarker.bindTooltip(it.name, { permanent: true, direction: 'top', offset: [0, -10] }).openTooltip();
-        setTimeout(() => { if (poiMarker) { map.removeLayer(poiMarker); poiMarker = null; } }, 60000);
+        setView(it.lat, it.lng, 16);
+        if (poiMarker) poiMarker.remove();
+        const pe = document.createElement('div');
+        pe.style.cssText = 'position:relative;width:22px;height:22px;border-radius:50%;background:#e0364b;border:3px solid #fff;box-sizing:border-box;box-shadow:0 1px 6px rgba(0,0,0,.45)';
+        const lb = document.createElement('div');
+        lb.textContent = it.name;
+        lb.style.cssText = 'position:absolute;bottom:26px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;color:#14232b;padding:3px 8px;border-radius:8px;font:700 13px var(--font);box-shadow:0 1px 6px rgba(0,0,0,.35)';
+        pe.appendChild(lb);
+        poiMarker = mkMarker(pe, it.lat, it.lng, { anchor: 'center' });
+        setTimeout(() => { if (poiMarker) { poiMarker.remove(); poiMarker = null; } }, 60000);
       };
       const sv = document.createElement('button'); sv.textContent = 'حفظ ★';
       sv.onclick = () => { if (addFav({ lat: it.lat, lng: it.lng, name: it.name })) toast('انحفظ بالمفضلة'); else toast('هذا المكان محفوظ من قبل'); };
@@ -1272,23 +1334,57 @@
   const packKey = (p) => new URL(p.url, location.href).href;
   function savePacks() { try { localStorage.setItem(PACK_KEY, JSON.stringify(packsInstalled)); } catch (e) {} }
 
+  // تعريف طبقات حزمة: العراق = الأساس، والمحافظات فوقها من مستوى 13
+  function packDefs(p, fl) {
+    const src = 'pm-' + p.id, base = p.id === 'iraq';
+    const layers = [];
+    basemaps.layers(src, basemaps.namedFlavor(fl), { lang: 'ar' }).forEach((l) => {
+      if (l.type === 'background') return;
+      const o = Object.assign({}, l, { id: src + '-' + l.id, source: src });
+      if (!base) o.minzoom = Math.max(l.minzoom || 0, 13);
+      layers.push(o);
+    });
+    return { src: src, source: { type: 'vector', url: 'pmtiles://' + packKey(p) }, layers: layers };
+  }
+  function packBefore(p) {
+    if (p.id === 'iraq') {
+      const g = map.getStyle().layers.find((l) => /^pm-/.test(l.id) && !/^pm-iraq-/.test(l.id));
+      if (g) return g.id;
+    }
+    return 'route-casing';
+  }
   function addPackLayer(p) {
-    if (packLayers[p.id] || !window.protomapsL) return;
-    try {
-      const l = protomapsL.leafletLayer(Object.assign(
-        { url: packKey(p), flavor: 'light', theme: 'light', lang: 'ar', maxDataZoom: p.maxZoom, maxNativeZoom: p.maxZoom, maxZoom: 19 },
-        p.bbox ? { bounds: L.latLngBounds([p.bbox[1], p.bbox[0]], [p.bbox[3], p.bbox[2]]), minZoom: 13 } : {}
-      ));
-      l.on('tileload', () => { diagTiles.ok++; });
-      l.on('tileerror', () => { diagTiles.bad++; });
-      l.addTo(map);
-      packLayers[p.id] = l;
-    } catch (e) { console.warn('pack layer', e); }
+    const go = () => {
+      if (map.getSource('pm-' + p.id)) return;
+      try {
+        const d = packDefs(p, curFlavor);
+        map.addSource(d.src, d.source);
+        const before = packBefore(p);
+        d.layers.forEach((l) => map.addLayer(l, before));
+        if (p.id === 'iraq' && map.getLayer('osm')) map.setLayoutProperty('osm', 'visibility', 'none');
+      } catch (e) { console.warn('pack layer', e); }
+    };
+    if (packsReady) go(); else map.once('load', go);
   }
   function removePackLayer(p) {
-    if (packLayers[p.id]) { map.removeLayer(packLayers[p.id]); delete packLayers[p.id]; }
+    try {
+      map.getStyle().layers.filter((l) => l.id.indexOf('pm-' + p.id + '-') === 0).forEach((l) => map.removeLayer(l.id));
+      if (map.getSource('pm-' + p.id)) map.removeSource('pm-' + p.id);
+      if (p.id === 'iraq' && map.getLayer('osm')) map.setLayoutProperty('osm', 'visibility', 'visible');
+    } catch (e) {}
   }
+  map.once('load', () => { packsReady = true; });
   PACKS.forEach((p) => { if (packsInstalled.includes(p.id)) addPackLayer(p); });
+
+  // نحفظ الخطوط والرموز للعمل بدون إنترنت (يحفظها الـ service worker)
+  if (navigator.onLine) {
+    const stacks = ['Noto Sans Regular', 'Noto Sans Medium', 'Noto Sans Italic'];
+    const ranges = ['0-255', '256-511', '512-767', '1536-1791', '1792-2047', '8192-8447', '64256-64511', '64512-64767', '65024-65279', '65280-65535'];
+    const urls = [];
+    ['light', 'dark'].forEach((f) => ['.json', '.png', '@2x.json', '@2x.png'].forEach((x) => urls.push(FONT_BASE + 'sprites/v4/' + f + x)));
+    stacks.forEach((st) => ranges.forEach((r) => urls.push(FONT_BASE + 'fonts/' + encodeURIComponent(st) + '/' + r + '.pbf')));
+    setTimeout(() => { urls.forEach((u) => fetch(u).then((r) => r.arrayBuffer()).catch(() => {})); }, 4000);
+  }
 
   function fmtMB(n) { return (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' ميغا'; }
 
@@ -1556,7 +1652,7 @@
     if (simulate) startSim(); else startWatch();
     if (!simulate && !state.user) toast('جاري تحديد موقعك...');
     speak(arInstr(steps[0]));
-    if (state.user) map.setView([state.user.lat, state.user.lng], 17);
+    if (state.user) setView(state.user.lat, state.user.lng, 17);
     navUpdate();
   }
 
@@ -1680,7 +1776,7 @@
     pothole:  { label: 'حفرة أو مطب',   color: '#6f5b3e', glyph: '◆' },
     closed:   { label: 'طريق مغلق',     color: '#212529', glyph: '✕' }
   };
-  const hazardLayer = L.layerGroup().addTo(map);
+  let hazMarkers = [];
   let hazards = [];
   let hazardAlerted = {};
   let lastSig = '';
@@ -1715,21 +1811,21 @@
   }
 
   function drawHazards() {
-    hazardLayer.clearLayers();
+    hazMarkers.forEach((m) => m.remove());
+    hazMarkers = [];
     hazards.forEach((h) => {
       if (settings.hazShow[h.type] === false) return; // النوع مخفي من الإعدادات
       const def = HZ[h.type];
-      const icon = L.divIcon({
-        className: '', iconSize: [30, 30], iconAnchor: [15, 15],
-        html: '<div class="hz" style="background:' + def.color + '">' + def.glyph + '</div>'
-      });
-      const m = L.marker([h.lat, h.lng], { icon: icon }).addTo(hazardLayer);
+      const hel = document.createElement('div');
+      hel.style.cssText = 'width:30px;height:30px';
+      hel.innerHTML = '<div class="hz" style="background:' + def.color + '">' + def.glyph + '</div>';
+      const pop = new maplibregl.Popup({ offset: 18 });
       const box = document.createElement('div');
       const mins = Math.max(1, Math.round((Date.now() - h.t) / 60000));
       box.innerHTML = '<b>' + def.label + '</b><br><small>قبل ' + mins + ' دقيقة</small><br>';
       const del = document.createElement('button'); del.textContent = 'انتهى / حذف';
       del.onclick = async () => {
-        map.closePopup();
+        pop.remove();
         try {
           const r = await fetch(DB_URL + '/hazards/' + h.id + '.json', { method: 'DELETE' });
           if (!r.ok) throw new Error('http ' + r.status);
@@ -1738,7 +1834,8 @@
         } catch (e) { toast('ما كدرت أحذف البلاغ، جرّب مرة ثانية'); }
       };
       box.appendChild(del);
-      m.bindPopup(box);
+      pop.setDOMContent(box);
+      hazMarkers.push(mkMarker(hel, h.lat, h.lng, { anchor: 'center' }).setPopup(pop));
     });
   }
 

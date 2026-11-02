@@ -1,13 +1,14 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
-const CACHE = 'daliny-v9';
+const CACHE = 'daliny-v10';
 const LIBS = 'daliny-libs-v2';
 const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 const LIB_URLS = [
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-  'https://unpkg.com/protomaps-leaflet@5.0.0/dist/protomaps-leaflet.js'
+  'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css',
+  'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js',
+  'https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js',
+  'https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js'
 ];
 
 self.addEventListener('install', (e) => {

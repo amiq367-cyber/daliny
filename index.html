@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 29</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 30</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -666,7 +666,7 @@
       const avg = vs.reduce((a, b) => a + b, 0) / vs.length;
       const col = avg < 12 ? '#d6281c' : (avg < 25 ? '#f08c00' : null);
       if (!col) return;
-      out.push({ lat: c.sl / c.n, lng: c.sg / c.n, color: col, h: c.hn ? (Math.atan2(c.hx, c.hy) * 180 / Math.PI + 360) % 360 : null });
+      out.push({ lat: c.sl / c.n, lng: c.sg / c.n, color: col, h: (c.hn && Math.hypot(c.hx, c.hy) / c.hn > 0.3) ? (Math.atan2(c.hx, c.hy) * 180 / Math.PI + 360) % 360 : null });
     });
     return out;
   }
@@ -699,9 +699,19 @@
     let roads = [];
     try { roads = trRoads(); } catch (e) { return; }
     cells.forEach((c) => {
-      let bl = null, bi = -1, bd = 120;
-      roads.forEach((d) => d.forEach((q, i) => { const m = haversine([c.lat, c.lng], [q.lat, q.lng]); if (m < bd) { bd = m; bl = d; bi = i; } }));
-      if (!bl) return;
+      let bl = null, bi = -1, bd = 1e9;
+      roads.forEach((d) => d.forEach((q, i) => {
+        const m = haversine([c.lat, c.lng], [q.lat, q.lng]);
+        if (m > 120) return;
+        let pen = 0;
+        if (c.h !== null && d.length > 2) { // نفضّل الطريق الموازي لاتجاه السير، ونتجنب الشوارع المتقاطعة
+          const lb = bearing(d[Math.max(0, i - 1)], d[Math.min(d.length - 1, i + 1)]);
+          const dd = Math.abs(((lb - c.h + 540) % 360) - 180), ang = Math.min(dd, 180 - dd); // 0 = موازي (بأي جهة)
+          pen = ang > 35 ? 1000 : ang;
+        }
+        if (m + pen < bd) { bd = m + pen; bl = d; bi = i; }
+      }));
+      if (!bl || bd >= 1000) return;
       let lo = bi, hi = bi;
       while (lo > 0 && haversine([c.lat, c.lng], [bl[lo - 1].lat, bl[lo - 1].lng]) <= 135) lo--;
       while (hi < bl.length - 1 && haversine([c.lat, c.lng], [bl[hi + 1].lat, bl[hi + 1].lng]) <= 135) hi++;
@@ -725,14 +735,20 @@
   function trArrowsGeo() {
     if (!trLines.length) return EMPTY_FC;
     const z = map.getZoom(), lat = map.getCenter().lat;
-    const mpp = 156543.03 * Math.cos(toRad(lat)) / Math.pow(2, z), gap = 60 * mpp, off = (trOff * mpp) % gap;
+    const mpp = 156543.03 * Math.cos(toRad(lat)) / Math.pow(2, z), gap = 64 * mpp, off = (trOff * mpp) % gap;
+    const stops = [[10, 1], [14, 5], [16, 9], [18, 16], [20, 30]];
+    let offPx = stops[stops.length - 1][1];
+    if (z <= stops[0][0]) offPx = stops[0][1];
+    else for (let i = 1; i < stops.length; i++) if (z <= stops[i][0]) { const a0 = stops[i - 1], a1 = stops[i]; offPx = a0[1] + (a1[1] - a0[1]) * (z - a0[0]) / (a1[0] - a0[0]); break; }
+    const offM = offPx * mpp;
     const feats = [];
     trLines.forEach((l) => {
       let seg = 0;
       for (let d = off; d < l.total; d += gap) {
         while (seg < l.cum.length - 2 && l.cum[seg + 1] < d) seg++;
         const A = l.coords[seg], B = l.coords[seg + 1], len = l.cum[seg + 1] - l.cum[seg] || 1, t = Math.min(1, Math.max(0, (d - l.cum[seg]) / len));
-        feats.push({ type: 'Feature', properties: { b: bearing(A, B) }, geometry: { type: 'Point', coordinates: [A.lng + (B.lng - A.lng) * t, A.lat + (B.lat - A.lat) * t] } });
+        const bb = bearing(A, B), rb = toRad(bb + 90), pl = A.lat + (B.lat - A.lat) * t, pg = A.lng + (B.lng - A.lng) * t;
+        feats.push({ type: 'Feature', properties: { b: bb }, geometry: { type: 'Point', coordinates: [pg + offM * Math.sin(rb) / (111320 * Math.cos(toRad(pl))), pl + offM * Math.cos(rb) / 111320] } });
       }
     });
     return { type: 'FeatureCollection', features: feats };
@@ -768,9 +784,9 @@
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
         { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: iraqHas ? 'none' : 'visible' }, paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
-        { id: 'traffic-glow', type: 'line', source: 'traffic', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.28, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 4, 14, 14, 16, 26, 18, 46, 20, 90] } },
-        { id: 'traffic-line', type: 'line', source: 'traffic', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.92, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 6, 16, 11, 18, 22, 20, 44] } },
-        { id: 'traffic-arrows', type: 'symbol', source: 'trarrows', minzoom: 14.5, layout: { 'icon-image': 'tr-arrow', 'icon-rotate': ['get', 'b'], 'icon-rotation-alignment': 'map', 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'icon-size': ['interpolate', ['linear'], ['zoom'], 14, 0.3, 16, 0.5, 18, 0.8, 20, 1.2] } },
+        { id: 'traffic-glow', type: 'line', source: 'traffic', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.28, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 4, 14, 16, 16, 28, 18, 50, 20, 96], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, 1, 14, 5, 16, 9, 18, 16, 20, 30] } },
+        { id: 'traffic-line', type: 'line', source: 'traffic', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.92, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 8, 16, 15, 18, 27, 20, 52], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, 1, 14, 5, 16, 9, 18, 16, 20, 30] } },
+        { id: 'traffic-arrows', type: 'symbol', source: 'trarrows', minzoom: 14.5, layout: { 'icon-image': 'tr-arrow', 'icon-rotate': ['get', 'b'], 'icon-rotation-alignment': 'map', 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'icon-size': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 0.85, 18, 1.4, 20, 2.2] } },
         { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 11, 'line-opacity': 0.95 } },
         { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } }
       ]
@@ -788,8 +804,8 @@
   function trArrowImg() {
     const sz = 48, cv = document.createElement('canvas'); cv.width = cv.height = sz;
     const x = cv.getContext('2d'); x.lineJoin = 'round';
-    x.beginPath(); x.moveTo(24, 5); x.lineTo(38, 34); x.lineTo(24, 26); x.lineTo(10, 34); x.closePath();
-    x.fillStyle = '#ffffff'; x.fill(); x.strokeStyle = 'rgba(0,0,0,.28)'; x.lineWidth = 2; x.stroke();
+    x.beginPath(); x.moveTo(24, 3); x.lineTo(43, 38); x.lineTo(24, 28); x.lineTo(5, 38); x.closePath();
+    x.fillStyle = '#ffffff'; x.fill(); x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 2.5; x.stroke();
     return x.getImageData(0, 0, sz, sz);
   }
   map.on('styleimagemissing', (e) => { if (e.id === 'tr-arrow' && !map.hasImage('tr-arrow')) map.addImage('tr-arrow', trArrowImg(), { pixelRatio: 2 }); });
@@ -1787,11 +1803,12 @@
     if (!pts) { pts = []; for (let i = 0; i < 10; i++) pts.push({ lng: c.lng + (i - 4) * 0.0008, lat: c.lat }); }
         pts.forEach((q, i) => {
       const v = q.after === undefined ? (i < pts.length / 2 ? 6 : 19) : (q.after ? 19 : 6); // قبل الوسط شبه واقف، وبعده بطيء
-      for (let u = 0; u < 3; u++) sim.push({ lat: q.lat, lng: q.lng, v: v + u, h: q.h, t: now, u: 'sim' + i + '_' + u });
+      const hh = q.after ? (q.h + 180) % 360 : q.h; // الجهة البرتقالية تسير بالاتجاه المعاكس
+      for (let u = 0; u < 3; u++) sim.push({ lat: q.lat, lng: q.lng, v: v + u, h: hh, t: now, u: 'sim' + i + '_' + u });
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v29 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v30 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');

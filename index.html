@@ -372,14 +372,20 @@
       <button class="set-row" data-page="hazards"><span>البلاغات</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 22</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 23</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
       <div id="packList"></div>
       <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.</p>
+    </div>
+    <div id="setTraffic" hidden>
+      <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
+      <div class="set-row"><span>تجربة الزحام (سيارات وهمية قربك)</span><button id="trafficSim" class="set-btn">تجربة</button></div>
+      <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة. زر التجربة يعرض سيارات وهمية على جوالك فقط حتى تشوف الشكل، وتختفي بعد دقيقتين.</p>
     </div>
     <div id="setPlaces" hidden>
       <p class="set-note" id="poiWhere">اختر نوع المكان حتى أعرض لك الأقرب إليك.</p>
@@ -476,7 +482,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
@@ -629,6 +635,38 @@
   function routeGeo() {
     return { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: routePts.map((q) => [q[1], q[0]]) } };
   }
+  /* ---- الزحام التلقائي: نجمع سرعات السيارات بخلايا صغيرة (حوالي 200 م) ---- */
+  const TR_CELL = 0.002, TR_TTL = 10 * 60 * 1000;
+  let trSim = null, trSimTimer = null; // سيارات وهمية للتجربة (على الجوال فقط)
+  let trRemote = [];                   // عينات حقيقية (تأتي من القاعدة بالخطوة القادمة)
+  function trCells() {
+    const now = Date.now(), cells = {};
+    trRemote.concat(trSim || []).forEach((q) => {
+      if (!q || now - q.t > TR_TTL || !isFinite(q.lat) || !isFinite(q.lng) || !isFinite(q.v)) return;
+      const cx = Math.floor(q.lng / TR_CELL), cy = Math.floor(q.lat / TR_CELL), k = cx + '_' + cy;
+      const c = cells[k] || (cells[k] = { lng: (cx + 0.5) * TR_CELL, lat: (cy + 0.5) * TR_CELL, users: {} });
+      c.users[q.u || 'x'] = q.v; // آخر سرعة لكل سائق
+    });
+    const out = [];
+    Object.keys(cells).forEach((k) => {
+      const c = cells[k], vs = Object.keys(c.users).map((u) => c.users[u]);
+      if (vs.length < 2) return; // نحتاج سيارتين على الأقل حتى ما نعتمد على سيارة وحدة
+      const avg = vs.reduce((a, b) => a + b, 0) / vs.length;
+      if (avg < 12) out.push({ lng: c.lng, lat: c.lat, color: '#d6281c', avg: avg });
+      else if (avg < 25) out.push({ lng: c.lng, lat: c.lat, color: '#f08c00', avg: avg });
+    });
+    return out;
+  }
+  function trGeo() {
+    const feats = settings.trafficShow === false ? [] : trCells().map((c) => ({
+      type: 'Feature', properties: { color: c.color }, geometry: { type: 'Point', coordinates: [c.lng, c.lat] }
+    }));
+    return { type: 'FeatureCollection', features: feats };
+  }
+  function trRefresh() {
+    try { const src = map.getSource('traffic'); if (src) src.setData(trGeo()); } catch (e) {}
+  }
+  setInterval(trRefresh, 30000);
   function baseStyle(fl) {
     const dark = fl === 'dark';
     return withPacks({
@@ -637,11 +675,13 @@
       sprite: FONT_BASE + 'sprites/v4/' + fl,
       sources: {
         osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 19, attribution: '© OpenStreetMap' },
-        route: { type: 'geojson', data: routeGeo() }
+        route: { type: 'geojson', data: routeGeo() },
+        traffic: { type: 'geojson', data: trGeo() }
       },
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
         { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: iraqHas ? 'none' : 'visible' }, paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
+        { id: 'traffic-glow', type: 'circle', source: 'traffic', paint: { 'circle-color': ['get', 'color'], 'circle-opacity': 0.5, 'circle-blur': 0.6, 'circle-pitch-alignment': 'map', 'circle-radius': ['interpolate', ['exponential', 2], ['zoom'], 10, 0.8, 20, 800] } },
         { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 11, 'line-opacity': 0.95 } },
         { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } }
       ]
@@ -1099,7 +1139,7 @@
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', places: 'أماكن مهمة', offline: 'الخرائط بدون إنترنت' };
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', places: 'أماكن مهمة', offline: 'الخرائط بدون إنترنت', traffic: 'الزحام' };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
@@ -1111,6 +1151,7 @@
     $('setFavs').hidden = p !== 'favs';
     $('setPlaces').hidden = p !== 'places';
     $('setOffline').hidden = p !== 'offline';
+    $('setTraffic').hidden = p !== 'traffic';
     if (p === 'favs') { favEditing = null; renderFavList(); }
     if (p === 'offline') refreshTileStats();
     if (p === 'places') poiOpen();
@@ -1582,11 +1623,26 @@
     $('hazAlertSwitch').checked = settings.hazAlert;
     $('hazAltSwitch').checked = settings.hazAlt !== false;
     $('hazAltPoliceSwitch').checked = settings.hazAltPolice !== false;
+    $('trafficShowSwitch').checked = settings.trafficShow !== false;
     document.querySelectorAll('#hazDistSeg button').forEach((b) => b.classList.toggle('on', Number(b.dataset.dist) === settings.hazDist));
   }
   $('hazAlertSwitch').onchange = () => { settings.hazAlert = $('hazAlertSwitch').checked; saveSettings(); };
   $('hazAltSwitch').onchange = () => { settings.hazAlt = $('hazAltSwitch').checked; saveSettings(); };
   $('hazAltPoliceSwitch').onchange = () => { settings.hazAltPolice = $('hazAltPoliceSwitch').checked; saveSettings(); };
+  $('trafficShowSwitch').onchange = () => { settings.trafficShow = $('trafficShowSwitch').checked; saveSettings(); trRefresh(); };
+  $('trafficSim').onclick = () => {
+    const c = map.getCenter(), now = Date.now(), sim = [];
+    for (let i = 0; i < 8; i++) {
+      const lng = c.lng + (i - 3) * TR_CELL, lat = c.lat;
+      const v = i < 4 ? 6 : 19; // أول 4 خلايا شبه واقفة، والباقي بطيء
+      for (let u = 0; u < 3; u++) sim.push({ lat: lat + 0.0003, lng: lng, v: v + u, t: now, u: 'sim' + i + u });
+    }
+    trSim = sim; trRefresh();
+    clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
+    map.jumpTo({ center: [c.lng, c.lat], zoom: 15 });
+    toast('راح تشوف الزحام التجريبي على الخريطة (يختفي بعد دقيقتين)', 4500);
+    $('settings').hidden = true;
+  };
   document.querySelectorAll('#hazDistSeg button').forEach((b) => {
     b.onclick = () => { settings.hazDist = Number(b.dataset.dist); saveSettings(); syncSettingsUI(); };
   });

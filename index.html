@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 23</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 24</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1630,18 +1630,55 @@
   $('hazAltSwitch').onchange = () => { settings.hazAlt = $('hazAltSwitch').checked; saveSettings(); };
   $('hazAltPoliceSwitch').onchange = () => { settings.hazAltPolice = $('hazAltPoliceSwitch').checked; saveSettings(); };
   $('trafficShowSwitch').onchange = () => { settings.trafficShow = $('trafficShowSwitch').checked; saveSettings(); trRefresh(); };
+  // يلتقط أقرب شارع حقيقي لوسط الشاشة ويرجع نقاطه كل ~80 م
+  function trRoadPoints() {
+    try {
+      const pt = map.project(map.getCenter()), R = 120;
+      const fs = map.queryRenderedFeatures([[pt.x - R, pt.y - R], [pt.x + R, pt.y + R]])
+        .filter((f) => f.sourceLayer === 'roads' && f.geometry && /LineString/.test(f.geometry.type));
+      if (!fs.length) return null;
+      const cen = map.getCenter();
+      const parts = (f) => (f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates);
+      const dist = (f) => {
+        let m = 1e9;
+        parts(f).forEach((ln) => ln.forEach((c) => { const d = haversine([cen.lat, cen.lng], [c[1], c[0]]); if (d < m) m = d; }));
+        return m;
+      };
+      // الشارع الأقرب، مع تفضيل الشوارع الكبيرة والمسماة
+      const rank = { highway: 0, major_road: 1, medium_road: 2, minor_road: 3, other: 4 };
+      let best = null, bd = 1e9;
+      fs.forEach((f) => {
+        const d = dist(f) + (rank[f.properties.kind] === undefined ? 4 : rank[f.properties.kind]) * 15;
+        if (d < bd) { bd = d; best = f; }
+      });
+      const nm = best.properties.name;
+      let lines = [];
+      fs.forEach((f) => { if (f === best || (nm && f.properties.name === nm)) parts(f).forEach((ln) => lines.push(ln)); });
+      // نرتب الخطوط من الأطول، ونمشي على أطولها
+      lines.sort((x, y) => y.length - x.length);
+      const pts = [];
+      lines.forEach((ln) => {
+        for (let i = 0; i + 1 < ln.length; i++) {
+          const A = ln[i], B = ln[i + 1], d = haversine([A[1], A[0]], [B[1], B[0]]), n = Math.max(1, Math.round(d / 80));
+          for (let k = 0; k < n; k++) pts.push({ lng: A[0] + (B[0] - A[0]) * k / n, lat: A[1] + (B[1] - A[1]) * k / n });
+        }
+      });
+      return pts.length ? pts : null;
+    } catch (e) { return null; }
+  }
   $('trafficSim').onclick = () => {
     const c = map.getCenter(), now = Date.now(), sim = [];
-    for (let i = 0; i < 8; i++) {
-      const lng = c.lng + (i - 3) * TR_CELL, lat = c.lat;
-      const v = i < 4 ? 6 : 19; // أول 4 خلايا شبه واقفة، والباقي بطيء
-      for (let u = 0; u < 3; u++) sim.push({ lat: lat + 0.0003, lng: lng, v: v + u, t: now, u: 'sim' + i + u });
-    }
+    let pts = trRoadPoints(), onRoad = !!pts;
+    if (!pts) { pts = []; for (let i = 0; i < 10; i++) pts.push({ lng: c.lng + (i - 4) * 0.0008, lat: c.lat }); }
+    pts = pts.slice(0, 40);
+    pts.forEach((q, i) => {
+      const v = i < pts.length / 2 ? 6 : 19; // النصف الأول شبه واقف، والباقي بطيء
+      for (let u = 0; u < 3; u++) sim.push({ lat: q.lat, lng: q.lng, v: v + u, t: now, u: 'sim' + i + '_' + u });
+    });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    map.jumpTo({ center: [c.lng, c.lat], zoom: 15 });
-    toast('راح تشوف الزحام التجريبي على الخريطة (يختفي بعد دقيقتين)', 4500);
     $('settings').hidden = true;
+    toast(onRoad ? 'الزحام التجريبي على أقرب شارع لوسط الشاشة (يختفي بعد دقيقتين)' : 'ما لقيت شارع قرب وسط الشاشة، عرضت زحام تجريبي بخط مستقيم', 4500);
   };
   document.querySelectorAll('#hazDistSeg button').forEach((b) => {
     b.onclick = () => { settings.hazDist = Number(b.dataset.dist); saveSettings(); syncSettingsUI(); };

@@ -374,7 +374,7 @@
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 19</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 20</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -570,6 +570,11 @@
     throw new Error('map libs missing');
   }
   maplibregl.addProtocol('pmtiles', new pmtiles.Protocol().tile);
+  // إضافة الكتابة العربية (تشبيك الحروف واتجاه اليمين لليسار): ملف محلي داخل الموقع
+  try { maplibregl.setRTLTextPlugin(new URL('mapbox-gl-rtl-text.js', location.href).href, false); } catch (e) { console.warn('rtl', e); }
+  // إذا حزمة العراق منزّلة ما نعرض خريطة الإنترنت القديمة أبداً (حتى ما تومض قبل الجديدة)
+  let iraqHas = false;
+  try { iraqHas = JSON.parse(localStorage.getItem('daliny-packs') || '[]').includes('iraq'); } catch (e) {}
   let curFlavor = isDark() ? 'dark' : 'light';
   let routePts = [];
   let packsReady = false;
@@ -588,7 +593,7 @@
       },
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
-        { id: 'osm', type: 'raster', source: 'osm', paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
+        { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: iraqHas ? 'none' : 'visible' }, paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
         { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 11, 'line-opacity': 0.95 } },
         { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } }
       ]

@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" media="print" onload="this.media='all'">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
 <script src="https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js"></script>
@@ -374,7 +374,7 @@
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 21</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 22</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -647,11 +647,18 @@
       ]
     }, fl);
   }
+  let lastView = null;
+  try { lastView = JSON.parse(localStorage.getItem('daliny-view') || 'null'); } catch (e) {}
+  if (!(lastView && isFinite(lastView.lng) && isFinite(lastView.lat) && isFinite(lastView.z))) lastView = null;
   const map = new maplibregl.Map({
-    container: 'map', style: baseStyle(curFlavor), center: [44.3661, 33.3152], zoom: 13, maxZoom: 20,
+    container: 'map', style: baseStyle(curFlavor),
+    center: lastView ? [lastView.lng, lastView.lat] : [44.3661, 33.3152], zoom: lastView ? lastView.z : 13, maxZoom: 20,
     attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false
   });
   map.touchZoomRotate.disableRotation();
+  map.on('moveend', () => {
+    try { const c = map.getCenter(); localStorage.setItem('daliny-view', JSON.stringify({ lng: c.lng, lat: c.lat, z: map.getZoom() })); } catch (e) {}
+  });
   function setView(lat, lng, z) { map.jumpTo({ center: [lng, lat], zoom: z }); }
   function setRoutePts(pts) {
     routePts = pts;

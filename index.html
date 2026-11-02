@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 24</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 25</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -617,7 +617,7 @@
     return { src: src, source: { type: 'vector', url: 'pmtiles://' + packKey(p) }, layers: layers };
   }
   function withPacks(st, fl) {
-    let at = st.layers.findIndex((l) => l.id === 'route-casing');
+    let at = st.layers.findIndex((l) => l.id === 'traffic-glow');
     PACKS.filter((q) => packsInstalled.includes(q.id)).sort((a, b) => (a.id === 'iraq' ? -1 : 0) - (b.id === 'iraq' ? -1 : 0)).forEach((q) => {
       const d = packDefs(q, fl);
       st.sources[d.src] = d.source;
@@ -1404,7 +1404,7 @@
       const g = map.getStyle().layers.find((l) => /^pm-/.test(l.id) && !/^pm-iraq-/.test(l.id));
       if (g) return g.id;
     }
-    return 'route-casing';
+    return 'traffic-glow';
   }
   function addPackLayer(p) {
     const go = () => {

@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 35</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 36</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -388,6 +388,7 @@
       <div class="set-row"><span>اختبار الإرسال لقاعدة البيانات</span><button id="trafficSend" class="set-btn">اختبار</button></div>
       <p class="set-note" id="trLive" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <div class="set-row"><span>تجربة الزحام (سيارات وهمية قربك)</span><button id="trafficSim" class="set-btn">تجربة</button></div>
+      <div class="set-row"><span>محاكاة كاملة عبر قاعدة البيانات (إرسال ثم قراءة)</span><button id="trafficFull" class="set-btn">محاكاة</button></div>
       <p class="set-note" id="trStatus" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة. زر التجربة يعرض سيارات وهمية على جوالك فقط حتى تشوف الشكل، وتختفي بعد دقيقتين.</p>
     </div>
@@ -1869,7 +1870,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v35 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v36 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -2232,6 +2233,34 @@
         setTimeout(() => { fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'DELETE' }).catch(() => {}); }, 20000);
       }
     } catch (e) { out.textContent = 'فشل الإرسال: ' + (e && e.message || e); }
+  };
+
+
+  // محاكاة كاملة: ترسل سيارات وهمية فعلاً للقاعدة ثم تقرأها مثل أي جهاز آخر وترسمها، وتمسحها بعد دقيقتين
+  $('trafficFull').onclick = async () => {
+    const out = $('trLive');
+    let pts = trRoadPoints();
+    if (!pts) { const c = map.getCenter(); pts = []; for (let i = 0; i < 10; i++) pts.push({ lng: c.lng + (i - 4) * 0.0008, lat: c.lat, h: 90, sv: 6 }); }
+    const ids = [], jobs = [], now = Date.now();
+    pts.forEach((q, i) => {
+      if (i % 2) return;
+      for (let u = 0; u < 2; u++) {
+        const id = 'simtest' + trUid.slice(0, 8) + '_' + i + '_' + u;
+        ids.push(id);
+        const rec = { lat: +q.lat.toFixed(5), lng: +q.lng.toFixed(5), v: (q.sv !== undefined ? q.sv : 8) + u, t: now };
+        if (typeof q.h === 'number') rec.h = Math.round(q.h);
+        jobs.push(fetch(DB_URL + '/traffic/' + id + '.json', { method: 'PUT', body: JSON.stringify(rec) }).then((r) => r.status).catch(() => 0));
+      }
+    });
+    out.textContent = 'جاري إرسال ' + jobs.length + ' عينة وهمية...';
+    const codes = await Promise.all(jobs), ok = codes.filter((c) => c === 200).length;
+    await trLoad();
+    out.textContent = 'محاكاة: أُرسلت ' + ok + ' من ' + jobs.length + ' (HTTP ' + (codes.find((c) => c !== 200) || 200) + ')\n' + out.textContent
+      + '\nأشرطة مرسومة: ' + trGeo().features.length;
+    setTimeout(() => {
+      ids.forEach((id) => fetch(DB_URL + '/traffic/' + id + '.json', { method: 'DELETE' }).catch(() => {}));
+      setTimeout(trLoad, 3000);
+    }, 120000);
   };
 
   // أسطر إعدادات أنواع البلاغات (تظهر بشاشة الإعدادات)

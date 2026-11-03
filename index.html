@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 33</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 34</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1801,7 +1801,7 @@
         } catch (e) {}
       }
       // لكل خط: نمشي من أقرب نقطة لوسط الشاشة بالاتجاهين (حتى 600 م)، ونتوقف عند أي انعطاف كبير حتى ما نلف مع زوايا الشوارع
-      let all = [];
+      let lns = [];
       nameFs.forEach((f) => parts(f).forEach((ln) => {
         const d = [];
         for (let i = 0; i + 1 < ln.length; i++) {
@@ -1814,44 +1814,43 @@
         if (ni < 0 || nd > 120) return;
         const b0 = bearing(d[Math.max(0, ni - 1)], d[Math.min(d.length - 1, ni + 1)]);
         const dev = (a, b) => { const dd = Math.abs(((bearing(a, b) - b0 + 540) % 360) - 180); return Math.min(dd, 180 - dd); };
-        const ok = (i) => {
-          if (i > 0 && dev(d[i - 1], d[i]) > 20) return false;                 // القطعة قبل النقطة منحرفة
-          if (i < d.length - 1 && dev(d[i], d[i + 1]) > 20) return false;     // القطعة بعد النقطة منحرفة
-          return haversine([cen.lat, cen.lng], [d[i].lat, d[i].lng]) < 600;
-        };
-        all.push({ lat: d[ni].lat, lng: d[ni].lng });
-        for (let i = ni - 1; i >= 0 && ok(i); i--) all.push({ lat: d[i].lat, lng: d[i].lng });
-        for (let i = ni + 1; i < d.length && ok(i); i++) all.push({ lat: d[i].lat, lng: d[i].lng });
+        const near = (i) => haversine([cen.lat, cen.lng], [d[i].lat, d[i].lng]) < 600;
+        let lo = ni, hi = ni;
+        while (lo > 0 && dev(d[lo - 1], d[lo]) <= 20 && near(lo - 1)) lo--;
+        while (hi < d.length - 1 && dev(d[hi], d[hi + 1]) <= 20 && near(hi + 1)) hi++;
+        const seg = d.slice(lo, hi + 1).map((q) => ({ lat: q.lat, lng: q.lng }));
+        if (seg.length >= 2) lns.push(seg);
       }));
-      if (!all.length) return null;
-      // محور الشارع: نفرز النقاط ونحدد جهة اليمين لكل نقطة
-      let mnLa = 90, mxLa = -90, mnLo = 180, mxLo = -180;
-      all.forEach((q) => { mnLa = Math.min(mnLa, q.lat); mxLa = Math.max(mxLa, q.lat); mnLo = Math.min(mnLo, q.lng); mxLo = Math.max(mxLo, q.lng); });
-      const byLat = (mxLa - mnLa) * 111 > (mxLo - mnLo) * 93;
-      const key = (q) => (byLat ? q.lat : q.lng);
-      all.sort((x, y) => key(x) - key(y));
-      const B = bearing(all[0], all[all.length - 1]), cb = Math.cos(toRad(B)), sb = Math.sin(toRad(B)), kc = Math.cos(toRad(cen.lat)) * 111320;
-      let mLa = 0, mLo = 0;
-      all.forEach((q) => { mLa += q.lat; mLo += q.lng; });
-      mLa /= all.length; mLo /= all.length; // مركز نقاط الشارع (يقع بين المسارين إن وجد مساران)
-      all.forEach((q) => { q.side = ((q.lng - mLo) * kc) * cb - ((q.lat - mLa) * 111320) * sb; }); // + = يمين اتجاه B
-      const nR = all.filter((q) => q.side > 5).length, nL = all.filter((q) => q.side < -5).length;
-      const dual = nR >= 3 && nL >= 3; // مساران منفصلان
-      const lbOf = (ls, i) => bearing(ls[Math.max(0, i - 1)], ls[Math.min(ls.length - 1, i + 1)]);
+      if (!lns.length) return null;
+      // اتجاه مرجعي = أطول خط، ونوجّه كل الخطوط بنفس الاتجاه (ونتجاهل الخطوط العمودية)
+      lns.sort((x, y) => y.length - x.length);
+      const B0 = bearing(lns[0][0], lns[0][lns[0].length - 1]);
+      const angTo = (a, b) => { const dd = Math.abs(((a - b + 540) % 360) - 180); return dd; };
+      lns = lns.filter((l) => { const bb = bearing(l[0], l[l.length - 1]); const dd = angTo(bb, B0); return Math.min(dd, 180 - dd) < 40; });
+      lns.forEach((l) => { if (angTo(bearing(l[0], l[l.length - 1]), B0) > 90) l.reverse(); });
+      const lbOf = (l, i) => bearing(l[Math.max(0, i - 1)], l[Math.min(l.length - 1, i + 1)]);
+      // الجهة تُحدد محلياً: إذا يوجد مسار مجاور (6-60 م) على يسار النقطة فهي على المسار الأيمن
       let pts = [];
-      if (dual) {
-        // العراق: السير على اليمين. المسار الأيمن باتجاه B (أحمر)، والأيسر بالاتجاه المعاكس (برتقالي)
-        const R = all.filter((q) => q.side >= 0), L = all.filter((q) => q.side < 0);
-        R.forEach((q, i) => pts.push({ lat: q.lat, lng: q.lng, h: lbOf(R, i), sv: 6 }));
-        L.forEach((q, i) => pts.push({ lat: q.lat, lng: q.lng, h: (lbOf(L, i) + 180) % 360, sv: 19 }));
-      } else {
-        // شارع بخط واحد: الاتجاهان معاً، وكل اتجاه ينزاح لجهة اليمين من اتجاه سيره
-        all.forEach((q, i) => {
-          const lb = lbOf(all, i);
+      lns.forEach((l, li) => l.forEach((q, i) => {
+        const lb = lbOf(l, i);
+        let nbDist = 1e9, nbCross = 0;
+        lns.forEach((o, oi) => {
+          if (oi === li) return;
+          o.forEach((w) => {
+            const m = haversine([q.lat, q.lng], [w.lat, w.lng]);
+            if (m > 6 && m < 60 && m < nbDist) { nbDist = m; nbCross = Math.sin(toRad(bearing(q, w) - lb)); }
+          });
+        });
+        if (nbDist < 1e9) {
+          // العراق: السير على اليمين. الأيمن باتجاه الخط (أحمر)، والأيسر بالعكس (برتقالي)
+          if (nbCross < 0) pts.push({ lat: q.lat, lng: q.lng, h: lb, sv: 6 });
+          else pts.push({ lat: q.lat, lng: q.lng, h: (lb + 180) % 360, sv: 19 });
+        } else {
+          // شارع بخط واحد: الاتجاهان معاً، وكل اتجاه ينزاح لجهة يمين سيره
           pts.push({ lat: q.lat, lng: q.lng, h: lb, sv: 6 });
           pts.push({ lat: q.lat, lng: q.lng, h: (lb + 180) % 360, sv: 19 });
-        });
-      }
+        }
+      }));
       return pts.length ? pts : null;
     } catch (e) { return null; }
   }
@@ -1865,7 +1864,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v33 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v34 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');

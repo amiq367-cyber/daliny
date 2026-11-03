@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 36</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 37</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1870,7 +1870,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v36 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v37 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -2179,13 +2179,16 @@
     for (let i = 0; i < 20; i++) trUid += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)];
     try { localStorage.setItem('daliny-uid', trUid); } catch (e) {}
   }
-  let trSentAt = 0, trSent = false;
+  let trSentAt = 0, trSent = false, trMaxV = 0;
   function trPut(rec) {
     return fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'PUT', body: JSON.stringify(rec) });
   }
   function trShare(lat, lng, heading, speedMs) {
     if (!state.navigating || state.sim || settings.trafficShare === false || !navigator.onLine) return;
     if (typeof speedMs !== 'number' || isNaN(speedMs) || speedMs < 0) return;
+    // لا نرسل إلا بعد أن تتجاوز سرعتك 15 كم/س مرة واحدة بهذه الملاحة (يعني سيارة، مو ماشي)؛ وبعدها نرسل حتى لو وقفت بالزحام
+    trMaxV = Math.max(trMaxV, speedMs * 3.6);
+    if (trMaxV < 15) return;
     const now = Date.now();
     if (now - trSentAt < 10000) return;
     trSentAt = now;
@@ -2194,6 +2197,7 @@
     trPut(rec).then(() => { trSent = true; }).catch(() => {});
   }
   function trUnshare() { // عند انتهاء الملاحة نمسح سرعتي من القاعدة
+    trMaxV = 0;
     if (!trSent) return;
     trSent = false; trSentAt = 0;
     try { fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'DELETE', keepalive: true }).catch(() => {}); } catch (e) {}

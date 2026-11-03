@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 37</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 39</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -385,6 +385,7 @@
     <div id="setTraffic" hidden>
       <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
       <label class="set-row" for="trafficShareSwitch"><span>أشارك سرعتي لكشف الزحام (أثناء الملاحة فقط، بدون هوية)</span><input type="checkbox" id="trafficShareSwitch" class="switch"></label>
+      <label class="set-row" for="trafficWalkSwitch"><span>وضع الاختبار: اقبل المشي (للتجربة فقط، أطفئه بعدها)</span><input type="checkbox" id="trafficWalkSwitch" class="switch"></label>
       <div class="set-row"><span>اختبار الإرسال لقاعدة البيانات</span><button id="trafficSend" class="set-btn">اختبار</button></div>
       <p class="set-note" id="trLive" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <div class="set-row"><span>تجربة الزحام (سيارات وهمية قربك)</span><button id="trafficSim" class="set-btn">تجربة</button></div>
@@ -487,7 +488,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
@@ -1767,11 +1768,13 @@
     $('hazAltPoliceSwitch').checked = settings.hazAltPolice !== false;
     $('trafficShowSwitch').checked = settings.trafficShow !== false;
     $('trafficShareSwitch').checked = settings.trafficShare !== false;
+    $('trafficWalkSwitch').checked = settings.trafficWalk === true;
     document.querySelectorAll('#hazDistSeg button').forEach((b) => b.classList.toggle('on', Number(b.dataset.dist) === settings.hazDist));
   }
   $('hazAlertSwitch').onchange = () => { settings.hazAlert = $('hazAlertSwitch').checked; saveSettings(); };
   $('hazAltSwitch').onchange = () => { settings.hazAlt = $('hazAltSwitch').checked; saveSettings(); };
   $('hazAltPoliceSwitch').onchange = () => { settings.hazAltPolice = $('hazAltPoliceSwitch').checked; saveSettings(); };
+  $('trafficWalkSwitch').onchange = () => { settings.trafficWalk = $('trafficWalkSwitch').checked; saveSettings(); trMaxV = 0; };
   $('trafficShareSwitch').onchange = () => { settings.trafficShare = $('trafficShareSwitch').checked; saveSettings(); if (!settings.trafficShare) trUnshare(); };
   $('trafficShowSwitch').onchange = () => { settings.trafficShow = $('trafficShowSwitch').checked; saveSettings(); trRefresh(); };
   // يلتقط أقرب شارع حقيقي لوسط الشاشة ويرجع نقاطه كل ~80 م
@@ -1870,7 +1873,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v37 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v39 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -2179,22 +2182,31 @@
     for (let i = 0; i < 20; i++) trUid += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)];
     try { localStorage.setItem('daliny-uid', trUid); } catch (e) {}
   }
-  let trSentAt = 0, trSent = false, trMaxV = 0;
+  let trSentAt = 0, trSent = false, trMaxV = 0, trCount = null, trDiag = '';
+  function trRenderLive() {
+    const el = $('trLive'); if (!el) return;
+    el.textContent = (trCount === null ? '' : 'أجهزة نشطة آخر 10 دقائق: ' + trCount) + (trDiag ? '\n' + trDiag : '');
+  }
+  function trHM() { const d = new Date(); return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0'); }
   function trPut(rec) {
     return fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'PUT', body: JSON.stringify(rec) });
   }
   function trShare(lat, lng, heading, speedMs) {
-    if (!state.navigating || state.sim || settings.trafficShare === false || !navigator.onLine) return;
-    if (typeof speedMs !== 'number' || isNaN(speedMs) || speedMs < 0) return;
+    if (!state.navigating) return;
+    if (state.sim) { trDiag = 'ملاحة تجريبية: لا يرسل'; trRenderLive(); return; }
+    if (settings.trafficShare === false) { trDiag = 'المشاركة مطفأة'; trRenderLive(); return; }
+    if (!navigator.onLine) { trDiag = 'لا يوجد إنترنت'; trRenderLive(); return; }
+    if (typeof speedMs !== 'number' || isNaN(speedMs) || speedMs < 0) { trDiag = 'الجهاز لا يعطي سرعة (GPS)'; trRenderLive(); return; }
     // لا نرسل إلا بعد أن تتجاوز سرعتك 15 كم/س مرة واحدة بهذه الملاحة (يعني سيارة، مو ماشي)؛ وبعدها نرسل حتى لو وقفت بالزحام
     trMaxV = Math.max(trMaxV, speedMs * 3.6);
-    if (trMaxV < 15) return;
+    const need = settings.trafficWalk === true ? 2 : 15;
+    if (trMaxV < need) { trDiag = 'بانتظار السرعة: أعلى سرعة ' + Math.round(trMaxV) + ' كم/س (يلزم ' + need + ')'; trRenderLive(); return; }
     const now = Date.now();
     if (now - trSentAt < 10000) return;
     trSentAt = now;
     const rec = { lat: +lat.toFixed(5), lng: +lng.toFixed(5), v: Math.round(speedMs * 3.6), t: now };
     if (typeof heading === 'number' && !isNaN(heading) && speedMs > 1.5) rec.h = Math.round(((heading % 360) + 360) % 360);
-    trPut(rec).then(() => { trSent = true; }).catch(() => {});
+    trPut(rec).then((r) => { trSent = r.ok; trDiag = 'إرسالي ' + trHM() + ': HTTP ' + r.status + ' | سرعة ' + rec.v + ' كم/س' + (rec.h !== undefined ? ' | اتجاه ' + rec.h : ' | بلا اتجاه'); trRenderLive(); }).catch(() => { trDiag = 'فشل الإرسال ' + trHM(); trRenderLive(); });
   }
   function trUnshare() { // عند انتهاء الملاحة نمسح سرعتي من القاعدة
     trMaxV = 0;
@@ -2215,7 +2227,7 @@
         list.push({ lat: d.lat, lng: d.lng, v: d.v, h: typeof d.h === 'number' ? d.h : undefined, t: d.t, u: u });
       });
       trRemote = list; trRefresh();
-      if ($('trLive')) $('trLive').textContent = 'أجهزة نشطة آخر 10 دقائق: ' + list.length;
+      trCount = list.length; trRenderLive();
     } catch (e) {}
   }
   setInterval(trLoad, 30000);

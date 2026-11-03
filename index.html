@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 34</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 35</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -384,6 +384,9 @@
     </div>
     <div id="setTraffic" hidden>
       <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
+      <label class="set-row" for="trafficShareSwitch"><span>أشارك سرعتي لكشف الزحام (أثناء الملاحة فقط، بدون هوية)</span><input type="checkbox" id="trafficShareSwitch" class="switch"></label>
+      <div class="set-row"><span>اختبار الإرسال لقاعدة البيانات</span><button id="trafficSend" class="set-btn">اختبار</button></div>
+      <p class="set-note" id="trLive" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <div class="set-row"><span>تجربة الزحام (سيارات وهمية قربك)</span><button id="trafficSim" class="set-btn">تجربة</button></div>
       <p class="set-note" id="trStatus" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة. زر التجربة يعرض سيارات وهمية على جوالك فقط حتى تشوف الشكل، وتختفي بعد دقيقتين.</p>
@@ -483,7 +486,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
@@ -898,7 +901,7 @@
 
   function onPosition(lat, lng, heading, speedMs) {
     setUser(lat, lng, heading, speedMs);
-    if (state.navigating) navUpdate();
+    if (state.navigating) { navUpdate(); trShare(lat, lng, heading, speedMs); }
   }
 
   function startWatch() {
@@ -1762,11 +1765,13 @@
     $('hazAltSwitch').checked = settings.hazAlt !== false;
     $('hazAltPoliceSwitch').checked = settings.hazAltPolice !== false;
     $('trafficShowSwitch').checked = settings.trafficShow !== false;
+    $('trafficShareSwitch').checked = settings.trafficShare !== false;
     document.querySelectorAll('#hazDistSeg button').forEach((b) => b.classList.toggle('on', Number(b.dataset.dist) === settings.hazDist));
   }
   $('hazAlertSwitch').onchange = () => { settings.hazAlert = $('hazAlertSwitch').checked; saveSettings(); };
   $('hazAltSwitch').onchange = () => { settings.hazAlt = $('hazAltSwitch').checked; saveSettings(); };
   $('hazAltPoliceSwitch').onchange = () => { settings.hazAltPolice = $('hazAltPoliceSwitch').checked; saveSettings(); };
+  $('trafficShareSwitch').onchange = () => { settings.trafficShare = $('trafficShareSwitch').checked; saveSettings(); if (!settings.trafficShare) trUnshare(); };
   $('trafficShowSwitch').onchange = () => { settings.trafficShow = $('trafficShowSwitch').checked; saveSettings(); trRefresh(); };
   // يلتقط أقرب شارع حقيقي لوسط الشاشة ويرجع نقاطه كل ~80 م
   function trRoadPoints() {
@@ -1864,7 +1869,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v34 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v35 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -1958,6 +1963,7 @@
 
   function endNav(msg) {
     state.navigating = false;
+    trUnshare();
     hideAlt();
     stopSim();
     $('nav').hidden = true; $('top').hidden = false;
@@ -2163,6 +2169,70 @@
   $('btnReport').onclick = () => { $('reportPanel').hidden = !$('reportPanel').hidden; };
   loadHazards(false);
   setInterval(() => { if (!document.hidden) loadHazards(true); }, 20000);
+
+  /* ---- الزحام الحقيقي: إرسال سرعتي أثناء الملاحة + قراءة سرعات الآخرين (بدون هوية) ---- */
+  let trUid = '';
+  try { trUid = localStorage.getItem('daliny-uid') || ''; } catch (e) {}
+  if (!/^[a-z0-9]{12,40}$/.test(trUid)) {
+    trUid = '';
+    for (let i = 0; i < 20; i++) trUid += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)];
+    try { localStorage.setItem('daliny-uid', trUid); } catch (e) {}
+  }
+  let trSentAt = 0, trSent = false;
+  function trPut(rec) {
+    return fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'PUT', body: JSON.stringify(rec) });
+  }
+  function trShare(lat, lng, heading, speedMs) {
+    if (!state.navigating || state.sim || settings.trafficShare === false || !navigator.onLine) return;
+    if (typeof speedMs !== 'number' || isNaN(speedMs) || speedMs < 0) return;
+    const now = Date.now();
+    if (now - trSentAt < 10000) return;
+    trSentAt = now;
+    const rec = { lat: +lat.toFixed(5), lng: +lng.toFixed(5), v: Math.round(speedMs * 3.6), t: now };
+    if (typeof heading === 'number' && !isNaN(heading) && speedMs > 1.5) rec.h = Math.round(((heading % 360) + 360) % 360);
+    trPut(rec).then(() => { trSent = true; }).catch(() => {});
+  }
+  function trUnshare() { // عند انتهاء الملاحة نمسح سرعتي من القاعدة
+    if (!trSent) return;
+    trSent = false; trSentAt = 0;
+    try { fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'DELETE', keepalive: true }).catch(() => {}); } catch (e) {}
+  }
+  async function trLoad() {
+    if (document.hidden || settings.trafficShow === false || !navigator.onLine) return;
+    try {
+      const r = await fetch(DB_URL + '/traffic.json');
+      if (!r.ok) { if ($('trLive')) $('trLive').textContent = 'قراءة الزحام: HTTP ' + r.status; return; }
+      const data = (await r.json()) || {}, now = Date.now(), list = [];
+      Object.keys(data).forEach((u) => {
+        const d = data[u];
+        if (!d || typeof d.lat !== 'number' || typeof d.lng !== 'number' || typeof d.v !== 'number' || typeof d.t !== 'number') return;
+        if (now - d.t > TR_TTL) return;
+        list.push({ lat: d.lat, lng: d.lng, v: d.v, h: typeof d.h === 'number' ? d.h : undefined, t: d.t, u: u });
+      });
+      trRemote = list; trRefresh();
+      if ($('trLive')) $('trLive').textContent = 'أجهزة نشطة آخر 10 دقائق: ' + list.length;
+    } catch (e) {}
+  }
+  setInterval(trLoad, 30000);
+  trLoad();
+  // اختبار: يرسل عينة واحدة ويتأكد أن القاعدة قبلتها، ثم يمسحها بعد 20 ثانية
+  $('trafficSend').onclick = async () => {
+    const out = $('trLive'), c = state.user ? { lat: state.user.lat, lng: state.user.lng } : map.getCenter();
+    const lat = c.lat, lng = c.lng;
+    out.textContent = 'جاري الإرسال...';
+    try {
+      const rec = { lat: +lat.toFixed(5), lng: +lng.toFixed(5), v: 7, t: Date.now() };
+      const r = await trPut(rec);
+      const body = await r.text();
+      const st = 'إرسال: HTTP ' + r.status + (r.ok ? ' (مقبول)' : ' ' + body.slice(0, 120));
+      out.textContent = st;
+      if (r.ok) {
+        await trLoad();
+        out.textContent = st + '\n' + out.textContent;
+        setTimeout(() => { fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'DELETE' }).catch(() => {}); }, 20000);
+      }
+    } catch (e) { out.textContent = 'فشل الإرسال: ' + (e && e.message || e); }
+  };
 
   // أسطر إعدادات أنواع البلاغات (تظهر بشاشة الإعدادات)
   Object.keys(HZ).forEach((k) => {

@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 40</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 41</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -642,7 +642,7 @@
     return { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: routePts.map((q) => [q[1], q[0]]) } };
   }
   /* ---- الزحام التلقائي: سرعات السيارات تتجمع بخلايا (~200 م) ثم تتحول لشريط ملوّن على الطريق ---- */
-  const TR_CELL = 0.002, TR_TTL = 10 * 60 * 1000;
+  const TR_CELL = 0.002, TR_TTL = 3 * 60 * 1000, TR_PURGE = 15 * 60 * 1000;  // العينة تعيش 3 دقائق للعرض، وتنمسح من القاعدة بعد 15 دقيقة
   let trSim = null, trSimTimer = null;   // سيارات وهمية للتجربة (على الجوال فقط)
   let trRemote = [];                     // عينات حقيقية (تأتي من القاعدة بالخطوة القادمة)
   let trLines = [];                      // أشرطة الزحام الحالية: {coords, cum, total, color}
@@ -1250,7 +1250,7 @@
     const m = s.maneuver, t = m.type, mod = m.modifier;
     const name = s.name ? ' إلى ' + s.name : '';
     if (t === 'depart') return 'انطلق' + (s.name ? ' على ' + s.name : '');
-    if (t === 'arrive') return 'وصلت إلى وجهتك';
+    if (t === 'arrive') return 'وجهتك أمامك';
     if (t === 'roundabout' || t === 'rotary' || t === 'roundabout turn')
       return 'ادخل الدوّار وخذ المخرج رقم ' + (m.exit || 1) + name;
     if (t === 'exit roundabout' || t === 'exit rotary') return 'اخرج من الدوّار' + name;
@@ -1873,7 +1873,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v40 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v41 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -2182,16 +2182,17 @@
     for (let i = 0; i < 20; i++) trUid += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)];
     try { localStorage.setItem('daliny-uid', trUid); } catch (e) {}
   }
-  let trSentAt = 0, trSent = false, trMaxV = 0, trCount = null, trDiag = '', trDiagMode = '', trLoadC = { lat: 0, lng: 0 }, trRegional = false, trLoadT = 0;
+  let trSentAt = 0, trSent = false, trMaxV = 0, trCount = null, trDiag = '', trDiagMode = '', trLoadC = { lat: 0, lng: 0 }, trLastArgs = null, trRegional = false, trLoadT = 0;
   function trRenderLive() {
     const el = $('trLive'); if (!el) return;
-    el.textContent = (trCount === null ? '' : 'أجهزة نشطة آخر 10 دقائق: ' + trCount + trDiagMode) + (trDiag ? '\n' + trDiag : '');
+    el.textContent = (trCount === null ? '' : 'أجهزة نشطة آخر 3 دقائق: ' + trCount + trDiagMode) + (trDiag ? '\n' + trDiag : '');
   }
   function trHM() { const d = new Date(); return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0'); }
   function trPut(rec) {
     return fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'PUT', body: JSON.stringify(rec) });
   }
   function trShare(lat, lng, heading, speedMs) {
+    trLastArgs = [lat, lng, heading, speedMs];
     if (!state.navigating) return;
     if (state.sim) { trDiag = 'ملاحة تجريبية: لا يرسل'; trRenderLive(); return; }
     if (settings.trafficShare === false) { trDiag = 'المشاركة مطفأة'; trRenderLive(); return; }
@@ -2208,8 +2209,10 @@
     if (typeof heading === 'number' && !isNaN(heading) && speedMs > 1.5) rec.h = Math.round(((heading % 360) + 360) % 360);
     trPut(rec).then((r) => { trSent = r.ok; trDiag = 'إرسالي ' + trHM() + ': HTTP ' + r.status + ' | سرعة ' + rec.v + ' كم/س' + (rec.h !== undefined ? ' | اتجاه ' + rec.h : ' | بلا اتجاه'); trRenderLive(); }).catch(() => { trDiag = 'فشل الإرسال ' + trHM(); trRenderLive(); });
   }
+  // إذا وقفت بزحام والـ GPS ما عاد يرسل تحديثات، نعيد إرسال آخر موقع كل 15 ثانية حتى لا يختفي الشريط
+  setInterval(() => { if (state.navigating && trLastArgs && Date.now() - trSentAt >= 15000) trShare.apply(null, trLastArgs); }, 5000);
   function trUnshare() { // عند انتهاء الملاحة نمسح سرعتي من القاعدة
-    trMaxV = 0;
+    trMaxV = 0; trLastArgs = null;
     if (!trSent) return;
     trSent = false; trSentAt = 0;
     try { fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'DELETE', keepalive: true }).catch(() => {}); } catch (e) {}
@@ -2223,10 +2226,11 @@
       trRegional = r.ok;
       if (!r.ok) r = await fetch(DB_URL + '/traffic.json');
       if (!r.ok) { if ($('trLive')) $('trLive').textContent = 'قراءة الزحام: HTTP ' + r.status; return; }
-      const data = (await r.json()) || {}, now = Date.now(), list = [];
+      const data = (await r.json()) || {}, now = Date.now(), list = []; let purged = 0;
       Object.keys(data).forEach((u) => {
         const d = data[u];
         if (!d || typeof d.lat !== 'number' || typeof d.lng !== 'number' || typeof d.v !== 'number' || typeof d.t !== 'number') return;
+        if (now - d.t > TR_PURGE && purged < 5 && u !== trUid) { purged++; fetch(DB_URL + '/traffic/' + u + '.json', { method: 'DELETE' }).catch(() => {}); return; }
         if (now - d.t > TR_TTL) return;
         if (Math.abs(d.lng - trLoadC.lng) > 0.4 || Math.abs(d.lat - trLoadC.lat) > 0.2) return;
         list.push({ lat: d.lat, lng: d.lng, v: d.v, h: typeof d.h === 'number' ? d.h : undefined, t: d.t, u: u });

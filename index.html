@@ -88,6 +88,30 @@
   .results li:active { background: var(--line); }
   .results small { display: block; color: var(--muted); }
 
+  /* ---------- الطقس ---------- */
+  .wxchip {
+    align-self: flex-start; background: var(--bg); color: var(--fg); border-radius: 999px;
+    box-shadow: var(--shadow); padding: 6px 14px; font-weight: 700; font-size: 1rem; line-height: 1.3;
+    display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums;
+  }
+  .wxchip.alert { background: var(--danger); color: #fff; }
+  .wxcard {
+    background: var(--bg); color: var(--fg); border-radius: 16px; box-shadow: var(--shadow);
+    padding: 14px; max-height: 60vh; overflow-y: auto;
+  }
+  .wxcard .wxhead { display: flex; align-items: center; gap: 12px; }
+  .wxcard .wxbig { font-size: 2.6rem; line-height: 1; }
+  .wxcard .wxtemp { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .wxcard .wxdesc { color: var(--muted); }
+  .wxcard .wxclose { margin-inline-start: auto; background: var(--line); border-radius: 50%; width: 34px; height: 34px; font-size: 1rem; }
+  .wxcard .wxgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 12px 0; font-size: .95rem; }
+  .wxcard .wxgrid span { color: var(--muted); }
+  .wxcard .wxwarn { background: rgba(201,42,42,.12); color: var(--danger); border-radius: 10px; padding: 8px 10px; margin-top: 10px; font-weight: 700; }
+  .wxcard .wxhours { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+  .wxcard .wxh { flex: none; min-width: 52px; text-align: center; background: var(--line); border-radius: 10px; padding: 6px 4px; font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .wxcard .wxh b { display: block; font-size: 1rem; }
+  .wxcard small { color: var(--muted); display: block; margin-top: 8px; }
+
   /* ---------- لافتة الملاحة ---------- */
   .nav {
     position: fixed; z-index: 1001;
@@ -300,6 +324,8 @@
     <button type="submit">ابحث</button>
   </form>
   <ul class="results" id="results" hidden></ul>
+  <button class="wxchip" id="wxChip" hidden aria-label="الطقس"></button>
+  <div class="wxcard" id="wxCard" hidden></div>
 </div>
 
 <!-- لافتة الملاحة -->
@@ -372,15 +398,28 @@
       <button class="set-row" data-page="hazards"><span>البلاغات</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="favs"><span>الأماكن المفضلة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="places"><span>أماكن مهمة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="set-row" data-page="weather"><span>الطقس</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 42</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 43</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
       <div id="packList"></div>
       <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.</p>
+    </div>
+    <div id="setWeather" hidden>
+      <label class="set-row" for="wxShowSwitch"><span>إظهار الطقس على الخريطة</span><input type="checkbox" id="wxShowSwitch" class="switch"></label>
+      <label class="set-row" for="wxAlertSwitch"><span>تنبيه صوتي عند طقس خطر أثناء الملاحة (مطر غزير، ضباب، غبار، رياح قوية)</span><input type="checkbox" id="wxAlertSwitch" class="switch"></label>
+      <div class="set-row col">
+        <span>وحدة الحرارة</span>
+        <div class="seg" id="wxUnitSeg">
+          <button data-u="c">مئوي °C</button>
+          <button data-u="f">فهرنهايت °F</button>
+        </div>
+      </div>
+      <p class="set-note">يُحدَّث الطقس كل 20 دقيقة تقريباً حسب موقعك، ويُحفظ على جوالك. بيانات الطقس من Open-Meteo.com (رخصة CC BY 4.0). تحذير الغبار تقديري ويعتمد على نماذج جوية، فلا تعتمد عليه وحده.</p>
     </div>
     <div id="setTraffic" hidden>
       <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
@@ -488,7 +527,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c'
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
@@ -1282,7 +1321,7 @@
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', places: 'أماكن مهمة', offline: 'الخرائط بدون إنترنت', traffic: 'الزحام' };
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', places: 'أماكن مهمة', offline: 'الخرائط بدون إنترنت', traffic: 'الزحام', weather: 'الطقس' };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
@@ -1295,6 +1334,7 @@
     $('setPlaces').hidden = p !== 'places';
     $('setOffline').hidden = p !== 'offline';
     $('setTraffic').hidden = p !== 'traffic';
+    $('setWeather').hidden = p !== 'weather';
     if (p === 'favs') { favEditing = null; renderFavList(); }
     if (p === 'offline') refreshTileStats();
     if (p === 'places') poiOpen();
@@ -1769,6 +1809,9 @@
     $('trafficShowSwitch').checked = settings.trafficShow !== false;
     $('trafficShareSwitch').checked = settings.trafficShare !== false;
     $('trafficWalkSwitch').checked = settings.trafficWalk === true;
+    $('wxShowSwitch').checked = settings.wxShow !== false;
+    $('wxAlertSwitch').checked = settings.wxAlert !== false;
+    document.querySelectorAll('#wxUnitSeg button').forEach((b) => b.classList.toggle('on', b.dataset.u === (settings.wxUnit === 'f' ? 'f' : 'c')));
     document.querySelectorAll('#hazDistSeg button').forEach((b) => b.classList.toggle('on', Number(b.dataset.dist) === settings.hazDist));
   }
   $('hazAlertSwitch').onchange = () => { settings.hazAlert = $('hazAlertSwitch').checked; saveSettings(); };
@@ -1873,7 +1916,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v42 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v43 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -1952,6 +1995,7 @@
     untrimRoute();
     state.follow = true; $('btnLocate').classList.add('on');
     $('top').hidden = true; $('nav').hidden = false;
+    try { wxLoad(false).then(wxNavAlert); } catch (e) {}
     $('reportPanel').hidden = true;
     $('planActions').hidden = true; $('navActions').hidden = false;
     $('stepsBox').open = false;
@@ -2326,6 +2370,104 @@
       setTimeout(trLoad, 3000);
     }, 120000);
   };
+
+
+  /* ================= الطقس (Open-Meteo) ================= */
+  const WX = { data: null, key: '', t: 0, busy: false, lastAlert: '', lastAlertAt: 0 };
+  try { const c = JSON.parse(localStorage.getItem('daliny-wx') || 'null'); if (c && c.data) { WX.data = c.data; WX.key = c.key; WX.t = c.t; } } catch (e) {}
+  const WX_CODES = {
+    0: ['☀️', 'صحو'], 1: ['🌤️', 'غالباً صحو'], 2: ['⛅', 'غائم جزئياً'], 3: ['☁️', 'غائم'],
+    45: ['🌫️', 'ضباب'], 48: ['🌫️', 'ضباب صقيعي'],
+    51: ['🌦️', 'رذاذ خفيف'], 53: ['🌦️', 'رذاذ'], 55: ['🌧️', 'رذاذ كثيف'], 56: ['🌧️', 'رذاذ متجمد'], 57: ['🌧️', 'رذاذ متجمد'],
+    61: ['🌧️', 'مطر خفيف'], 63: ['🌧️', 'مطر'], 65: ['🌧️', 'مطر غزير'], 66: ['🌧️', 'مطر متجمد'], 67: ['🌧️', 'مطر متجمد غزير'],
+    71: ['🌨️', 'ثلج خفيف'], 73: ['🌨️', 'ثلج'], 75: ['❄️', 'ثلج كثيف'], 77: ['🌨️', 'حبيبات ثلج'],
+    80: ['🌦️', 'زخات مطر'], 81: ['🌧️', 'زخات مطر قوية'], 82: ['⛈️', 'زخات مطر غزيرة'],
+    85: ['🌨️', 'زخات ثلج'], 86: ['❄️', 'زخات ثلج كثيفة'],
+    95: ['⛈️', 'عاصفة رعدية'], 96: ['⛈️', 'عاصفة رعدية وبَرَد'], 99: ['⛈️', 'عاصفة رعدية وبَرَد قوي']
+  };
+  function wxCode(c, day) { const w = WX_CODES[c] || ['🌡️', '—']; return (day === 0 && (c === 0 || c === 1)) ? ['🌙', w[1]] : w; }
+  function wxT(c) { return Math.round(settings.wxUnit === 'f' ? c * 9 / 5 + 32 : c); }
+  function wxIdx(d) { const hh = (d.cur.time || '').slice(0, 13) + ':00'; const i = d.hourly.time.indexOf(hh); return i < 0 ? 0 : i; }
+  function wxAlerts(d) { // قائمة تحذيرات نصية للطقس الحالي
+    const out = [], c = d.cur, i = wxIdx(d), vis = d.hourly.visibility ? d.hourly.visibility[i] : null;
+    if ([95, 96, 99].indexOf(c.weather_code) >= 0) out.push('عاصفة رعدية');
+    else if ([65, 67, 82, 75, 86].indexOf(c.weather_code) >= 0) out.push(c.weather_code === 75 || c.weather_code === 86 ? 'ثلج كثيف' : 'مطر غزير');
+    if (c.weather_code === 45 || c.weather_code === 48 || (typeof vis === 'number' && vis < 1000)) out.push('ضباب ورؤية ضعيفة');
+    if (typeof d.pm10 === 'number' && d.pm10 >= 250) out.push('غبار كثيف');
+    if (typeof c.wind_gusts_10m === 'number' && c.wind_gusts_10m >= 60) out.push('رياح قوية');
+    return out;
+  }
+  function wxRender() {
+    const chip = $('wxChip'), card = $('wxCard'), d = WX.data;
+    if (settings.wxShow === false || !d || !d.cur) { chip.hidden = true; card.hidden = true; return; }
+    const c = d.cur, w = wxCode(c.weather_code, c.is_day === 0 ? 0 : 1), al = wxAlerts(d);
+    chip.textContent = (al.length ? '⚠️ ' : w[0] + ' ') + wxT(c.temperature_2m) + '°';
+    chip.classList.toggle('alert', al.length > 0);
+    chip.hidden = false;
+    if (card.hidden) return;
+    const mi = settings.units === 'mi', i = wxIdx(d), vis = d.hourly.visibility ? d.hourly.visibility[i] : null;
+    const windV = mi ? c.wind_speed_10m * 0.621371 : c.wind_speed_10m, gustV = mi ? c.wind_gusts_10m * 0.621371 : c.wind_gusts_10m;
+    const visV = typeof vis === 'number' ? (mi ? vis / 1609.34 : vis / 1000) : null;
+    const hoursHtml = [];
+    for (let k = i + 1; k <= i + 6 && k < d.hourly.time.length; k++) {
+      const h = Number(d.hourly.time[k].slice(11, 13)), hw = WX_CODES[d.hourly.weather_code[k]] || ['🌡️', ''];
+      const pp = d.hourly.precipitation_probability ? d.hourly.precipitation_probability[k] : null;
+      hoursHtml.push('<div class="wxh">' + ((h % 12) || 12) + (h < 12 ? 'ص' : 'م') + '<br>' + hw[0] + '<b>' + wxT(d.hourly.temperature_2m[k]) + '°</b>' + (pp ? '💧' + pp + '%' : '&nbsp;') + '</div>');
+    }
+    const dust = typeof d.pm10 === 'number' ? (d.pm10 >= 250 ? 'كثيف' : d.pm10 >= 150 ? 'متوسط' : d.pm10 >= 80 ? 'خفيف' : 'لا يوجد') : '—';
+    const stale = (Date.now() - WX.t) > 60 * 60000 ? ' (قديم)' : '';
+    card.innerHTML = '<div class="wxhead"><div class="wxbig">' + w[0] + '</div><div><div class="wxtemp">' + wxT(c.temperature_2m) + '°' + (settings.wxUnit === 'f' ? 'F' : 'C') + '</div><div class="wxdesc">' + w[1] + stale + '</div></div><button class="wxclose" id="wxClose" aria-label="إغلاق">✕</button></div>'
+      + (al.length ? '<div class="wxwarn">⚠️ ' + al.join(' • ') + ' — قُد بحذر</div>' : '')
+      + '<div class="wxgrid"><div><span>المحسوسة</span> ' + wxT(c.apparent_temperature) + '°</div>'
+      + '<div><span>الرياح</span> ' + Math.round(windV) + (mi ? ' ميل/س' : ' كم/س') + '</div>'
+      + '<div><span>الرطوبة</span> ' + Math.round(c.relative_humidity_2m) + '%</div>'
+      + '<div><span>هبّات الرياح</span> ' + Math.round(gustV) + (mi ? ' ميل/س' : ' كم/س') + '</div>'
+      + '<div><span>الرؤية</span> ' + (visV === null ? '—' : visV.toFixed(1) + (mi ? ' ميل' : ' كم')) + '</div>'
+      + '<div><span>الغبار</span> ' + dust + '</div>'
+      + (d.daily && d.daily.temperature_2m_max ? '<div><span>العظمى</span> ' + wxT(d.daily.temperature_2m_max[0]) + '°</div><div><span>الصغرى</span> ' + wxT(d.daily.temperature_2m_min[0]) + '°</div>' : '')
+      + '</div><div class="wxhours">' + hoursHtml.join('') + '</div><small>Open-Meteo.com</small>';
+    const cl = $('wxClose'); if (cl) cl.onclick = () => { card.hidden = true; };
+  }
+  function wxNavAlert() {
+    if (!state.navigating || settings.wxAlert === false || !WX.data || !WX.data.cur) return;
+    const al = wxAlerts(WX.data); if (!al.length) return;
+    const txt = al.join(' و '), now = Date.now();
+    if (txt === WX.lastAlert && now - WX.lastAlertAt < 30 * 60000) return;
+    WX.lastAlert = txt; WX.lastAlertAt = now;
+    toast('⚠️ ' + txt + ' — قُد بحذر', 5000);
+    speak('تنبيه طقس: ' + txt + '. قُد بحذر');
+  }
+  async function wxLoad(force) {
+    if (settings.wxShow === false || !navigator.onLine) return;
+    const pos = state.user ? { lat: state.user.lat, lng: state.user.lng } : map.getCenter();
+    const key = pos.lat.toFixed(1) + ',' + pos.lng.toFixed(1);
+    if (!force && WX.data && WX.key === key && Date.now() - WX.t < 20 * 60000) return;
+    if (WX.busy) return;
+    WX.busy = true;
+    try {
+      const la = pos.lat.toFixed(3), lo = pos.lng.toFixed(3);
+      const u1 = 'https://api.open-meteo.com/v1/forecast?latitude=' + la + '&longitude=' + lo
+        + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,is_day'
+        + '&hourly=temperature_2m,weather_code,precipitation_probability,visibility&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=auto';
+      const u2 = 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + la + '&longitude=' + lo + '&current=pm10,dust&timezone=auto';
+      const rs = await Promise.all([fetch(u1), fetch(u2).catch(() => null)]);
+      if (!rs[0].ok) throw new Error('wx ' + rs[0].status);
+      const j = await rs[0].json();
+      let air = null; try { if (rs[1] && rs[1].ok) air = await rs[1].json(); } catch (e) {}
+      WX.data = { cur: j.current, hourly: j.hourly, daily: j.daily, pm10: air && air.current ? air.current.pm10 : null };
+      WX.key = key; WX.t = Date.now();
+      try { localStorage.setItem('daliny-wx', JSON.stringify({ data: WX.data, key: WX.key, t: WX.t })); } catch (e) {}
+      wxRender(); wxNavAlert();
+    } catch (e) { /* نبقي آخر بيانات محفوظة */ }
+    finally { WX.busy = false; }
+  }
+  $('wxChip').onclick = () => { const c = $('wxCard'); c.hidden = !c.hidden; wxRender(); };
+  $('wxShowSwitch').onchange = () => { settings.wxShow = $('wxShowSwitch').checked; saveSettings(); wxRender(); if (settings.wxShow) wxLoad(true); };
+  $('wxAlertSwitch').onchange = () => { settings.wxAlert = $('wxAlertSwitch').checked; saveSettings(); };
+  document.querySelectorAll('#wxUnitSeg button').forEach((b) => { b.onclick = () => { settings.wxUnit = b.dataset.u; saveSettings(); syncSettingsUI(); wxRender(); }; });
+  wxRender();
+  setTimeout(() => wxLoad(false), 2500);
+  setInterval(() => { if (!document.hidden) wxLoad(false); }, 5 * 60000);
 
   // أسطر إعدادات أنواع البلاغات (تظهر بشاشة الإعدادات)
   Object.keys(HZ).forEach((k) => {

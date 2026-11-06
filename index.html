@@ -375,7 +375,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 41</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 42</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1873,7 +1873,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v41 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v42 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -2091,6 +2091,40 @@
   let hazardAlerted = {};
   let lastSig = '';
   const DB_URL = 'https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app';
+  // دخول مجهول بـ Firebase (بدون حساب): نأخذ رمزاً مؤقتاً ونجدده تلقائياً، ونرفقه بكل كتابة
+  const FB_KEY = 'AIzaSyDl_vy7zW2Tkcab-ZntXRRlaw5Xs18vH-s';
+  const dbAuth = { uid: '', token: '', exp: 0, rt: '', busy: null, err: '' };
+  try { dbAuth.rt = localStorage.getItem('daliny-auth') || ''; } catch (e) {}
+  function dbToken() {
+    if (dbAuth.token && Date.now() < dbAuth.exp - 300000) return Promise.resolve(dbAuth.token);
+    if (dbAuth.busy) return dbAuth.busy;
+    dbAuth.busy = (async () => {
+      try {
+        let j = null;
+        if (dbAuth.rt) {
+          const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + FB_KEY, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(dbAuth.rt) });
+          if (r.ok) { const d = await r.json(); j = { idToken: d.id_token, refreshToken: d.refresh_token, localId: d.user_id, expiresIn: d.expires_in }; }
+        }
+        if (!j) {
+          const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FB_KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ returnSecureToken: true }) });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          j = await r.json();
+        }
+        dbAuth.token = j.idToken; dbAuth.uid = j.localId; dbAuth.rt = j.refreshToken;
+        dbAuth.exp = Date.now() + (Number(j.expiresIn) || 3600) * 1000; dbAuth.err = '';
+        try { localStorage.setItem('daliny-auth', dbAuth.rt); } catch (e) {}
+        return dbAuth.token;
+      } catch (e) { dbAuth.err = String(e && e.message || e); return ''; }
+      finally { dbAuth.busy = null; }
+    })();
+    return dbAuth.busy;
+  }
+  async function dbFetch(path, opts) { // للكتابة والمسح: نرفق رمز الدخول إن توفر
+    const t = await dbToken();
+    return fetch(DB_URL + path + (t ? (path.indexOf('?') < 0 ? '?' : '&') + 'auth=' + encodeURIComponent(t) : ''), opts);
+  }
+  function myTrId() { return dbAuth.uid || trUid; }
+  dbToken();
   const HZ_TTL = 3 * 3600 * 1000; // البلاغ يبقى 3 ساعات
 
   function validHazard(h) {
@@ -2108,7 +2142,7 @@
         const h = data[id];
         if (!validHazard(h)) return;
         if (now - h.t > HZ_TTL) { // بلاغ قديم: نمسحه من القاعدة
-          fetch(DB_URL + '/hazards/' + id + '.json', { method: 'DELETE' }).catch(() => {});
+          dbFetch('/hazards/' + id + '.json', { method: 'DELETE' }).catch(() => {});
           return;
         }
         h.id = id; list.push(h);
@@ -2137,7 +2171,7 @@
       del.onclick = async () => {
         pop.remove();
         try {
-          const r = await fetch(DB_URL + '/hazards/' + h.id + '.json', { method: 'DELETE' });
+          const r = await dbFetch('/hazards/' + h.id + '.json', { method: 'DELETE' });
           if (!r.ok) throw new Error('http ' + r.status);
           hazards = hazards.filter((x) => x.id !== h.id);
           drawHazards();
@@ -2159,7 +2193,7 @@
       const rec = { type: k, lat: pos[0], lng: pos[1], t: Date.now() };
       $('reportPanel').hidden = true;
       try {
-        const r = await fetch(DB_URL + '/hazards.json', { method: 'POST', body: JSON.stringify(rec) });
+        const r = await dbFetch('/hazards.json', { method: 'POST', body: JSON.stringify(rec) });
         if (!r.ok) throw new Error('http ' + r.status);
         const j = await r.json();
         rec.id = j.name;
@@ -2185,11 +2219,11 @@
   let trSentAt = 0, trSent = false, trMaxV = 0, trCount = null, trDiag = '', trDiagMode = '', trLoadC = { lat: 0, lng: 0 }, trLastArgs = null, trRegional = false, trLoadT = 0;
   function trRenderLive() {
     const el = $('trLive'); if (!el) return;
-    el.textContent = (trCount === null ? '' : 'أجهزة نشطة آخر 3 دقائق: ' + trCount + trDiagMode) + (trDiag ? '\n' + trDiag : '');
+    el.textContent = (trCount === null ? '' : 'أجهزة نشطة آخر 3 دقائق: ' + trCount + trDiagMode) + (trDiag ? '\n' + trDiag : '') + '\nالدخول المجهول: ' + (dbAuth.uid ? 'مفعّل' : (dbAuth.err ? 'فشل (' + dbAuth.err + ')' : 'جاري...'));
   }
   function trHM() { const d = new Date(); return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0'); }
   function trPut(rec) {
-    return fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'PUT', body: JSON.stringify(rec) });
+    return dbFetch('/traffic/' + myTrId() + '.json', { method: 'PUT', body: JSON.stringify(rec) });
   }
   function trShare(lat, lng, heading, speedMs) {
     trLastArgs = [lat, lng, heading, speedMs];
@@ -2215,7 +2249,7 @@
     trMaxV = 0; trLastArgs = null;
     if (!trSent) return;
     trSent = false; trSentAt = 0;
-    try { fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'DELETE', keepalive: true }).catch(() => {}); } catch (e) {}
+    try { const t = dbAuth.token; fetch(DB_URL + '/traffic/' + myTrId() + '.json' + (t ? '?auth=' + encodeURIComponent(t) : ''), { method: 'DELETE', keepalive: true }).catch(() => {}); } catch (e) {}
   }
   async function trLoad() {
     if (document.hidden || settings.trafficShow === false || !navigator.onLine) return;
@@ -2230,7 +2264,7 @@
       Object.keys(data).forEach((u) => {
         const d = data[u];
         if (!d || typeof d.lat !== 'number' || typeof d.lng !== 'number' || typeof d.v !== 'number' || typeof d.t !== 'number') return;
-        if (now - d.t > TR_PURGE && purged < 5 && u !== trUid) { purged++; fetch(DB_URL + '/traffic/' + u + '.json', { method: 'DELETE' }).catch(() => {}); return; }
+        if (now - d.t > TR_PURGE && purged < 5 && u !== myTrId()) { purged++; dbFetch('/traffic/' + u + '.json', { method: 'DELETE' }).catch(() => {}); return; }
         if (now - d.t > TR_TTL) return;
         if (Math.abs(d.lng - trLoadC.lng) > 0.4 || Math.abs(d.lat - trLoadC.lat) > 0.2) return;
         list.push({ lat: d.lat, lng: d.lng, v: d.v, h: typeof d.h === 'number' ? d.h : undefined, t: d.t, u: u });
@@ -2260,7 +2294,7 @@
       if (r.ok) {
         await trLoad();
         out.textContent = st + '\n' + out.textContent;
-        setTimeout(() => { fetch(DB_URL + '/traffic/' + trUid + '.json', { method: 'DELETE' }).catch(() => {}); }, 20000);
+        setTimeout(() => { dbFetch('/traffic/' + myTrId() + '.json', { method: 'DELETE' }).catch(() => {}); }, 20000);
       }
     } catch (e) { out.textContent = 'فشل الإرسال: ' + (e && e.message || e); }
   };
@@ -2275,11 +2309,11 @@
     pts.forEach((q, i) => {
       if (i % 2) return;
       for (let u = 0; u < 2; u++) {
-        const id = 'simtest' + trUid.slice(0, 8) + '_' + i + '_' + u;
+        const id = 'sim' + myTrId() + '_' + i + '_' + u;
         ids.push(id);
         const rec = { lat: +q.lat.toFixed(5), lng: +q.lng.toFixed(5), v: (q.sv !== undefined ? q.sv : 8) + u, t: now };
         if (typeof q.h === 'number') rec.h = Math.round(q.h);
-        jobs.push(fetch(DB_URL + '/traffic/' + id + '.json', { method: 'PUT', body: JSON.stringify(rec) }).then((r) => r.status).catch(() => 0));
+        jobs.push(dbFetch('/traffic/' + id + '.json', { method: 'PUT', body: JSON.stringify(rec) }).then((r) => r.status).catch(() => 0));
       }
     });
     out.textContent = 'جاري إرسال ' + jobs.length + ' عينة وهمية...';
@@ -2288,7 +2322,7 @@
     out.textContent = 'محاكاة: أُرسلت ' + ok + ' من ' + jobs.length + ' (HTTP ' + (codes.find((c) => c !== 200) || 200) + ')\n' + out.textContent
       + '\nأشرطة مرسومة: ' + trGeo().features.length;
     setTimeout(() => {
-      ids.forEach((id) => fetch(DB_URL + '/traffic/' + id + '.json', { method: 'DELETE' }).catch(() => {}));
+      ids.forEach((id) => dbFetch('/traffic/' + id + '.json', { method: 'DELETE' }).catch(() => {}));
       setTimeout(trLoad, 3000);
     }, 120000);
   };

@@ -95,6 +95,7 @@
     display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums;
   }
   .wxchip.alert { background: var(--danger); color: #fff; }
+  body.wxopen .fabs { display: none; }
   .wxcard {
     background: var(--bg); color: var(--fg); border-radius: 16px; box-shadow: var(--shadow);
     padding: 14px; max-height: 60vh; overflow-y: auto;
@@ -402,7 +403,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 43</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 44</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -1916,7 +1917,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v43 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v44 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -1995,7 +1996,7 @@
     untrimRoute();
     state.follow = true; $('btnLocate').classList.add('on');
     $('top').hidden = true; $('nav').hidden = false;
-    try { wxLoad(false).then(wxNavAlert); } catch (e) {}
+    try { wxOpen(false); wxLoad(false).then(wxNavAlert); } catch (e) {}
     $('reportPanel').hidden = true;
     $('planActions').hidden = true; $('navActions').hidden = false;
     $('stepsBox').open = false;
@@ -2385,7 +2386,16 @@
     85: ['🌨️', 'زخات ثلج'], 86: ['❄️', 'زخات ثلج كثيفة'],
     95: ['⛈️', 'عاصفة رعدية'], 96: ['⛈️', 'عاصفة رعدية وبَرَد'], 99: ['⛈️', 'عاصفة رعدية وبَرَد قوي']
   };
-  function wxCode(c, day) { const w = WX_CODES[c] || ['🌡️', '—']; return (day === 0 && (c === 0 || c === 1)) ? ['🌙', w[1]] : w; }
+  function wxCode(c, day) {
+    const w = WX_CODES[c] || ['🌡️', '—'];
+    if (day === 0) { if (c === 0 || c === 1) return ['🌙', w[1]]; if (c === 2) return ['☁️', w[1]]; }
+    return w;
+  }
+  function wxOpen(on) {
+    $('wxCard').hidden = !on;
+    document.body.classList.toggle('wxopen', !!on);
+    if (on) wxRender();
+  }
   function wxT(c) { return Math.round(settings.wxUnit === 'f' ? c * 9 / 5 + 32 : c); }
   function wxIdx(d) { const hh = (d.cur.time || '').slice(0, 13) + ':00'; const i = d.hourly.time.indexOf(hh); return i < 0 ? 0 : i; }
   function wxAlerts(d) { // قائمة تحذيرات نصية للطقس الحالي
@@ -2399,7 +2409,7 @@
   }
   function wxRender() {
     const chip = $('wxChip'), card = $('wxCard'), d = WX.data;
-    if (settings.wxShow === false || !d || !d.cur) { chip.hidden = true; card.hidden = true; return; }
+    if (settings.wxShow === false || !d || !d.cur) { chip.hidden = true; card.hidden = true; document.body.classList.remove('wxopen'); return; }
     const c = d.cur, w = wxCode(c.weather_code, c.is_day === 0 ? 0 : 1), al = wxAlerts(d);
     chip.textContent = (al.length ? '⚠️ ' : w[0] + ' ') + wxT(c.temperature_2m) + '°';
     chip.classList.toggle('alert', al.length > 0);
@@ -2410,7 +2420,7 @@
     const visV = typeof vis === 'number' ? (mi ? vis / 1609.34 : vis / 1000) : null;
     const hoursHtml = [];
     for (let k = i + 1; k <= i + 6 && k < d.hourly.time.length; k++) {
-      const h = Number(d.hourly.time[k].slice(11, 13)), hw = WX_CODES[d.hourly.weather_code[k]] || ['🌡️', ''];
+      const h = Number(d.hourly.time[k].slice(11, 13)), hw = wxCode(d.hourly.weather_code[k], d.hourly.is_day ? d.hourly.is_day[k] : 1);
       const pp = d.hourly.precipitation_probability ? d.hourly.precipitation_probability[k] : null;
       hoursHtml.push('<div class="wxh">' + ((h % 12) || 12) + (h < 12 ? 'ص' : 'م') + '<br>' + hw[0] + '<b>' + wxT(d.hourly.temperature_2m[k]) + '°</b>' + (pp ? '💧' + pp + '%' : '&nbsp;') + '</div>');
     }
@@ -2418,15 +2428,15 @@
     const stale = (Date.now() - WX.t) > 60 * 60000 ? ' (قديم)' : '';
     card.innerHTML = '<div class="wxhead"><div class="wxbig">' + w[0] + '</div><div><div class="wxtemp">' + wxT(c.temperature_2m) + '°' + (settings.wxUnit === 'f' ? 'F' : 'C') + '</div><div class="wxdesc">' + w[1] + stale + '</div></div><button class="wxclose" id="wxClose" aria-label="إغلاق">✕</button></div>'
       + (al.length ? '<div class="wxwarn">⚠️ ' + al.join(' • ') + ' — قُد بحذر</div>' : '')
-      + '<div class="wxgrid"><div><span>المحسوسة</span> ' + wxT(c.apparent_temperature) + '°</div>'
+      + '<div class="wxgrid"><div><span>المحسوسة</span> <bdi dir="ltr">' + wxT(c.apparent_temperature) + '°</bdi></div>'
       + '<div><span>الرياح</span> ' + Math.round(windV) + (mi ? ' ميل/س' : ' كم/س') + '</div>'
       + '<div><span>الرطوبة</span> ' + Math.round(c.relative_humidity_2m) + '%</div>'
       + '<div><span>هبّات الرياح</span> ' + Math.round(gustV) + (mi ? ' ميل/س' : ' كم/س') + '</div>'
       + '<div><span>الرؤية</span> ' + (visV === null ? '—' : visV.toFixed(1) + (mi ? ' ميل' : ' كم')) + '</div>'
       + '<div><span>الغبار</span> ' + dust + '</div>'
-      + (d.daily && d.daily.temperature_2m_max ? '<div><span>العظمى</span> ' + wxT(d.daily.temperature_2m_max[0]) + '°</div><div><span>الصغرى</span> ' + wxT(d.daily.temperature_2m_min[0]) + '°</div>' : '')
+      + (d.daily && d.daily.temperature_2m_max ? '<div><span>العظمى</span> <bdi dir="ltr">' + wxT(d.daily.temperature_2m_max[0]) + '°</bdi></div><div><span>الصغرى</span> <bdi dir="ltr">' + wxT(d.daily.temperature_2m_min[0]) + '°</bdi></div>' : '')
       + '</div><div class="wxhours">' + hoursHtml.join('') + '</div><small>Open-Meteo.com</small>';
-    const cl = $('wxClose'); if (cl) cl.onclick = () => { card.hidden = true; };
+    const cl = $('wxClose'); if (cl) cl.onclick = () => wxOpen(false);
   }
   function wxNavAlert() {
     if (!state.navigating || settings.wxAlert === false || !WX.data || !WX.data.cur) return;
@@ -2448,7 +2458,7 @@
       const la = pos.lat.toFixed(3), lo = pos.lng.toFixed(3);
       const u1 = 'https://api.open-meteo.com/v1/forecast?latitude=' + la + '&longitude=' + lo
         + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,is_day'
-        + '&hourly=temperature_2m,weather_code,precipitation_probability,visibility&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=auto';
+        + '&hourly=temperature_2m,weather_code,precipitation_probability,visibility,is_day&daily=temperature_2m_max,temperature_2m_min&forecast_days=2&timezone=auto';
       const u2 = 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + la + '&longitude=' + lo + '&current=pm10,dust&timezone=auto';
       const rs = await Promise.all([fetch(u1), fetch(u2).catch(() => null)]);
       if (!rs[0].ok) throw new Error('wx ' + rs[0].status);
@@ -2461,7 +2471,8 @@
     } catch (e) { /* نبقي آخر بيانات محفوظة */ }
     finally { WX.busy = false; }
   }
-  $('wxChip').onclick = () => { const c = $('wxCard'); c.hidden = !c.hidden; wxRender(); };
+  $('wxChip').onclick = () => wxOpen($('wxCard').hidden);
+  $('q').addEventListener('focus', () => wxOpen(false));
   $('wxShowSwitch').onchange = () => { settings.wxShow = $('wxShowSwitch').checked; saveSettings(); wxRender(); if (settings.wxShow) wxLoad(true); };
   $('wxAlertSwitch').onchange = () => { settings.wxAlert = $('wxAlertSwitch').checked; saveSettings(); };
   document.querySelectorAll('#wxUnitSeg button').forEach((b) => { b.onclick = () => { settings.wxUnit = b.dataset.u; saveSettings(); syncSettingsUI(); wxRender(); }; });

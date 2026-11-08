@@ -284,7 +284,7 @@
     position: fixed; z-index: 2000; left: 50%; transform: translateX(-50%);
     top: calc(env(safe-area-inset-top, 0px) + 84px);
     background: #14232b; color: #fff; padding: 10px 16px; border-radius: 12px;
-    max-width: 90vw; text-align: center; box-shadow: var(--shadow);
+    max-width: 90vw; text-align: center; box-shadow: var(--shadow); white-space: pre-line;
   }
 
   /* ---------- علامات الخريطة ---------- */
@@ -403,7 +403,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 45</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 46</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -489,7 +489,7 @@
         </div>
       </div>
       <label class="set-row" for="speedoSwitch"><span>عداد السرعة أثناء الملاحة</span><input type="checkbox" id="speedoSwitch" class="switch"></label>
-      <p class="set-note">المظهر التلقائي يتبع إعداد جوالك (نهاري أو ليلي). زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.</p>
+      <p class="set-note">المظهر التلقائي: نهاري من شروق الشمس إلى غروبها حسب موقعك، وليلي بعد الغروب. زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.</p>
     </div>
     <div id="setSound" hidden>
       <label class="set-row" for="voiceSwitch"><span>التوجيه الصوتي</span><input type="checkbox" id="voiceSwitch" class="switch"></label>
@@ -601,11 +601,33 @@
   /* ================= الخريطة ================= */
   // الخريطة تنشأ بعد تعريف الثيم (أدناه)
 
-  const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  // ارتفاع الشمس فوق الأفق (بالدرجات) في وقت ومكان معيّنين (معادلات فلكية مبسّطة، بدون إنترنت)
+  function sunAltDeg(date, lat, lng) {
+    const rad = Math.PI / 180, e = rad * 23.4397;
+    const d = date.valueOf() / 86400000 - 0.5 + 2440588 - 2451545; // أيام منذ عام 2000
+    const M = rad * (357.5291 + 0.98560028 * d);
+    const C = rad * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
+    const L = M + C + rad * 102.9372 + Math.PI;
+    const dec = Math.asin(Math.sin(e) * Math.sin(L));
+    const ra = Math.atan2(Math.sin(L) * Math.cos(e), Math.cos(L));
+    const H = rad * (280.16 + 360.9856235 * d) + rad * lng - ra;
+    const phi = rad * lat;
+    return Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H)) / rad;
+  }
+  // مكان الحساب: موقع المستخدم، وإذا مجهول فآخر مكان شافته الخريطة، وإذا مجهول فبغداد
+  function sunSpot() {
+    if (state.user) return [state.user.lat, state.user.lng];
+    try {
+      const v = JSON.parse(localStorage.getItem('daliny-view') || 'null');
+      if (v && isFinite(v.lat) && isFinite(v.lng)) return [v.lat, v.lng];
+    } catch (e) {}
+    return [33.3, 44.4];
+  }
   function isDark() {
     if (settings.theme === 'dark') return true;
     if (settings.theme === 'light') return false;
-    return !!(darkQuery && darkQuery.matches); // تلقائي: يتبع إعداد الجهاز
+    const p = sunSpot(); // تلقائي: نهاري من شروق الشمس لغروبها، وليلي بعدها
+    return sunAltDeg(new Date(), p[0], p[1]) < -0.833;
   }
   function applyTheme() {
     const dark = isDark();
@@ -894,9 +916,7 @@
   function rebuildStyle() { map.setStyle(baseStyle(curFlavor), { diff: false }); }
 
   applyTheme();
-  if (darkQuery && darkQuery.addEventListener) {
-    darkQuery.addEventListener('change', () => { if (settings.theme === 'auto') applyTheme(); });
-  }
+  setInterval(() => { if (settings.theme === 'auto') applyTheme(); }, 60000); // التلقائي يتبدل مع الشروق والغروب
   $('btnTheme').onclick = () => {
     settings.theme = isDark() ? 'light' : 'dark';
     saveSettings(); applyTheme(); syncSettingsUI();
@@ -923,7 +943,9 @@
   let meAngle = 0; // زاوية تراكمية حتى ما يلف المثلث لفة كاملة عند عبور الشمال
 
   function setUser(lat, lng, heading, speed) {
+    const firstFix = !state.user;
     state.user = { lat, lng, heading: heading, speed: speed };
+    if (firstFix && settings.theme === 'auto') applyTheme();
     if (!meMarker) {
       const mel = document.createElement('div');
       mel.style.cssText = 'width:44px;height:52px;pointer-events:none;z-index:5';
@@ -955,8 +977,9 @@
     const now = Date.now();
     if (now - geoFailAt < 20000) return;
     geoFailAt = now;
-    toast(err.code === 1 ? 'اسمح للتطبيق باستخدام موقعك من إعدادات الجوال (1)'
-      : (err.code === 3 ? 'تحديد الموقع بطيء، جرّب قرب شباك أو برا البيت' : 'الموقع غير متاح حالياً') + ' (' + err.code + ')', 5000);
+    toast((err.code === 1 ? 'اسمح للتطبيق باستخدام موقعك من إعدادات الجوال'
+      : (err.code === 3 ? 'تحديد الموقع بطيء، جرّب قرب شباك أو برا البيت' : 'الموقع غير متاح حالياً')) + ' (' + err.code + ')'
+      + (err.message ? '\n' + String(err.message).slice(0, 80) : ''), 6000);
   }
   function startWatch() {
     if (state.watchId !== null) return;
@@ -1941,7 +1964,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v45 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v46 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');

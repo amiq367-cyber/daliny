@@ -403,7 +403,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 44</p>
+      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 45</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -519,7 +519,7 @@
   /* ================= أدوات مساعدة ================= */
   const $ = (id) => document.getElementById(id);
   const state = {
-    user: null, follow: false, watchId: null,
+    user: null, follow: false, watchId: null, geoMode: 'hi',
     dest: null, route: null, coords: [],
     navigating: false, stepIdx: 0, offCount: 0, rerouting: false,
     sim: null, wake: null
@@ -946,22 +946,46 @@
     if (state.navigating) { navUpdate(); trShare(lat, lng, heading, speedMs); }
   }
 
+  function geoStop() {
+    if (state.watchId !== null) { try { navigator.geolocation.clearWatch(state.watchId); } catch (e) {} state.watchId = null; }
+  }
+  let geoFailAt = 0;
+  function geoFail(err) {
+    if (err.code !== 1 && state.user) return; // عندنا موقع سابق: لا نزعج المستخدم
+    const now = Date.now();
+    if (now - geoFailAt < 20000) return;
+    geoFailAt = now;
+    toast(err.code === 1 ? 'اسمح للتطبيق باستخدام موقعك من إعدادات الجوال (1)'
+      : (err.code === 3 ? 'تحديد الموقع بطيء، جرّب قرب شباك أو برا البيت' : 'الموقع غير متاح حالياً') + ' (' + err.code + ')', 5000);
+  }
   function startWatch() {
     if (state.watchId !== null) return;
     if (!navigator.geolocation) { toast('جهازك ما يدعم تحديد الموقع'); return; }
+    const hi = state.navigating || state.geoMode !== 'lo';
     state.watchId = navigator.geolocation.watchPosition(
       (pos) => {
         if (state.sim) return; // أثناء التجربة نتجاهل الـ GPS الحقيقي
         const c = pos.coords;
+        const first = !state.user;
         onPosition(c.latitude, c.longitude, c.heading, c.speed);
+        // أول تحديد للموقع بعد ضغط الزر: نقرّب الخريطة حتى يبين المكان
+        if (first && state.follow && !state.navigating && map.getZoom() < 15)
+          map.easeTo({ center: [c.longitude, c.latitude], zoom: 16, duration: 700 });
       },
       (err) => {
-        state.watchId = null;
-        toast(err.code === 1 ? 'اسمح للمتصفح باستخدام موقعك' : 'ما كدرت أحدد موقعك', 4000);
+        geoStop();
+        geoFail(err);
+        if (err.code === 1) return;
+        if (hi && !state.navigating) state.geoMode = 'lo'; // الـ GPS ما رد: نجرّب موقع الشبكة
+        setTimeout(startWatch, hi ? 500 : 5000);
       },
-      { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+      hi ? { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+         : { enableHighAccuracy: false, maximumAge: 30000, timeout: 30000 }
     );
   }
+  setInterval(() => { // كل دقيقة نحاول نرجع للـ GPS الدقيق إذا كنا على موقع الشبكة
+    if (state.geoMode === 'lo' && state.watchId !== null && !state.navigating) { geoStop(); state.geoMode = 'hi'; startWatch(); }
+  }, 60000);
 
   $('btnLocate').onclick = () => {
     state.follow = true;
@@ -1917,7 +1941,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v44 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v45 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -2003,7 +2027,8 @@
     $('sheet').classList.add('navmode');
     hazardAlerted = {};
     keepAwake();
-    if (simulate) startSim(); else startWatch();
+    if (simulate) startSim();
+    else { if (state.geoMode === 'lo') { geoStop(); state.geoMode = 'hi'; } startWatch(); }
     if (!simulate && !state.user) toast('جاري تحديد موقعك...');
     speak(arInstr(steps[0]));
     if (state.user) setView(state.user.lat, state.user.lng, 17);

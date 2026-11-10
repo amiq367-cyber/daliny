@@ -250,6 +250,27 @@
   .pack-bar { height: 6px; border-radius: 3px; background: rgba(128,128,128,.25); overflow: hidden; }
   .pack-bar i { display: block; height: 100%; background: var(--accent); }
   .set-note { color: var(--muted); font-size: .9rem; line-height: 1.7; margin: 12px 4px; }
+  /* ---------- حول البرنامج ---------- */
+  .ab-head { text-align: center; padding: 18px 8px 6px; }
+  .ab-head img { width: 84px; height: 84px; border-radius: 20px; box-shadow: var(--shadow); }
+  .ab-head h3 { margin: 10px 0 2px; font-size: 1.5rem; }
+  .ab-ver { color: var(--muted); font-size: .9rem; }
+  .ab-desc { margin: 10px 6px 0; line-height: 1.8; }
+  .ab-sec { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 14px; }
+  .ab-sec h4 { margin: 0 4px 8px; font-size: 1.05rem; }
+  .ab-val { padding: 4px; line-height: 1.9; }
+  .ab-name { font-weight: 700; font-size: 1.1rem; }
+  .ab-sub { color: var(--muted); }
+  .ab-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 4px; }
+  .ab-line bdi { direction: ltr; unicode-bidi: isolate; flex: 1; min-width: 0; overflow-wrap: anywhere; text-align: right; font-variant-numeric: tabular-nums; }
+  .ab-line .acts { display: flex; gap: 6px; flex: none; }
+  .ab-line a { padding: 9px 13px; border-radius: 10px; background: var(--line); color: var(--fg); text-decoration: none; font-size: .9rem; font-weight: 700; }
+  .ab-line a.wa { background: var(--accent); color: var(--accent-fg); }
+  #fbText { display: block; width: 100%; min-height: 120px; resize: vertical; margin-top: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-family: inherit; font-size: 1rem; line-height: 1.7; }
+  #fbContact { display: block; width: 100%; margin-top: 8px; }
+  .fb-count { color: var(--muted); font-size: .8rem; text-align: left; margin: 3px 4px 0; font-variant-numeric: tabular-nums; }
+  #fbSend { display: block; width: 100%; margin-top: 12px; }
+  #fbSend:disabled { opacity: .6; }
   .poi-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
   .poi-cats button { padding: 10px 14px; border-radius: 999px; background: var(--line); font-weight: 500; }
   .poi-cats button.on { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
@@ -403,12 +424,43 @@
       <button class="set-row" data-page="weather"><span>الطقس</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: 49</p>
+      <button class="set-row" data-page="about"><span>حول البرنامج</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: 51</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
       <div id="packList"></div>
       <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.</p>
+    </div>
+    <div id="setAbout" hidden>
+      <div class="ab-head">
+        <img src="icon-192.png" alt="" width="84" height="84">
+        <h3>دليني</h3>
+        <div class="ab-ver" id="abVer"></div>
+        <p class="ab-desc" id="abDesc"></p>
+      </div>
+      <div class="ab-sec" id="abDesignerSec" hidden>
+        <h4>الجهة المصممة</h4>
+        <div class="ab-val" id="abDesigner"></div>
+      </div>
+      <div class="ab-sec" id="abContactSec" hidden>
+        <h4>التواصل مع المطوّر</h4>
+        <div id="abPhones"></div>
+        <div id="abEmails"></div>
+      </div>
+      <div class="ab-sec">
+        <h4>اقتراح أو مشكلة</h4>
+        <div class="seg" id="fbType">
+          <button data-t="idea" class="on">اقتراح</button>
+          <button data-t="bug">مشكلة</button>
+        </div>
+        <textarea id="fbText" maxlength="1000" dir="auto"></textarea>
+        <div class="fb-count" id="fbCount">0 / 1000</div>
+        <input class="fav-input" id="fbContact" maxlength="80" dir="auto" placeholder="رقمك أو إيميلك إذا تريد نرد عليك (اختياري)">
+        <button class="set-btn" id="fbSend">إرسال</button>
+        <p class="set-note">نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك أو أي معلومات شخصية.</p>
+      </div>
+      <p class="set-note" id="abCredits">مصادر الخرائط والبيانات: © مساهمو OpenStreetMap، خرائط Protomaps، عرض الخريطة بـ MapLibre، حساب المسار OSRM، والطقس من Open-Meteo.com.</p>
     </div>
     <div id="setWeather" hidden>
       <label class="set-row" for="wxShowSwitch"><span>إظهار الطقس على الخريطة</span><input type="checkbox" id="wxShowSwitch" class="switch"></label>
@@ -550,6 +602,7 @@
   let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
   // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
   const TILT = 50;
+  const APP_VER = 51; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
   const VIEW_NOTES = {
     '2d': 'الخريطة مسطّحة والشمال دائماً فوق.',
     '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة بدون إنترنت.',
@@ -1443,7 +1496,7 @@
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', places: 'أماكن مهمة', offline: 'الخرائط بدون إنترنت', traffic: 'الزحام', weather: 'الطقس' };
+  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', places: 'أماكن مهمة', offline: 'الخرائط بدون إنترنت', traffic: 'الزحام', weather: 'الطقس', about: 'حول البرنامج' };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
@@ -1457,6 +1510,8 @@
     $('setOffline').hidden = p !== 'offline';
     $('setTraffic').hidden = p !== 'traffic';
     $('setWeather').hidden = p !== 'weather';
+    $('setAbout').hidden = p !== 'about';
+    if (p === 'about') renderAbout();
     if (p === 'favs') { favEditing = null; renderFavList(); }
     if (p === 'offline') refreshTileStats();
     if (p === 'places') poiOpen();
@@ -2051,7 +2106,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v49 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v' + APP_VER + ' | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -2084,6 +2139,111 @@
   $('btnSettings').onclick = () => { showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
   $('setBack').onclick = () => { if (setPage === 'main') $('settings').hidden = true; else showSetPage('main'); };
   document.querySelectorAll('#setMain [data-page]').forEach((b) => { b.onclick = () => showSetPage(b.dataset.page); });
+
+  /* ================= حول البرنامج ================= */
+  $('verNote').textContent = 'رقم الإصدار: ' + APP_VER;
+  // ✏️ بيانات الجهة المصممة والتواصل تنكتب هنا فقط (القسم الفاضي ما يظهر)
+  const ABOUT = {
+    desc: 'دليني: تطبيق ملاحة عراقي. خرائط تشتغل بدون إنترنت، توجيه صوتي بالعربي، وتنبيهات الحوادث والزحام من المستخدمين نفسهم.',
+    designer: 'مركز الذكاء للمعلوماتية والحلول البرمجية\nبابل - العراق',   // السطر الأول اسم الجهة (خط عريض) وبعده التفاصيل
+    phones: [{ n: '+964 781 355 1690', wa: true }, { n: '+964 777 349 5868', wa: true }],   // wa: true = يظهر زر واتساب
+    emails: ['amiq367@gmail.com', 'nonaameer8@gmail.com']
+  };
+  function waLink(n) {
+    let d = String(n).replace(/[^\d+]/g, '');
+    if (d.charAt(0) === '+') d = d.slice(1);
+    else if (d.indexOf('00') === 0) d = d.slice(2);
+    else if (d.charAt(0) === '0') d = '964' + d.slice(1);
+    else if (d.length === 10 && d.charAt(0) === '7') d = '964' + d;
+    return 'https://wa.me/' + d;
+  }
+  function aboutLine(text, links) {
+    const row = document.createElement('div'); row.className = 'ab-line';
+    const b = document.createElement('bdi'); b.dir = 'ltr'; b.textContent = text;
+    const acts = document.createElement('div'); acts.className = 'acts';
+    links.forEach((l) => {
+      const a = document.createElement('a'); a.textContent = l.t; a.href = l.href;
+      if (l.cls) a.className = l.cls;
+      if (/^https?:/.test(l.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+      acts.appendChild(a);
+    });
+    row.append(b, acts);
+    return row;
+  }
+  function renderAbout() {
+    $('abVer').textContent = 'الإصدار ' + APP_VER;
+    $('abDesc').textContent = ABOUT.desc || ''; $('abDesc').hidden = !ABOUT.desc;
+    const des = String(ABOUT.designer || '').trim();
+    const dbox = $('abDesigner'); dbox.textContent = '';
+    des.split('\n').filter((ln) => ln.trim()).forEach((ln, i) => {
+      const d = document.createElement('div'); d.className = i ? 'ab-sub' : 'ab-name'; d.textContent = ln.trim(); dbox.appendChild(d);
+    });
+    $('abDesignerSec').hidden = !des;
+    const ph = $('abPhones'), em = $('abEmails');
+    ph.textContent = ''; em.textContent = '';
+    ABOUT.phones.forEach((x) => {
+      const n = typeof x === 'string' ? x : x.n;
+      const links = [{ t: 'اتصال', href: 'tel:' + String(n).replace(/[^\d+]/g, '') }];
+      if (typeof x === 'object' && x.wa) links.push({ t: 'واتساب', href: waLink(n), cls: 'wa' });
+      ph.appendChild(aboutLine(n, links));
+    });
+    ABOUT.emails.forEach((e) => em.appendChild(aboutLine(e, [{ t: 'راسلنا', href: 'mailto:' + e + '?subject=' + encodeURIComponent('دليني - ملاحظة') }])));
+    $('abContactSec').hidden = !(ABOUT.phones.length || ABOUT.emails.length);
+    fbHint();
+  }
+
+  // نموذج الاقتراحات والمشاكل: يُحفظ بقاعدة Firebase (المسار /feedback) وتقراه من لوحة Firebase
+  let fbKind = 'idea', fbBusy = false;
+  const FB_HINT = { idea: 'اكتب اقتراحك لتحسين دليني...', bug: 'اشرح المشكلة: شنو صار؟ وين؟ وبأي خطوة؟' };
+  function fbHint() { $('fbText').placeholder = FB_HINT[fbKind]; }
+  function fbPlatform() {
+    const ua = navigator.userAgent || '';
+    const os = /Android/i.test(ua) ? 'Android' : /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : 'Web';
+    let mode = 'web';
+    try { if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) mode = 'app'; } catch (e) {}
+    if ((document.referrer || '').indexOf('android-app://') === 0) mode = 'apk';
+    return os + '/' + mode;
+  }
+  function fbQuota() { // أقصى 5 رسائل باليوم، وبين الرسالة والتي بعدها دقيقة
+    let q = { d: '', n: 0, last: 0 };
+    try { q = Object.assign(q, JSON.parse(localStorage.getItem('daliny-fb') || '{}')); } catch (e) {}
+    const today = new Date().toISOString().slice(0, 10);
+    if (q.d !== today) { q.d = today; q.n = 0; }
+    return q;
+  }
+  document.querySelectorAll('#fbType button').forEach((b) => {
+    b.onclick = () => {
+      fbKind = b.dataset.t;
+      document.querySelectorAll('#fbType button').forEach((x) => x.classList.toggle('on', x === b));
+      fbHint();
+    };
+  });
+  $('fbText').oninput = () => { $('fbCount').textContent = $('fbText').value.length + ' / 1000'; };
+  $('fbText').onfocus = () => { setTimeout(() => { try { $('fbText').scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }, 350); };
+  $('fbSend').onclick = async () => {
+    if (fbBusy) return;
+    const text = $('fbText').value.trim();
+    if (text.length < 5) { toast('اكتب رسالة أوضح شوي'); return; }
+    const q = fbQuota();
+    if (q.n >= 5) { toast('وصلت للحد اليومي للرسائل، جرّب باجر', 3500); return; }
+    if (Date.now() - q.last < 60000) { toast('انتظر شوي قبل ما ترسل رسالة ثانية', 3000); return; }
+    fbBusy = true; $('fbSend').disabled = true; $('fbSend').textContent = 'جاري الإرسال...';
+    try {
+      const body = { t: fbKind, m: text.slice(0, 1000), v: APP_VER, p: fbPlatform(), ts: { '.sv': 'timestamp' } };
+      const contact = $('fbContact').value.trim().slice(0, 80);
+      if (contact) body.c = contact;
+      const r = await dbFetch('/feedback.json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      q.n++; q.last = Date.now();
+      try { localStorage.setItem('daliny-fb', JSON.stringify(q)); } catch (e) {}
+      $('fbText').value = ''; $('fbCount').textContent = '0 / 1000';
+      toast('وصلت رسالتك، شكراً لك', 3500);
+    } catch (e) {
+      toast('تعذّر الإرسال، تأكد من الإنترنت وجرّب مرة ثانية (' + String(e && e.message || e).slice(0, 24) + ')', 4500);
+    } finally {
+      fbBusy = false; $('fbSend').disabled = false; $('fbSend').textContent = 'إرسال';
+    }
+  };
   $('voiceSwitch').onchange = () => { settings.voice = $('voiceSwitch').checked; saveSettings(); syncSettingsUI(); };
   $('volRange').oninput = () => {
     settings.volume = $('volRange').value / 100;

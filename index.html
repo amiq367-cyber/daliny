@@ -298,6 +298,7 @@
     position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
     transform-origin: 50% 50%; transition: transform .3s ease-out;
   }
+  .me3d .arwrap { position: absolute; inset: 0; transform-origin: 50% 50%; }
   .hz {
     width: 30px; height: 30px; border-radius: 50%; color: #fff; display: grid; place-items: center;
     font-weight: 800; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0,0,0,.45); font-family: var(--font);
@@ -402,8 +403,7 @@
       <button class="set-row" data-page="weather"><span>الطقس</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <button class="set-row" onclick="location.href='maplibre-test.html'"><span>تجربة محرك الخريطة الجديد (تجريبي)</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" style="text-align:center;margin-top:18px">رقم الإصدار: 46</p>
+      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: 49</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -425,13 +425,17 @@
     <div id="setTraffic" hidden>
       <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
       <label class="set-row" for="trafficShareSwitch"><span>أشارك سرعتي لكشف الزحام (أثناء الملاحة فقط، بدون هوية)</span><input type="checkbox" id="trafficShareSwitch" class="switch"></label>
+      <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة.</p>
+      <div id="trDev" hidden>
+        <p class="set-note">أدوات المطوّر (للتجربة فقط)</p>
       <label class="set-row" for="trafficWalkSwitch"><span>وضع الاختبار: اقبل المشي (للتجربة فقط، أطفئه بعدها)</span><input type="checkbox" id="trafficWalkSwitch" class="switch"></label>
       <div class="set-row"><span>اختبار الإرسال لقاعدة البيانات</span><button id="trafficSend" class="set-btn">اختبار</button></div>
       <p class="set-note" id="trLive" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <div class="set-row"><span>تجربة الزحام (سيارات وهمية قربك)</span><button id="trafficSim" class="set-btn">تجربة</button></div>
       <div class="set-row"><span>محاكاة كاملة عبر قاعدة البيانات (إرسال ثم قراءة)</span><button id="trafficFull" class="set-btn">محاكاة</button></div>
       <p class="set-note" id="trStatus" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
-      <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة. زر التجربة يعرض سيارات وهمية على جوالك فقط حتى تشوف الشكل، وتختفي بعد دقيقتين.</p>
+      <p class="set-note">زر التجربة يعرض سيارات وهمية على جوالك فقط حتى تشوف الشكل، وتختفي بعد دقيقتين.</p>
+      </div>
     </div>
     <div id="setPlaces" hidden>
       <p class="set-note" id="poiWhere">اختر نوع المكان حتى أعرض لك الأقرب إليك.</p>
@@ -488,6 +492,15 @@
           <button data-units="mi">ميل</button>
         </div>
       </div>
+      <div class="set-row col">
+        <span>عرض الخريطة</span>
+        <div class="seg" id="viewSeg">
+          <button data-view="2d">2D</button>
+          <button data-view="3d">3D</button>
+          <button data-view="auto">تلقائي</button>
+        </div>
+      </div>
+      <p class="set-note" id="viewNote"></p>
       <label class="set-row" for="speedoSwitch"><span>عداد السرعة أثناء الملاحة</span><input type="checkbox" id="speedoSwitch" class="switch"></label>
       <p class="set-note">المظهر التلقائي: نهاري من شروق الشمس إلى غروبها حسب موقعك، وليلي بعد الغروب. زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.</p>
     </div>
@@ -528,10 +541,20 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c'
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d'
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
+  if (settings.mapView !== '2d' && settings.mapView !== '3d' && settings.mapView !== 'auto') settings.mapView = '2d';
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
+  // وضع المطوّر: أدوات الاختبار مخفية، وتظهر بالضغط 7 مرات سريعة على رقم الإصدار (بالإعدادات)
+  let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
+  // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
+  const TILT = 50;
+  const VIEW_NOTES = {
+    '2d': 'الخريطة مسطّحة والشمال دائماً فوق.',
+    '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة بدون إنترنت.',
+    'auto': 'مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.'
+  };
 
   function toast(msg, ms) {
     const t = $('toast');
@@ -591,7 +614,7 @@
     }
     return best;
   }
-  function bearing(a, b) {
+  function bearingA(a, b) { // a,b = [lat,lng] -> درجة 0..360
     const r = Math.PI / 180;
     const y = Math.sin((b[1] - a[1]) * r) * Math.cos(b[0] * r);
     const x = Math.cos(a[0] * r) * Math.sin(b[0] * r) - Math.sin(a[0] * r) * Math.cos(b[0] * r) * Math.cos((b[1] - a[1]) * r);
@@ -888,7 +911,8 @@
   const map = new maplibregl.Map({
     container: 'map', style: baseStyle(curFlavor),
     center: lastView ? [lastView.lng, lastView.lat] : [44.3661, 33.3152], zoom: lastView ? lastView.z : 13, maxZoom: 20,
-    attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false
+    attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false,
+    pitch: settings.mapView === '3d' ? TILT : 0
   });
   map.touchZoomRotate.disableRotation();
   function trArrowImg() {
@@ -904,7 +928,7 @@
   map.on('moveend', () => {
     try { const c = map.getCenter(); localStorage.setItem('daliny-view', JSON.stringify({ lng: c.lng, lat: c.lat, z: map.getZoom() })); } catch (e) {}
   });
-  function setView(lat, lng, z) { map.jumpTo({ center: [lng, lat], zoom: z }); }
+  function setView(lat, lng, z) { map.jumpTo({ center: [lng, lat], zoom: z, pitch: wantTilt() ? TILT : 0, bearing: 0 }); }
   function setRoutePts(pts) {
     routePts = pts;
     const src = map.getSource('route');
@@ -923,6 +947,43 @@
   };
 
   map.on('dragstart', () => { state.follow = false; $('btnLocate').classList.remove('on'); });
+
+  /* ================= عرض الخريطة: 2D / 3D / تلقائي ================= */
+  function wantTilt() { return settings.mapView === '3d' || (settings.mapView === 'auto' && state.navigating); }
+  let camB = 0, followT = 0; // اتجاه الكاميرا (درجات)، ووقت آخر تحديث لها
+  function angDiff(to, from) { return ((to - from) % 360 + 540) % 360 - 180; }
+  // الكاميرا تتبع موقعي. بالعرض المائل: تدور حسب اتجاه الحركة، وموقعي يكون بالثلث السفلي من الشاشة
+  function followCam(extra) {
+    const u = state.user; if (!u) return;
+    const o = { center: [u.lng, u.lat], duration: 400, pitch: 0, bearing: 0, offset: [0, 0] };
+    if (wantTilt()) {
+      const h = u.heading;
+      // اتجاه الـ GPS ما نصدّقه إذا كنت واقف أو ماشي ببطء
+      if (typeof h === 'number' && isFinite(h) && (state.sim || typeof u.speed !== 'number' || u.speed >= 1)) {
+        const d = angDiff(h, camB);
+        if (Math.abs(d) > 1.5) camB = (camB + d * 0.6 + 360) % 360;
+      }
+      o.pitch = TILT; o.bearing = camB;
+      o.offset = [0, Math.round(map.getContainer().clientHeight * 0.16)];
+      const now = performance.now(), dt = now - followT; followT = now;
+      if (!(extra && extra.duration !== undefined)) { o.duration = Math.min(1100, Math.max(300, dt)); o.easing = (t) => t; } // انسياب مستمر بين تحديثات الـ GPS
+    } else camB = 0;
+    map.easeTo(Object.assign(o, extra || {}));
+  }
+  // تطبيق الوضع المختار فوراً (عند تغييره بالإعدادات، أو بعد انتهاء الملاحة بالوضع التلقائي)
+  function applyMapView() {
+    if (state.follow && state.user) { followCam({ duration: 700 }); return; }
+    const t = wantTilt();
+    map.easeTo({ pitch: t ? TILT : 0, bearing: t ? map.getBearing() : 0, duration: 700 });
+  }
+  // اتجاه المسار قدّامي (لما نبدأ الملاحة والجهاز واقف وما عنده اتجاه)
+  function routeHeading(p) {
+    const c = state.coords;
+    if (c.length < 2) return null;
+    const n = nearestOnRoute(p, 0, 400);
+    for (let k = n.i + 1; k < c.length && k < n.i + 120; k++) if (haversine(p, c[k]) >= 25) return bearingA(p, c[k]);
+    return null;
+  }
 
   /* ================= موقعي ================= */
   // مثلث بثلاثة أوجه: وجه أيسر فاتح، ووجه أيمن غامق، وسماكة تحتهما
@@ -949,7 +1010,7 @@
     if (!meMarker) {
       const mel = document.createElement('div');
       mel.style.cssText = 'width:44px;height:52px;pointer-events:none;z-index:5';
-      mel.innerHTML = '<div class="me3d"><div class="shd"></div>' + ME_SVG + '</div>';
+      mel.innerHTML = '<div class="me3d"><div class="shd"></div><div class="arwrap">' + ME_SVG + '</div></div>';
       meMarker = mkMarker(mel, lat, lng, { anchor: 'center' });
     } else meMarker.setLngLat([lng, lat]);
     const el = meMarker.getElement();
@@ -960,8 +1021,20 @@
         arrow.style.transform = 'rotate(' + meAngle + 'deg)';
       }
     }
-    if (state.follow) map.easeTo({ center: [lng, lat], duration: 400 });
+    updateArrowBearing();
+    if (state.follow) followCam();
   }
+  // الخريطة مدوّرة: السهم يتعاكس مع دورانها حتى يبقى يشير لاتجاه حركتك الحقيقي
+  let arwB = null;
+  function updateArrowBearing() {
+    if (!meMarker) return;
+    const b = Math.round(map.getBearing() * 10) / 10;
+    if (b === arwB) return;
+    arwB = b;
+    const w = meMarker.getElement().querySelector('.arwrap');
+    if (w) w.style.transform = 'rotate(' + (-b) + 'deg)';
+  }
+  map.on('rotate', updateArrowBearing);
 
   function onPosition(lat, lng, heading, speedMs) {
     setUser(lat, lng, heading, speedMs);
@@ -993,7 +1066,7 @@
         onPosition(c.latitude, c.longitude, c.heading, c.speed);
         // أول تحديد للموقع بعد ضغط الزر: نقرّب الخريطة حتى يبين المكان
         if (first && state.follow && !state.navigating && map.getZoom() < 15)
-          map.easeTo({ center: [c.longitude, c.latitude], zoom: 16, duration: 700 });
+          followCam({ zoom: 16, duration: 700 });
       },
       (err) => {
         geoStop();
@@ -1013,7 +1086,7 @@
   $('btnLocate').onclick = () => {
     state.follow = true;
     $('btnLocate').classList.add('on');
-    if (state.user) setView(state.user.lat, state.user.lng, Math.max(map.getZoom(), 16));
+    if (state.user) followCam({ zoom: Math.max(map.getZoom(), 16), duration: wantTilt() ? 600 : 0 });
     else toast('جاري تحديد موقعك...');
     startWatch();
   };
@@ -1308,9 +1381,10 @@
       $('planActions').hidden = false;
       $('navActions').hidden = true;
       $('top').hidden = false;
+      state.follow = false; $('btnLocate').classList.remove('on'); // نظرة عامة على المسار: الكاميرا ما تلحقني لين تبدأ الملاحة
       const rb = new maplibregl.LngLatBounds();
       state.coords.forEach((c) => rb.extend([c[1], c[0]]));
-      map.fitBounds(rb, { padding: { top: 120, bottom: 260, left: 30, right: 30 }, maxZoom: 18, duration: 600 });
+      map.fitBounds(rb, { padding: { top: 120, bottom: 260, left: 30, right: 30 }, maxZoom: 18, duration: 600, pitch: 0, bearing: 0 });
     } catch (e) {
       toast('ما كدرت ألقى طريق لهذا المكان', 4000);
     }
@@ -1846,6 +1920,8 @@
     // العرض
     document.querySelectorAll('#themeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.theme === settings.theme));
     document.querySelectorAll('#unitsSeg button').forEach((b) => b.classList.toggle('on', b.dataset.units === settings.units));
+    document.querySelectorAll('#viewSeg button').forEach((b) => b.classList.toggle('on', b.dataset.view === settings.mapView));
+    $('viewNote').textContent = VIEW_NOTES[settings.mapView] || '';
     $('speedoSwitch').checked = settings.speedo;
     $('navSpeed').hidden = !settings.speedo;
     $('spdUnit').textContent = speedUnitLabel();
@@ -1868,6 +1944,17 @@
   $('trafficWalkSwitch').onchange = () => { settings.trafficWalk = $('trafficWalkSwitch').checked; saveSettings(); trMaxV = 0; };
   $('trafficShareSwitch').onchange = () => { settings.trafficShare = $('trafficShareSwitch').checked; saveSettings(); if (!settings.trafficShare) trUnshare(); };
   $('trafficShowSwitch').onchange = () => { settings.trafficShow = $('trafficShowSwitch').checked; saveSettings(); trRefresh(); };
+  function applyDev() { const d = $('trDev'); if (d) d.hidden = !devMode; }
+  applyDev();
+  let verTaps = 0, verTapAt = 0;
+  $('verNote').onclick = () => {
+    const now = Date.now(); verTaps = (now - verTapAt < 1500) ? verTaps + 1 : 1; verTapAt = now;
+    if (verTaps < 7) return;
+    verTaps = 0; devMode = !devMode;
+    try { localStorage.setItem('daliny-dev', devMode ? '1' : '0'); } catch (e) {}
+    if (!devMode && settings.trafficWalk) { settings.trafficWalk = false; saveSettings(); $('trafficWalkSwitch').checked = false; }
+    applyDev(); toast(devMode ? 'وضع المطوّر: شغّال' : 'وضع المطوّر: مطفأ');
+  };
   // يلتقط أقرب شارع حقيقي لوسط الشاشة ويرجع نقاطه كل ~80 م
   function trRoadPoints() {
     try {
@@ -1964,7 +2051,7 @@
     });
     trSim = sim; trRefresh();
     clearTimeout(trSimTimer); trSimTimer = setTimeout(() => { trSim = null; trRefresh(); }, 120000);
-    let info = 'v46 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
+    let info = 'v49 | road=' + onRoad + ' | pts=' + pts.length + ' | samples=' + sim.length;
     try {
       const g = trGeo();
       info += '\nbands=' + g.features.length + ' | layer=' + !!map.getLayer('traffic-glow') + ' | src=' + !!map.getSource('traffic');
@@ -1989,6 +2076,9 @@
         if (state.navigating) navUpdate();
       }
     };
+  });
+  document.querySelectorAll('#viewSeg button').forEach((b) => {
+    b.onclick = () => { settings.mapView = b.dataset.view; saveSettings(); syncSettingsUI(); applyMapView(); };
   });
   $('speedoSwitch').onchange = () => { settings.speedo = $('speedoSwitch').checked; saveSettings(); syncSettingsUI(); };
   $('btnSettings').onclick = () => { showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
@@ -2054,7 +2144,10 @@
     else { if (state.geoMode === 'lo') { geoStop(); state.geoMode = 'hi'; } startWatch(); }
     if (!simulate && !state.user) toast('جاري تحديد موقعك...');
     speak(arInstr(steps[0]));
-    if (state.user) setView(state.user.lat, state.user.lng, 17);
+    if (state.user) {
+      if (wantTilt()) { const hd = routeHeading([state.user.lat, state.user.lng]); if (hd !== null) camB = hd; } // نبدأ والخريطة باتجاه المسار
+      followCam({ zoom: 17, duration: wantTilt() ? 800 : 0 });
+    }
     navUpdate();
   }
 
@@ -2066,6 +2159,7 @@
     $('nav').hidden = true; $('top').hidden = false;
     $('sheet').classList.remove('navmode');
     clearRoute();
+    if (settings.mapView === 'auto') applyMapView(); // الوضع التلقائي: نرجع مسطّحة وشمال فوق
     try { if (state.wake) { state.wake.release(); state.wake = null; } } catch (e) {}
     try { window.speechSynthesis.cancel(); } catch (e) {}
     if (msg) toast(msg, 4000);
@@ -2160,7 +2254,7 @@
     state.sim = setInterval(() => {
       if (i >= pts.length - 1) { stopSim(); return; }
       const a = pts[i], b = pts[Math.min(i + 1, pts.length - 1)];
-      onPosition(a[0], a[1], bearing(a, b), 20); // 20 م/ث تقريباً 72 كم/س
+      onPosition(a[0], a[1], bearingA(a, b), 20); // 20 م/ث تقريباً 72 كم/س
       i++;
     }, 400);
   }
@@ -2168,7 +2262,7 @@
 
   $('startBtn').onclick = () => startNav(false);
   $('simBtn').onclick = () => startNav(true);
-  $('cancelBtn').onclick = () => clearRoute();
+  $('cancelBtn').onclick = () => { clearRoute(); if (settings.mapView === '3d') applyMapView(); };
   $('endBtn').onclick = () => endNav('انتهت الملاحة');
 
   /* ================= البلاغات (مثل Waze) ================= */
@@ -2327,7 +2421,7 @@
     if (typeof speedMs !== 'number' || isNaN(speedMs) || speedMs < 0) { trDiag = 'الجهاز لا يعطي سرعة (GPS)'; trRenderLive(); return; }
     // لا نرسل إلا بعد أن تتجاوز سرعتك 15 كم/س مرة واحدة بهذه الملاحة (يعني سيارة، مو ماشي)؛ وبعدها نرسل حتى لو وقفت بالزحام
     trMaxV = Math.max(trMaxV, speedMs * 3.6);
-    const need = settings.trafficWalk === true ? 2 : 15;
+    const need = (devMode && settings.trafficWalk === true) ? 2 : 15;
     if (trMaxV < need) { trDiag = 'بانتظار السرعة: أعلى سرعة ' + Math.round(trMaxV) + ' كم/س (يلزم ' + need + ')'; trRenderLive(); return; }
     const now = Date.now();
     if (now - trSentAt < 10000) return;
@@ -2598,7 +2692,7 @@
       const d = segDist([h.lat, h.lng], c[i], c[i + 1]);
       if (d < bd) { bd = d; bi = i; }
     }
-    const br = bearing(c[bi], c[bi + 1]);
+    const br = bearingA(c[bi], c[bi + 1]);
     const wps = [];
     [90, -90].forEach((turn) => {
       [150, 300, 600].forEach((dist) => {

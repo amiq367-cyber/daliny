@@ -268,9 +268,13 @@
   .ab-line a.wa { background: var(--accent); color: var(--accent-fg); }
   #fbText { display: block; width: 100%; min-height: 120px; resize: vertical; margin-top: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-family: inherit; font-size: 1rem; line-height: 1.7; }
   #fbContact { display: block; width: 100%; margin-top: 8px; }
-  .fb-count { color: var(--muted); font-size: .8rem; text-align: left; margin: 3px 4px 0; font-variant-numeric: tabular-nums; }
+  .fb-count { color: var(--muted); font-size: .8rem; text-align: left; direction: ltr; margin: 3px 4px 0; font-variant-numeric: tabular-nums; }
   #fbSend { display: block; width: 100%; margin-top: 12px; }
   #fbSend:disabled { opacity: .6; }
+  .fb-status { margin-top: 10px; padding: 10px 12px; border-radius: 10px; font-weight: 700; line-height: 1.6; text-align: center; background: var(--line); color: var(--fg); }
+  .fb-status.ok { background: rgba(25,135,84,.15); color: #157347; }
+  .fb-status.err { background: rgba(201,42,42,.12); color: var(--danger); }
+  html.dark .fb-status.ok { color: #5fd38a; }
   .poi-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
   .poi-cats button { padding: 10px 14px; border-radius: 999px; background: var(--line); font-weight: 500; }
   .poi-cats button.on { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
@@ -302,7 +306,7 @@
   #hazDistSeg { flex-wrap: wrap; }
   #hazDistSeg button { flex: 1 0 22%; }
   #toast {
-    position: fixed; z-index: 2000; left: 50%; transform: translateX(-50%);
+    position: fixed; z-index: 4000; left: 50%; transform: translateX(-50%); /* فوق شاشة الإعدادات (3000) */
     top: calc(env(safe-area-inset-top, 0px) + 84px);
     background: #14232b; color: #fff; padding: 10px 16px; border-radius: 12px;
     max-width: 90vw; text-align: center; box-shadow: var(--shadow); white-space: pre-line;
@@ -425,7 +429,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="about"><span>حول البرنامج</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: 51</p>
+      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: 52</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -458,6 +462,7 @@
         <div class="fb-count" id="fbCount">0 / 1000</div>
         <input class="fav-input" id="fbContact" maxlength="80" dir="auto" placeholder="رقمك أو إيميلك إذا تريد نرد عليك (اختياري)">
         <button class="set-btn" id="fbSend">إرسال</button>
+        <div class="fb-status" id="fbStatus" role="status" aria-live="polite" hidden></div>
         <p class="set-note">نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك أو أي معلومات شخصية.</p>
       </div>
       <p class="set-note" id="abCredits">مصادر الخرائط والبيانات: © مساهمو OpenStreetMap، خرائط Protomaps، عرض الخريطة بـ MapLibre، حساب المسار OSRM، والطقس من Open-Meteo.com.</p>
@@ -602,7 +607,7 @@
   let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
   // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
   const TILT = 50;
-  const APP_VER = 51; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
+  const APP_VER = 52; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
   const VIEW_NOTES = {
     '2d': 'الخريطة مسطّحة والشمال دائماً فوق.',
     '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة بدون إنترنت.',
@@ -2189,7 +2194,7 @@
     });
     ABOUT.emails.forEach((e) => em.appendChild(aboutLine(e, [{ t: 'راسلنا', href: 'mailto:' + e + '?subject=' + encodeURIComponent('دليني - ملاحظة') }])));
     $('abContactSec').hidden = !(ABOUT.phones.length || ABOUT.emails.length);
-    fbHint();
+    fbHint(); fbNote('');
   }
 
   // نموذج الاقتراحات والمشاكل: يُحفظ بقاعدة Firebase (المسار /feedback) وتقراه من لوحة Firebase
@@ -2211,6 +2216,13 @@
     if (q.d !== today) { q.d = today; q.n = 0; }
     return q;
   }
+  // سطر الحالة تحت زر الإرسال: يبقى ظاهر (التنبيه العلوي يختفي بعد ثواني، وكان مخفي خلف شاشة الإعدادات)
+  function fbNote(kind, msg) { // kind: ok | err | wait ، وفاضي لإخفائه
+    const el = $('fbStatus');
+    if (!kind) { el.hidden = true; el.textContent = ''; el.className = 'fb-status'; return; }
+    el.className = 'fb-status ' + kind; el.textContent = msg; el.hidden = false;
+    try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+  }
   document.querySelectorAll('#fbType button').forEach((b) => {
     b.onclick = () => {
       fbKind = b.dataset.t;
@@ -2218,28 +2230,34 @@
       fbHint();
     };
   });
-  $('fbText').oninput = () => { $('fbCount').textContent = $('fbText').value.length + ' / 1000'; };
+  $('fbText').oninput = () => { $('fbCount').textContent = $('fbText').value.length + ' / 1000'; if (!fbBusy) fbNote(''); };
   $('fbText').onfocus = () => { setTimeout(() => { try { $('fbText').scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }, 350); };
   $('fbSend').onclick = async () => {
     if (fbBusy) return;
     const text = $('fbText').value.trim();
-    if (text.length < 5) { toast('اكتب رسالة أوضح شوي'); return; }
+    if (text.length < 5) { fbNote('err', 'اكتب رسالة أوضح شوي (5 أحرف على الأقل)'); return; }
     const q = fbQuota();
-    if (q.n >= 5) { toast('وصلت للحد اليومي للرسائل، جرّب باجر', 3500); return; }
-    if (Date.now() - q.last < 60000) { toast('انتظر شوي قبل ما ترسل رسالة ثانية', 3000); return; }
-    fbBusy = true; $('fbSend').disabled = true; $('fbSend').textContent = 'جاري الإرسال...';
+    if (q.n >= 5) { fbNote('err', 'وصلت للحد اليومي للرسائل، جرّب باجر'); return; }
+    const wait = 60000 - (Date.now() - q.last);
+    if (wait > 0) { fbNote('wait', 'انتظر ' + Math.ceil(wait / 1000) + ' ثانية قبل ما ترسل رسالة ثانية'); return; }
+    fbBusy = true; $('fbSend').disabled = true; $('fbSend').textContent = 'جاري الإرسال...'; fbNote('wait', 'جاري الإرسال...');
     try {
       const body = { t: fbKind, m: text.slice(0, 1000), v: APP_VER, p: fbPlatform(), ts: { '.sv': 'timestamp' } };
       const contact = $('fbContact').value.trim().slice(0, 80);
       if (contact) body.c = contact;
       const r = await dbFetch('/feedback.json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.ok) {
+        let why = 'HTTP ' + r.status;
+        try { const j = await r.json(); if (j && typeof j.error === 'string') why += ' - ' + j.error.slice(0, 40); } catch (e) {}
+        throw new Error(why);
+      }
       q.n++; q.last = Date.now();
       try { localStorage.setItem('daliny-fb', JSON.stringify(q)); } catch (e) {}
       $('fbText').value = ''; $('fbCount').textContent = '0 / 1000';
-      toast('وصلت رسالتك، شكراً لك', 3500);
+      try { $('fbText').blur(); } catch (e) {}
+      fbNote('ok', 'وصلت رسالتك، شكراً لك ✓');
     } catch (e) {
-      toast('تعذّر الإرسال، تأكد من الإنترنت وجرّب مرة ثانية (' + String(e && e.message || e).slice(0, 24) + ')', 4500);
+      fbNote('err', 'تعذّر الإرسال، تأكد من الإنترنت وجرّب مرة ثانية (' + String(e && e.message || e).slice(0, 60) + ')');
     } finally {
       fbBusy = false; $('fbSend').disabled = false; $('fbSend').textContent = 'إرسال';
     }

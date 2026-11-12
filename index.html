@@ -429,10 +429,10 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="about"><span>حول البرنامج</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: 52</p>
+      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: 53</p>
     </div>
     <div id="setOffline" hidden>
-      <p class="set-note">نزّل خريطة دولة كاملة على جوالك مرة وحدة، وتشتغل حتى بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
+      <p class="set-note">نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
       <div id="packList"></div>
       <p class="set-note">البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.</p>
     </div>
@@ -558,6 +558,8 @@
         </div>
       </div>
       <p class="set-note" id="viewNote"></p>
+      <label class="set-row" for="bld3dSwitch"><span>المباني المجسّمة (3D)</span><input type="checkbox" id="bld3dSwitch" class="switch"></label>
+      <p class="set-note">تظهر المباني ببروز عند تقريب الخريطة، بالعرض المائل فقط وبالمحافظات المنزّلة بدون إنترنت. إذا حسّيت الجهاز يثقل أطفئها.</p>
       <label class="set-row" for="speedoSwitch"><span>عداد السرعة أثناء الملاحة</span><input type="checkbox" id="speedoSwitch" class="switch"></label>
       <p class="set-note">المظهر التلقائي: نهاري من شروق الشمس إلى غروبها حسب موقعك، وليلي بعد الغروب. زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.</p>
     </div>
@@ -598,7 +600,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d'
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   if (settings.mapView !== '2d' && settings.mapView !== '3d' && settings.mapView !== 'auto') settings.mapView = '2d';
@@ -607,10 +609,10 @@
   let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
   // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
   const TILT = 50;
-  const APP_VER = 52; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
+  const APP_VER = 53; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
   const VIEW_NOTES = {
     '2d': 'الخريطة مسطّحة والشمال دائماً فوق.',
-    '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة بدون إنترنت.',
+    '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة) بالمحافظات المنزّلة بدون إنترنت. كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.',
     'auto': 'مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.'
   };
 
@@ -1780,6 +1782,7 @@
         const before = packBefore(p);
         d.layers.forEach((l) => map.addLayer(l, before));
         if (p.id === 'iraq' && map.getLayer('osm')) map.setLayoutProperty('osm', 'visibility', 'none');
+        b3dAdd(p);
       } catch (e) { console.warn('pack layer', e); }
     };
     if (packsReady) go(); else map.once('load', go);
@@ -1793,6 +1796,46 @@
   }
   map.once('load', () => { packsReady = true; });
   PACKS.forEach((p) => { if (packsInstalled.includes(p.id)) addPackLayer(p); });
+
+  /* ---- المباني المجسّمة (3D) ----
+     طبقة تجسيم (fill-extrusion) فوق مباني كل محافظة منزّلة. نضيفها برمجياً (مو داخل ستايل الخريطة)
+     حتى لو صار فيها خطأ ما تتخرب الخريطة نفسها. تظهر فقط لما الخريطة مائلة ومن مستوى تقريب 15
+     (قبله بيانات المباني مدمجة). المبنى اللي ما له ارتفاع بالبيانات ناخذ له 7 م (دورين تقريباً). */
+  const B3D_ZOOM = 15, B3D_DEF_H = 7;
+  const b3dId = (p) => 'pm-' + p.id + '-b3d';
+  function b3dWant() { return settings.bld3d !== false && map.getPitch() > 5; }
+  function b3dAdd(p) {
+    try {
+      if (!p.bbox || p.maxZoom < B3D_ZOOM) return;            // العراق (الأساس) والأنبار (لحد 14) ما فيهم مباني منفصلة
+      const src = 'pm-' + p.id, id = b3dId(p);
+      if (!map.getSource(src) || map.getLayer(id)) return;
+      const ls = map.getStyle().layers;
+      const from = ls.findIndex((l) => l.source === src && l['source-layer'] === 'buildings' && l.type === 'fill');
+      let before = null;                                       // تحت أول كتابة (symbol) من نفس الحزمة، فوق الشوارع
+      for (let i = from + 1; i < ls.length; i++) if (ls[i].source === src && ls[i].type === 'symbol') { before = ls[i].id; break; }
+      if (!before) before = packBefore(p);
+      const num = (k) => ['to-number', ['get', k], 0];
+      const hgt = () => ['case', ['>', num('height'), 0], num('height'), B3D_DEF_H];
+      map.addLayer({
+        id: id, type: 'fill-extrusion', source: src, 'source-layer': 'buildings', minzoom: B3D_ZOOM,
+        filter: ['!=', ['get', 'kind'], 'building_part'],
+        layout: { visibility: b3dWant() ? 'visible' : 'none' },
+        paint: {
+          'fill-extrusion-color': curFlavor === 'dark' ? '#4a5760' : '#d8d2c8',
+          'fill-extrusion-height': hgt(),
+          'fill-extrusion-base': ['case', ['all', ['>', num('min_height'), 0], ['<', num('min_height'), hgt()]], num('min_height'), 0]
+        }
+      }, before);
+    } catch (e) { console.warn('b3d', e); }
+  }
+  function b3dSync() {
+    try {
+      const vis = b3dWant() ? 'visible' : 'none';
+      PACKS.forEach((p) => { const id = b3dId(p); if (map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== vis) map.setLayoutProperty(id, 'visibility', vis); });
+    } catch (e) {}
+  }
+  map.on('pitch', b3dSync);
+  map.on('style.load', () => { PACKS.forEach((p) => { if (packsInstalled.includes(p.id)) b3dAdd(p); }); }); // أول تحميل + بعد تبديل نهاري/ليلي
 
   // نحفظ الخطوط والرموز للعمل بدون إنترنت (يحفظها الـ service worker)
   if (navigator.onLine) {
@@ -1983,6 +2026,7 @@
     document.querySelectorAll('#viewSeg button').forEach((b) => b.classList.toggle('on', b.dataset.view === settings.mapView));
     $('viewNote').textContent = VIEW_NOTES[settings.mapView] || '';
     $('speedoSwitch').checked = settings.speedo;
+    $('bld3dSwitch').checked = settings.bld3d !== false;
     $('navSpeed').hidden = !settings.speedo;
     $('spdUnit').textContent = speedUnitLabel();
     // البلاغات
@@ -2141,6 +2185,7 @@
     b.onclick = () => { settings.mapView = b.dataset.view; saveSettings(); syncSettingsUI(); applyMapView(); };
   });
   $('speedoSwitch').onchange = () => { settings.speedo = $('speedoSwitch').checked; saveSettings(); syncSettingsUI(); };
+  $('bld3dSwitch').onchange = () => { settings.bld3d = $('bld3dSwitch').checked; saveSettings(); b3dSync(); };
   $('btnSettings').onclick = () => { showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
   $('setBack').onclick = () => { if (setPage === 'main') $('settings').hidden = true; else showSetPage('main'); };
   document.querySelectorAll('#setMain [data-page]').forEach((b) => { b.onclick = () => showSetPage(b.dataset.page); });

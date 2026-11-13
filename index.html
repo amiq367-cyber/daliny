@@ -150,6 +150,11 @@
   .fab svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .fab.on { background: var(--accent); color: var(--accent-fg); }
   .fab.warn { color: var(--danger); }
+  /* بوصلة: تظهر لما تكون الخريطة مدوّرة (بإصبعين أو أثناء الملاحة)، والضغط عليها يرجّع الشمال فوق */
+  #btnNorth[hidden] { display: none; }
+  #btnNorth .nr { stroke-width: 1.8; opacity: .4; }
+  #btnNorth .nn { fill: var(--danger); stroke: none; }
+  #btnNorth .ns { fill: currentColor; stroke: none; opacity: .5; }
   /* زر القائمة (☰): يجمع البلاغات والوضع الليلي والإعدادات، وينطوي لحاله بعد 5 ثواني بدون لمس */
   .fabmenu { display: flex; flex-direction: column; gap: 10px; }
   .fabmenu[hidden] { display: none; }
@@ -385,6 +390,9 @@
 
 <div class="bottom">
   <div class="fabs">
+    <button class="fab" id="btnNorth" aria-label="رجّع الخريطة للشمال" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="nr" cx="12" cy="12" r="10"/><g id="northNeedle"><path class="nn" d="M12 3.4 16.4 12H7.6z"/><path class="ns" d="M12 20.6 7.6 12h8.8z"/></g></svg>
+    </button>
     <div class="fabmenu" id="fabMenu" hidden>
       <button class="fab warn" id="btnReport" aria-label="بلّغ عن شي بالطريق">
         <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v5M12 17.5v.01"/></svg>
@@ -633,9 +641,9 @@
   let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
   // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
   const TILT = 50;
-  const APP_VER = 55; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
+  const APP_VER = 56; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
   const VIEW_NOTES = {
-    '2d': 'الخريطة مسطّحة والشمال دائماً فوق.',
+    '2d': 'الخريطة مسطّحة والشمال فوق. تكدر تدوّرها بإصبعين (مثل التكبير)، وتظهر بوصلة ترجّعها للشمال.',
     '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة). كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.',
     'auto': 'مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.'
   };
@@ -1001,7 +1009,7 @@
     attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false,
     pitch: settings.mapView === '3d' ? TILT : 0
   });
-  map.touchZoomRotate.disableRotation();
+  // تدوير الخريطة بإصبعين (مع التكبير) شغّال: touchZoomRotate الافتراضي، وما نستدعي disableRotation
   function trArrowImg() {
     const sz = 48, cv = document.createElement('canvas'); cv.width = cv.height = sz;
     const x = cv.getContext('2d'); x.lineJoin = 'round';
@@ -1109,7 +1117,7 @@
       }
     }
     updateArrowBearing();
-    if (state.follow) followCam();
+    if (state.follow && !fingersDown()) followCam();
   }
   // الخريطة مدوّرة: السهم يتعاكس مع دورانها حتى يبقى يشير لاتجاه حركتك الحقيقي
   let arwB = null;
@@ -1122,6 +1130,35 @@
     if (w) w.style.transform = 'rotate(' + (-b) + 'deg)';
   }
   map.on('rotate', updateArrowBearing);
+
+  /* ================= تدوير الخريطة بإصبعين + بوصلة الشمال ================= */
+  // أول ما يلف المستخدم الخريطة بإصبعيه (e.originalEvent موجود)، الكاميرا تتوقف عن اللحاق بموقعي مثل السحب.
+  // الدوران البرمجي (الملاحة، زر الشمال) ما عنده originalEvent فما يوقف المتابعة.
+  map.on('rotatestart', (e) => { if (e && e.originalEvent) { state.follow = false; $('btnLocate').classList.remove('on'); } });
+  // بعد ما ينتهي الدوران وأنا مو متابع: اتجاه الكاميرا يصير نفس اتجاه الخريطة، حتى ما تقفز لاتجاه قديم لما أرجع أتابع
+  map.on('rotateend', () => { if (!state.follow) camB = ((map.getBearing() % 360) + 360) % 360; });
+  // وإصبعي على الشاشة نوقف لحاق الكاميرا بموقعي: easeTo يقطع حركة الأصابع الجارية (تدوير/تكبير) مع كل تحديث GPS
+  let touchN = 0, touchT = 0;
+  const touchSeen = (e) => { touchN = (e.touches && e.touches.length) || 0; touchT = performance.now(); };
+  ['touchstart', 'touchend', 'touchcancel'].forEach((t) => document.addEventListener(t, touchSeen, { passive: true, capture: true }));
+  document.addEventListener('touchmove', () => { touchT = performance.now(); }, { passive: true, capture: true });
+  function fingersDown() { return touchN > 0 && performance.now() - touchT < 4000; } // 4 ثواني احتياط لو ضاع touchend
+  const northBtn = $('btnNorth'), northNeedle = $('northNeedle');
+  let northB = null; // آخر زاوية معروضة
+  function updateNorthBtn() {
+    let b = ((map.getBearing() % 360) + 540) % 360 - 180; // من -180 إلى 180
+    b = Math.round(b * 10) / 10;
+    if (b === northB) return;
+    northB = b;
+    northBtn.hidden = Math.abs(b) < 0.5;
+    if (!northBtn.hidden) northNeedle.setAttribute('transform', 'rotate(' + (-b) + ' 12 12)'); // الإبرة الحمراء دائماً تشير للشمال الحقيقي
+  }
+  map.on('rotate', updateNorthBtn);
+  map.on('moveend', updateNorthBtn);
+  northBtn.onclick = () => {
+    state.follow = false; $('btnLocate').classList.remove('on'); // الشمال فوق: نوقف اللحاق بموقعي (زر موقعي يرجّعه)
+    map.easeTo({ bearing: 0, duration: 350 });
+  };
 
   function onPosition(lat, lng, heading, speedMs) {
     setUser(lat, lng, heading, speedMs);

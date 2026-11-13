@@ -150,11 +150,27 @@
   .fab svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .fab.on { background: var(--accent); color: var(--accent-fg); }
   .fab.warn { color: var(--danger); }
+  /* زر القائمة (☰): يجمع البلاغات والوضع الليلي والإعدادات، وينطوي لحاله بعد 5 ثواني بدون لمس */
+  .fabmenu { display: flex; flex-direction: column; gap: 10px; }
+  .fabmenu[hidden] { display: none; }
+  .fabmenu .fab { animation: fabIn .18s ease-out both; }
+  .fabmenu .fab:nth-child(2) { animation-delay: .04s; }
+  .fabmenu .fab:nth-child(1) { animation-delay: .08s; }
+  .fabmenu.closing .fab { animation: fabOut .15s ease-in both; animation-delay: 0s; }
+  @keyframes fabIn { from { opacity: 0; transform: translateY(12px) scale(.7); } to { opacity: 1; transform: none; } }
+  @keyframes fabOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(12px) scale(.7); } }
+  @media (prefers-reduced-motion: reduce) { .fabmenu .fab, .fabmenu.closing .fab { animation: none; } }
+  #btnMenu .ic-x { display: none; }
+  #btnMenu.on .ic-x { display: inline; }
+  #btnMenu.on .ic-bars { display: none; }
 
   .panel, .sheet {
     background: var(--bg); border-radius: 18px; box-shadow: var(--shadow); padding: 14px;
   }
   .panel h3 { margin: 0 0 10px; font-size: 1rem; }
+  .panel .ph { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin: 0 0 10px; }
+  .panel .ph h3 { margin: 0; flex: 1; font-size: .92rem; line-height: 1.4; }
+  .panel .px { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--line); color: var(--fg); font-size: 1rem; line-height: 1; display: grid; place-items: center; }
   .hz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
   .hz-grid button {
     background: var(--line); border-radius: 12px; padding: 12px 8px;
@@ -369,22 +385,27 @@
 
 <div class="bottom">
   <div class="fabs">
+    <div class="fabmenu" id="fabMenu" hidden>
+      <button class="fab warn" id="btnReport" aria-label="بلّغ عن شي بالطريق">
+        <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v5M12 17.5v.01"/></svg>
+      </button>
+      <button class="fab" id="btnTheme" aria-label="الوضع الليلي">
+        <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>
+      </button>
+      <button class="fab" id="btnSettings" aria-label="الإعدادات">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
     <button class="fab" id="btnLocate" aria-label="موقعي">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
     </button>
-    <button class="fab warn" id="btnReport" aria-label="بلّغ عن شي بالطريق">
-      <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v5M12 17.5v.01"/></svg>
-    </button>
-    <button class="fab" id="btnTheme" aria-label="الوضع الليلي">
-      <svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>
-    </button>
-    <button class="fab" id="btnSettings" aria-label="الإعدادات">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    <button class="fab" id="btnMenu" aria-label="القائمة" aria-haspopup="true" aria-expanded="false" aria-controls="fabMenu">
+      <svg viewBox="0 0 24 24"><path class="ic-bars" d="M4 7h16M4 12h16M4 17h16"/><path class="ic-x" d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
   </div>
 
   <div class="panel" id="reportPanel" hidden>
-    <h3>شنو شفت بالطريق؟ (يوصل لكل المستخدمين)</h3>
+    <div class="ph"><h3>شنو شفت بالطريق؟ (يوصل لكل المستخدمين)</h3><button class="px" id="rpClose" aria-label="إغلاق">✕</button></div>
     <div class="hz-grid" id="hzGrid"></div>
   </div>
 
@@ -612,7 +633,7 @@
   let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
   // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
   const TILT = 50;
-  const APP_VER = 54; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
+  const APP_VER = 55; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
   const VIEW_NOTES = {
     '2d': 'الخريطة مسطّحة والشمال دائماً فوق.',
     '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة). كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.',
@@ -2348,7 +2369,25 @@
   $('speedoSwitch').onchange = () => { settings.speedo = $('speedoSwitch').checked; saveSettings(); syncSettingsUI(); };
   $('bld3dSwitch').onchange = () => { settings.bld3d = $('bld3dSwitch').checked; saveSettings(); b3dSync(); };
   $('bldAllSwitch').onchange = () => { settings.bldAll = $('bldAllSwitch').checked; saveSettings(); bldToggle(); };
-  $('btnSettings').onclick = () => { showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
+  /* ---- زر القائمة (☰): يظهر البلاغات والوضع الليلي والإعدادات، وينطوي بعد 5 ثواني بدون لمس ---- */
+  const FAB_MENU_MS = 5000;
+  let fabTimer = 0, fabClosing = 0;
+  function fabMenuSet(open, now) {
+    const m = $('fabMenu'), b = $('btnMenu');
+    clearTimeout(fabTimer); clearTimeout(fabClosing);
+    m.classList.remove('closing');
+    if (open) { m.hidden = false; fabArm(); }
+    else if (!m.hidden) {
+      if (now) m.hidden = true;
+      else { m.classList.add('closing'); fabClosing = setTimeout(() => { m.hidden = true; m.classList.remove('closing'); }, 160); }
+    }
+    b.classList.toggle('on', !!open);
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function fabArm() { clearTimeout(fabTimer); fabTimer = setTimeout(() => fabMenuSet(false), FAB_MENU_MS); }
+  $('btnMenu').onclick = () => fabMenuSet($('fabMenu').hidden || $('fabMenu').classList.contains('closing'));
+  $('fabMenu').addEventListener('pointerdown', () => { if (!$('fabMenu').classList.contains('closing')) fabArm(); }); // كل لمسة تعيد العدّاد
+  $('btnSettings').onclick = () => { fabMenuSet(false, true); showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
   $('setBack').onclick = () => { if (setPage === 'main') $('settings').hidden = true; else showSetPage('main'); };
   document.querySelectorAll('#setMain [data-page]').forEach((b) => { b.onclick = () => showSetPage(b.dataset.page); });
 
@@ -2776,7 +2815,8 @@
     };
     grid.appendChild(b);
   });
-  $('btnReport').onclick = () => { $('reportPanel').hidden = !$('reportPanel').hidden; };
+  $('btnReport').onclick = () => { const pn = $('reportPanel'); pn.hidden = !pn.hidden; state.reportAt = null; };
+  $('rpClose').onclick = () => { $('reportPanel').hidden = true; state.reportAt = null; };
   loadHazards(false);
   setInterval(() => { if (!document.hidden) loadHazards(true); }, 20000);
 

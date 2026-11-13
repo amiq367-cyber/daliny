@@ -465,7 +465,7 @@
         <div class="fb-status" id="fbStatus" role="status" aria-live="polite" hidden></div>
         <p class="set-note">نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك أو أي معلومات شخصية.</p>
       </div>
-      <p class="set-note" id="abCredits">مصادر الخرائط والبيانات: © مساهمو OpenStreetMap، خرائط Protomaps، عرض الخريطة بـ MapLibre، حساب المسار OSRM، والطقس من Open-Meteo.com.</p>
+      <p class="set-note" id="abCredits">مصادر الخرائط والبيانات: © مساهمو OpenStreetMap، خرائط Protomaps، مباني العراق © Overture Maps Foundation (رخصة ODbL)، عرض الخريطة بـ MapLibre، حساب المسار OSRM، والطقس من Open-Meteo.com.</p>
     </div>
     <div id="setWeather" hidden>
       <label class="set-row" for="wxShowSwitch"><span>إظهار الطقس على الخريطة</span><input type="checkbox" id="wxShowSwitch" class="switch"></label>
@@ -559,7 +559,10 @@
       </div>
       <p class="set-note" id="viewNote"></p>
       <label class="set-row" for="bld3dSwitch"><span>المباني المجسّمة (3D)</span><input type="checkbox" id="bld3dSwitch" class="switch"></label>
-      <p class="set-note">تظهر المباني ببروز عند تقريب الخريطة، بالعرض المائل فقط وبالمحافظات المنزّلة بدون إنترنت. إذا حسّيت الجهاز يثقل أطفئها.</p>
+      <p class="set-note">تظهر المباني ببروز عند تقريب الخريطة (من مستوى 15) بالعرض المائل فقط. إذا حسّيت الجهاز يثقل أطفئها.</p>
+      <label class="set-row" for="bldAllSwitch"><span>كل المباني (من الإنترنت)</span><input type="checkbox" id="bldAllSwitch" class="switch"></label>
+      <p class="set-note">تظهر كل مباني العراق على الخريطة بأشكالها الحقيقية، وبارتفاعها الحقيقي لما يكون معروف. المباني اللي ارتفاعها مجهول تظهر بارتفاع تقديري (7 م). تحتاج إنترنت. إذا حسّيت الخريطة تثقل أطفئها.</p>
+      <p class="set-note" id="bldStat"></p>
       <label class="set-row" for="speedoSwitch"><span>عداد السرعة أثناء الملاحة</span><input type="checkbox" id="speedoSwitch" class="switch"></label>
       <p class="set-note">المظهر التلقائي: نهاري من شروق الشمس إلى غروبها حسب موقعك، وليلي بعد الغروب. زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.</p>
     </div>
@@ -600,7 +603,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true, bldAll: true
   };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('daliny-settings') || '{}')); } catch (e) {}
   if (settings.mapView !== '2d' && settings.mapView !== '3d' && settings.mapView !== 'auto') settings.mapView = '2d';
@@ -609,10 +612,10 @@
   let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
   // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
   const TILT = 50;
-  const APP_VER = 53; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
+  const APP_VER = 54; // رقم الإصدار: يظهر بالإعدادات وبصفحة حول البرنامج
   const VIEW_NOTES = {
     '2d': 'الخريطة مسطّحة والشمال دائماً فوق.',
-    '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة) بالمحافظات المنزّلة بدون إنترنت. كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.',
+    '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة). كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.',
     'auto': 'مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.'
   };
 
@@ -783,6 +786,9 @@
   let curFlavor = isDark() ? 'dark' : 'light';
   let routePts = [];
   let packsReady = false;
+  // كل المباني (Overture): فهرس المحافظات، اللي مضافة للخريطة، اللي ثبت إنها تشتغل، واللي فشلت (وقت الفشل)
+  const BLD_BASE = 'https://amiq367-cyber.github.io/bld/', BLD_IDX_KEY = 'daliny-bldidx', BLD_Z = 14, BLD_RETRY = 90000, BLD_ATTR = '© Overture Maps Foundation, © OpenStreetMap';
+  let bldIdx = {}, bldAct = {}, bldOk = {}, bldBad = {}, bldErr = {}, bldReady = false;
   function routeGeo() {
     return { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: routePts.map((q) => [q[1], q[0]]) } };
   }
@@ -997,7 +1003,7 @@
   function mkMarker(el, lat, lng, opts) {
     return new maplibregl.Marker(Object.assign({ element: el }, opts || {})).setLngLat([lng, lat]).addTo(map);
   }
-  function rebuildStyle() { map.setStyle(baseStyle(curFlavor), { diff: false }); }
+  function rebuildStyle() { bldReady = false; map.setStyle(baseStyle(curFlavor), { diff: false }); }
 
   applyTheme();
   setInterval(() => { if (settings.theme === 'auto') applyTheme(); }, 60000); // التلقائي يتبدل مع الشروق والغروب
@@ -1783,6 +1789,7 @@
         d.layers.forEach((l) => map.addLayer(l, before));
         if (p.id === 'iraq' && map.getLayer('osm')) map.setLayoutProperty('osm', 'visibility', 'none');
         b3dAdd(p);
+        bldReorder();
       } catch (e) { console.warn('pack layer', e); }
     };
     if (packsReady) go(); else map.once('load', go);
@@ -1792,6 +1799,7 @@
       map.getStyle().layers.filter((l) => l.id.indexOf('pm-' + p.id + '-') === 0).forEach((l) => map.removeLayer(l.id));
       if (map.getSource('pm-' + p.id)) map.removeSource('pm-' + p.id);
       if (p.id === 'iraq' && map.getLayer('osm')) map.setLayoutProperty('osm', 'visibility', 'visible');
+      bldReorder(); b3dSync();
     } catch (e) {}
   }
   map.once('load', () => { packsReady = true; });
@@ -1800,10 +1808,13 @@
   /* ---- المباني المجسّمة (3D) ----
      طبقة تجسيم (fill-extrusion) فوق مباني كل محافظة منزّلة. نضيفها برمجياً (مو داخل ستايل الخريطة)
      حتى لو صار فيها خطأ ما تتخرب الخريطة نفسها. تظهر فقط لما الخريطة مائلة ومن مستوى تقريب 15
-     (قبله بيانات المباني مدمجة). المبنى اللي ما له ارتفاع بالبيانات ناخذ له 7 م (دورين تقريباً). */
+     (قبله بيانات المباني مدمجة). المبنى اللي ما له ارتفاع بالبيانات ناخذ له 7 م (دورين تقريباً).
+     من الإصدار 54: إذا ملفات «كل المباني» (القسم اللي تحت) اشتغلت لمحافظة، تحل محل هذي الطبقة حتى ما ينرسم المبنى مرتين،
+     وإذا ما اشتغلت (بدون إنترنت مثلاً) ترجع هذي الطبقة تظهر من الحزمة المنزّلة. */
   const B3D_ZOOM = 15, B3D_DEF_H = 7;
   const b3dId = (p) => 'pm-' + p.id + '-b3d';
   function b3dWant() { return settings.bld3d !== false && map.getPitch() > 5; }
+  function setVis(id, v) { if (map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== v) map.setLayoutProperty(id, 'visibility', v); }
   function b3dAdd(p) {
     try {
       if (!p.bbox || p.maxZoom < B3D_ZOOM) return;            // العراق (الأساس) والأنبار (لحد 14) ما فيهم مباني منفصلة
@@ -1819,7 +1830,7 @@
       map.addLayer({
         id: id, type: 'fill-extrusion', source: src, 'source-layer': 'buildings', minzoom: B3D_ZOOM,
         filter: ['!=', ['get', 'kind'], 'building_part'],
-        layout: { visibility: b3dWant() ? 'visible' : 'none' },
+        layout: { visibility: b3dWant() && !bldGood(p.id) ? 'visible' : 'none' },
         paint: {
           'fill-extrusion-color': curFlavor === 'dark' ? '#4a5760' : '#d8d2c8',
           'fill-extrusion-height': hgt(),
@@ -1830,12 +1841,160 @@
   }
   function b3dSync() {
     try {
-      const vis = b3dWant() ? 'visible' : 'none';
-      PACKS.forEach((p) => { const id = b3dId(p); if (map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== vis) map.setLayoutProperty(id, 'visibility', vis); });
+      const want = b3dWant(), all = settings.bldAll !== false;
+      PACKS.forEach((p) => setVis(b3dId(p), want && !bldGood(p.id) ? 'visible' : 'none'));
+      Object.keys(bldAct).forEach((id) => {
+        setVis(bldLid(id, 'flat'), all ? 'visible' : 'none');
+        setVis(bldLid(id, 'ext'), all && want ? 'visible' : 'none');
+      });
     } catch (e) {}
   }
   map.on('pitch', b3dSync);
-  map.on('style.load', () => { PACKS.forEach((p) => { if (packsInstalled.includes(p.id)) b3dAdd(p); }); }); // أول تحميل + بعد تبديل نهاري/ليلي
+
+  /* ---- كل المباني (Overture) ----
+     ملفات جاهزة لكل محافظة بمجلد bld على نفس الموقع: شكل كل مبنى، وارتفاعه (h) لما يكون معروف.
+     ما ننزّلها كلها: نضيف مصدر المحافظة فقط لما تدخل الشاشة (من تقريب 13)، والخريطة تسحب منه الأجزاء اللي تحتاجها بس.
+     المباني تنرسم مسطّحة دائماً (من 14)، ومجسّمة بالعرض المائل (من 15). المبنى بدون ارتفاع معروف ياخذ 7 م.
+     إذا الملف ما انفتح (بدون إنترنت مثلاً) نرجع لمباني الحزمة المنزّلة. */
+  const bldSrc = (id) => 'bld-' + id;
+  const bldLid = (id, k) => 'bld-' + id + '-' + k;
+  const bldGood = (id) => settings.bldAll !== false && !!bldAct[id] && !!bldOk[id];
+  function bldClean(sh) {                                      // نقبل بس السجلات السليمة من index.json
+    const out = {};
+    if (!sh || typeof sh !== 'object') return out;
+    Object.keys(sh).forEach((id) => {
+      const q = sh[id];
+      if (!/^[a-z0-9_]{1,32}$/.test(id) || !q || !Array.isArray(q.bbox) || q.bbox.length !== 4) return;
+      const bb = q.bbox.map(Number);
+      if (!bb.every((v) => isFinite(v)) || bb[0] >= bb[2] || bb[1] >= bb[3]) return;
+      out[id] = { id: id, name: String(q.name || id), bbox: bb, bytes: Number(q.bytes) || 0, release: String(q.release || ''), built_at: String(q.built_at || ''), buildings: Number(q.buildings) || 0 };
+    });
+    return out;
+  }
+  function bldVer(q) { return encodeURIComponent(String(q.built_at || q.release || '1').replace(/[^0-9A-Za-z]/g, '') + '-' + (q.bytes || 0)); }
+  function bldBefore() {                                       // نحط المباني فوق شوارع آخر حزمة وتحت كتاباتها
+    const ls = map.getStyle().layers;
+    for (let i = ls.length - 1; i >= 0; i--) {
+      if (!/^pm-/.test(ls[i].id)) continue;
+      const src = ls[i].source;
+      const sym = ls.find((l) => l.source === src && l.type === 'symbol');
+      if (sym) return sym.id;
+      break;
+    }
+    return 'traffic-glow';
+  }
+  function bldDefs(id) {
+    const dark = curFlavor === 'dark', src = bldSrc(id);
+    const h = ['to-number', ['get', 'h'], 0];
+    return [
+      { id: bldLid(id, 'flat'), type: 'fill', source: src, 'source-layer': 'buildings', minzoom: BLD_Z,
+        layout: { visibility: settings.bldAll !== false ? 'visible' : 'none' },
+        paint: { 'fill-color': dark ? '#3a444b' : '#d9d3ca', 'fill-outline-color': dark ? '#56626a' : '#bdb5aa' } },
+      { id: bldLid(id, 'ext'), type: 'fill-extrusion', source: src, 'source-layer': 'buildings', minzoom: B3D_ZOOM,
+        layout: { visibility: settings.bldAll !== false && b3dWant() ? 'visible' : 'none' },
+        paint: { 'fill-extrusion-color': dark ? '#4a5760' : '#d8d2c8', 'fill-extrusion-height': ['case', ['>', h, 0], h, B3D_DEF_H], 'fill-extrusion-base': 0 } }
+    ];
+  }
+  function bldAdd(id) {
+    if (bldAct[id] || !bldIdx[id]) return;
+    try {
+      const q = bldIdx[id], src = bldSrc(id);
+      if (!map.getSource(src)) map.addSource(src, { type: 'vector', url: 'pmtiles://' + BLD_BASE + id + '.pmtiles?v=' + bldVer(q), minzoom: BLD_Z, maxzoom: BLD_Z, bounds: q.bbox, attribution: BLD_ATTR });
+      const before = bldBefore();
+      bldDefs(id).forEach((l) => { if (!map.getLayer(l.id)) map.addLayer(l, before); });
+      bldAct[id] = true;
+    } catch (e) { console.warn('bld add', e); }
+  }
+  function bldRemove(id) {
+    try {
+      ['ext', 'flat'].forEach((k) => { if (map.getLayer(bldLid(id, k))) map.removeLayer(bldLid(id, k)); });
+      if (map.getSource(bldSrc(id))) map.removeSource(bldSrc(id));
+    } catch (e) {}
+    delete bldAct[id];
+  }
+  function bldStat() {                                         // سطر الحالة بالإعدادات (يساعدنا نعرف إذا الملفات تشتغل)
+    const el = $('bldStat');
+    if (!el) return;
+    const nm = (id) => (bldIdx[id] && bldIdx[id].name) || id;
+    let t;
+    if (settings.bldAll === false) t = 'الحالة: مطفأة.';
+    else if (!Object.keys(bldIdx).length) t = 'الحالة: ما وصلت قائمة المباني بعد. تحتاج إنترنت (أول مرة بس).';
+    else {
+      const act = Object.keys(bldAct), good = act.filter((id) => bldOk[id]), wait = act.filter((id) => !bldOk[id]);
+      const bad = Object.keys(bldBad).filter((id) => !bldAct[id]);
+      t = 'الحالة: جاهزة (' + Object.keys(bldIdx).length + ' محافظة).';
+      if (good.length) t += ' شغّالة هنا: ' + good.map(nm).join('، ') + '.';
+      if (wait.length) t += ' جاري التحميل: ' + wait.map(nm).join('، ') + '.';
+      if (bad.length) t += ' تعذّر فتح: ' + bad.map((id) => nm(id) + (bldErr[id] ? ' (' + bldErr[id] + ')' : '')).join('، ') + '.';
+      if (!act.length && !bad.length) t += ' قرّب الخريطة (مستوى 13 وفوق) حتى تظهر.';
+    }
+    el.textContent = t;
+  }
+  function bldSync() {                                         // نضيف محافظات الشاشة الحالية، ونحدّث الظهور
+    if (!bldReady) return;
+    try {
+      if (settings.bldAll !== false && map.getZoom() >= BLD_Z - 1 && Object.keys(bldIdx).length) {
+        const b = map.getBounds(), w = b.getWest(), s = b.getSouth(), e = b.getEast(), n = b.getNorth(), now = Date.now();
+        Object.keys(bldIdx).forEach((id) => {
+          const bb = bldIdx[id].bbox;
+          if (bb[0] > e || bb[2] < w || bb[1] > n || bb[3] < s) return;
+          if (bldBad[id] && now - bldBad[id] < BLD_RETRY) return;
+          bldAdd(id);
+        });
+      }
+      b3dSync();
+    } catch (e) { console.warn('bld sync', e); }
+    bldStat();
+  }
+  function bldReorder() {                                      // بعد إضافة/حذف حزمة: نرجّع المباني لمكانها الصحيح
+    try {
+      const ids = Object.keys(bldAct);
+      if (!ids.length) return;
+      const before = bldBefore();
+      ids.forEach((id) => ['flat', 'ext'].forEach((k) => { if (map.getLayer(bldLid(id, k))) map.moveLayer(bldLid(id, k), before); }));
+    } catch (e) { console.warn('bld reorder', e); }
+  }
+  function bldToggle() {
+    if (settings.bldAll === false) Object.keys(bldAct).forEach(bldRemove);
+    bldSync();
+  }
+  function bldLoadIdx() {
+    fetch(BLD_BASE + 'index.json', { cache: 'no-cache' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('bld index ' + r.status))))
+      .then((j) => {
+        const sh = bldClean(j && j.shards);
+        if (!Object.keys(sh).length) return;
+        bldIdx = sh;
+        try { localStorage.setItem(BLD_IDX_KEY, JSON.stringify({ shards: sh })); } catch (e) {}
+        bldSync();
+      })
+      .catch(() => { bldStat(); });
+  }
+  map.on('sourcedata', (e) => {                                // وصل وصف الملف = الملف يشتغل
+    const m = /^bld-(.+)$/.exec((e && e.sourceId) || '');
+    if (!m || e.dataType !== 'source' || bldOk[m[1]]) return;
+    if (e.sourceDataType === 'metadata' || e.sourceDataType === 'content') { bldOk[m[1]] = true; delete bldBad[m[1]]; delete bldErr[m[1]]; b3dSync(); bldStat(); }
+  });
+  map.on('error', (e) => {                                     // الملف ما انفتح: نشيله ونرجع لمباني الحزمة، ونعيد المحاولة بعد شوي
+    try {
+      const m = /^bld-(.+)$/.exec((e && e.sourceId) || '');
+      if (!m || bldOk[m[1]]) return;
+      const id = m[1];
+      bldBad[id] = Date.now();
+      bldErr[id] = String((e.error && e.error.message) || 'error').slice(0, 60);
+      // نشيله بعد ما ينتهي إشعار الخطأ (ما نعدّل الخريطة وسط إشعار صادر منها)
+      setTimeout(() => { if (!bldOk[id]) bldRemove(id); b3dSync(); bldStat(); }, 0);
+    } catch (_) {}
+  });
+  map.on('moveend', bldSync);
+  window.addEventListener('online', () => { bldBad = {}; bldErr = {}; bldLoadIdx(); bldSync(); });
+  map.on('style.load', () => {                                 // أول تحميل + بعد تبديل نهاري/ليلي (كل المصادر تنمسح وتنبني من جديد)
+    bldReady = true; bldAct = {};
+    PACKS.forEach((p) => { if (packsInstalled.includes(p.id)) b3dAdd(p); });
+    bldSync();
+  });
+  try { const j = JSON.parse(localStorage.getItem(BLD_IDX_KEY) || 'null'); if (j && j.shards) bldIdx = bldClean(j.shards); } catch (e) {}
+  bldLoadIdx();
 
   // نحفظ الخطوط والرموز للعمل بدون إنترنت (يحفظها الـ service worker)
   if (navigator.onLine) {
@@ -2027,6 +2186,8 @@
     $('viewNote').textContent = VIEW_NOTES[settings.mapView] || '';
     $('speedoSwitch').checked = settings.speedo;
     $('bld3dSwitch').checked = settings.bld3d !== false;
+    $('bldAllSwitch').checked = settings.bldAll !== false;
+    bldStat();
     $('navSpeed').hidden = !settings.speedo;
     $('spdUnit').textContent = speedUnitLabel();
     // البلاغات
@@ -2186,6 +2347,7 @@
   });
   $('speedoSwitch').onchange = () => { settings.speedo = $('speedoSwitch').checked; saveSettings(); syncSettingsUI(); };
   $('bld3dSwitch').onchange = () => { settings.bld3d = $('bld3dSwitch').checked; saveSettings(); b3dSync(); };
+  $('bldAllSwitch').onchange = () => { settings.bldAll = $('bldAllSwitch').checked; saveSettings(); bldToggle(); };
   $('btnSettings').onclick = () => { showSetPage('main'); syncSettingsUI(); $('settings').hidden = false; };
   $('setBack').onclick = () => { if (setPage === 'main') $('settings').hidden = true; else showSetPage('main'); };
   document.querySelectorAll('#setMain [data-page]').forEach((b) => { b.onclick = () => showSetPage(b.dataset.page); });

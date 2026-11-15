@@ -8,7 +8,7 @@ const LIB_URLS = [
   'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css',
   'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js',
   'https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js',
-  'https://unpkg.com/@protomaps/basemaps@5/dist/basemaps.js'
+  'https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js'
 ];
 
 self.addEventListener('install', (e) => {

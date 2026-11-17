@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- سياج الحماية (CSP): يسمح فقط بسكربت التطبيق نفسه (بصمة SHA-256) ومكتبات الخرائط بنسخ ثابتة، ويمنع أي سكربت أو معالج مدمج ثاني.
      ⚠️ البصمة sha256 تُحسب من نص السكربت الرئيسي حرفياً: أي تعديل بالسكربت لازم تتحدث البصمة (أداة build-csp.js)، وإلا ما يشتغل التطبيق. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-y6p3Y8LH39MNTifKVuCrzF7c48t1FsVi0n4X9uDP+lA=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-wLREyKjuvduizt/uue4nliz/b5bTXyo4Lt/7hKHm02k=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>دليني</title>
@@ -336,6 +336,27 @@
     max-width: 90vw; text-align: center; box-shadow: var(--shadow); white-space: pre-line;
   }
 
+  /* ---------- نافذة الموافقة على مشاركة الزحام (فوق الإعدادات 3000 وتحت التنبيه 4000) ---------- */
+  #consent {
+    position: fixed; inset: 0; z-index: 3500; background: rgba(8, 20, 26, .62);
+    display: flex; align-items: center; justify-content: center;
+    padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .cn-card {
+    background: var(--bg); color: var(--fg); border-radius: 18px; box-shadow: var(--shadow);
+    width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; padding: 20px 18px 16px; outline: none;
+  }
+  .cn-card h3 { margin: 0 0 8px; font-size: 1.25rem; }
+  .cn-lead { margin: 0 0 10px; line-height: 1.8; }
+  .cn-list { margin: 0 0 10px; padding: 0 20px 0 0; line-height: 1.8; }
+  .cn-list li { margin-bottom: 4px; }
+  .cn-foot { color: var(--muted); font-size: .9rem; line-height: 1.7; margin: 0 0 14px; }
+  .cn-acts { display: flex; gap: 10px; }
+  .cn-acts button { flex: 1; padding: 14px 10px; border-radius: 12px; font-weight: 700; }
+  .cn-yes { background: var(--accent); color: var(--accent-fg); }
+  .cn-no { background: var(--line); color: var(--fg); }
+  .tr-priv .cn-list { margin: 0 4px 10px; color: var(--muted); font-size: .9rem; }
+
   /* ---------- علامات الخريطة ---------- */
   /* موقعي: مثلث مجسّم، الظل ثابت تحته والمثلث يدور مع اتجاه الحركة */
   .me3d { position: relative; width: 44px; height: 52px; }
@@ -446,6 +467,18 @@
 </div>
 
 <!-- شاشة الإعدادات -->
+<div id="consent" hidden role="dialog" aria-modal="true" aria-labelledby="cnTitle">
+  <div class="cn-card" id="cnCard" tabindex="-1">
+    <h3 id="cnTitle">تشارك سرعتك لكشف الزحام؟</h3>
+    <p class="cn-lead" id="cnLead"></p>
+    <ul class="cn-list" id="cnList"></ul>
+    <p class="cn-foot" id="cnFoot"></p>
+    <div class="cn-acts">
+      <button type="button" class="cn-yes" id="cnYes">أوافق</button>
+      <button type="button" class="cn-no" id="cnNo">لا، شكراً</button>
+    </div>
+  </div>
+</div>
 <div id="settings" hidden role="dialog" aria-label="الإعدادات">
   <div class="set-head">
     <button id="setBack" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
@@ -462,7 +495,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="about"><span>حول البرنامج</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: v1.0.0</p>
+      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: v1.1.0</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -514,6 +547,7 @@
     <div id="setTraffic" hidden>
       <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
       <label class="set-row" for="trafficShareSwitch"><span>أشارك سرعتي لكشف الزحام (أثناء الملاحة فقط، بدون هوية)</span><input type="checkbox" id="trafficShareSwitch" class="switch"></label>
+      <details class="tr-priv"><summary>ما الذي يُرسل بالضبط؟</summary><p class="set-note" id="trPrivLead"></p><ul class="cn-list" id="trPrivList"></ul></details>
       <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة.</p>
       <div id="trDev" hidden>
         <p class="set-note">أدوات المطوّر (للتجربة فقط)</p>
@@ -636,10 +670,12 @@
     sim: null, wake: null
   };
 
+  // رقم نسخة نص الموافقة على مشاركة الزحام: إذا تغيّر شي بما نرسله نرفعه، فيُسأل الجميع من جديد
+  const TR_CONSENT_V = 1;
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: true, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true, bldAll: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: false, trafficConsent: 0, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true, bldAll: true
   };
   // نقرأ فقط المفاتيح المعروفة وبنفس النوع (يمنع أي قيمة غريبة بالتخزين المحلي من التأثير على التطبيق)
   try {
@@ -654,17 +690,22 @@
           }
         } else if (typeof v === typeof settings[k] && (typeof v !== 'number' || isFinite(v))) settings[k] = v;
       });
+      // قبل نافذة الموافقة كانت مشاركة الزحام مفعّلة افتراضياً، فمن طفّاها بنفسه نعتبر جوابه «لا» ولا نسأله مرة ثانية
+      if (saved.trafficShare === false && settings.trafficConsent !== TR_CONSENT_V) { settings.trafficConsent = TR_CONSENT_V; settings.trafficShare = false; }
     }
   } catch (e) {}
   if (settings.mapView !== '2d' && settings.mapView !== '3d' && settings.mapView !== 'auto') settings.mapView = '2d';
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
+  // الإرسال (موقعي وسرعتي) ما يصير إلا إذا جاوبت على نافذة الموافقة بـ«أوافق» وما طفّيت المفتاح
+  const trConsented = () => settings.trafficConsent === TR_CONSENT_V;
+  const trShareOn = () => trConsented() && settings.trafficShare === true;
   // وضع المطوّر: أدوات الاختبار مخفية، وتظهر بالضغط 7 مرات سريعة على رقم الإصدار (بالإعدادات)
   let devMode = false; try { devMode = localStorage.getItem('daliny-dev') === '1'; } catch (e) {}
   // عرض الخريطة: 2d مسطّحة والشمال فوق، 3d مائلة ومدوّرة حسب اتجاه الحركة، auto مسطّحة وتميل أثناء الملاحة فقط
   const TILT = 50;
   // رقم الإصدار بثلاث خانات: رئيسي.فرعي.إصلاح (MAJOR.MINOR.PATCH) ويظهر بالإعدادات وبصفحة حول البرنامج
   //   الأول (رئيسي): تغيير كبير بالبرنامج. الثاني (فرعي): ميزة جديدة. الثالث (إصلاح): تصليح صغير بدون ميزة جديدة.
-  const APP_VERSION = '1.0.0';
+  const APP_VERSION = '1.1.0';
   // نفس الرقم بصيغة رقمية تنرسل مع رسائل الاقتراحات: 1.0.0 => 10000 ، 1.2.3 => 10203 (تقبلها قواعد القاعدة القديمة والجديدة)
   const APP_BUILD = APP_VERSION.split('.').reduce((n, p, i) => n + (parseInt(p, 10) || 0) * [10000, 100, 1][i], 0);
   function verEl(prefix) { // «v1.0.0» تنكتب من اليسار لليمين حتى لو النص عربي
@@ -2309,7 +2350,7 @@
     $('hazAltSwitch').checked = settings.hazAlt !== false;
     $('hazAltPoliceSwitch').checked = settings.hazAltPolice !== false;
     $('trafficShowSwitch').checked = settings.trafficShow !== false;
-    $('trafficShareSwitch').checked = settings.trafficShare !== false;
+    $('trafficShareSwitch').checked = trShareOn();
     $('trafficWalkSwitch').checked = settings.trafficWalk === true;
     $('wxShowSwitch').checked = settings.wxShow !== false;
     $('wxAlertSwitch').checked = settings.wxAlert !== false;
@@ -2320,7 +2361,15 @@
   $('hazAltSwitch').onchange = () => { settings.hazAlt = $('hazAltSwitch').checked; saveSettings(); };
   $('hazAltPoliceSwitch').onchange = () => { settings.hazAltPolice = $('hazAltPoliceSwitch').checked; saveSettings(); };
   $('trafficWalkSwitch').onchange = () => { settings.trafficWalk = $('trafficWalkSwitch').checked; saveSettings(); trMaxV = 0; };
-  $('trafficShareSwitch').onchange = () => { settings.trafficShare = $('trafficShareSwitch').checked; saveSettings(); if (!settings.trafficShare) trUnshare(); };
+  $('trafficShareSwitch').onchange = () => {
+    const sw = $('trafficShareSwitch');
+    if (sw.checked && !trConsented()) { // أول مرة تشغّله: نعرض نافذة الموافقة بكل التفاصيل، وهي اللي تحفظ جوابك
+      sw.checked = false;
+      trAskConsent();
+      return;
+    }
+    settings.trafficShare = sw.checked; saveSettings(); if (!settings.trafficShare) trUnshare();
+  };
   $('trafficShowSwitch').onchange = () => { settings.trafficShow = $('trafficShowSwitch').checked; saveSettings(); trRefresh(); };
   function applyDev() { const d = $('trDev'); if (d) d.hidden = !devMode; }
   applyDev();
@@ -2761,7 +2810,44 @@
   }
   function stopSim() { if (state.sim) { clearInterval(state.sim); state.sim = null; } }
 
-  $('startBtn').onclick = () => startNav(false);
+  /* ================= موافقة مشاركة الزحام ================= */
+  // ما نرسل موقعك ولا سرعتك لأحد إلا بعد موافقتك. السؤال يظهر مرة وحدة قبل أول ملاحة حقيقية، وتغيّر جوابك بأي وقت من الإعدادات ← الزحام.
+  // هذا النص هو نفسه اللي يظهر بالنافذة وبالإعدادات، وكل نقطة فيه لازم تطابق شغل trShare فعلاً؛ إذا تغيّر الإرسال لازم يتغيّر النص ويرتفع TR_CONSENT_V.
+  const TR_PRIVACY = {
+    lead: 'أثناء الملاحة، يكدر دليني يرسل سرعتك واتجاهك وموقعك (بدقة حوالي 10 أمتار) حتى يظهر الزحام لباقي السواق.',
+    points: [
+      'بدون اسمك أو رقمك أو حسابك، وبهوية عشوائية جديدة لكل رحلة.',
+      'ما يرسل إلا أثناء الملاحة، وبعد ما تتجاوز سرعتك 15 كم/س (يعني بالسيارة، مو ماشي).',
+      'ما يرسل أول 300 متر ولا آخر 300 متر من رحلتك، حتى ما ينكشف بيتك أو شغلك.',
+      'يبقى آخر موقع بس (مو سجل لتنقلاتك)، ويتمسح لما تنتهي الملاحة.'
+    ],
+    foot: 'إذا ما وافقت، الملاحة وعرض الزحام يشتغلون عادي. وتكدر تغيّر رأيك بأي وقت من الإعدادات ← الزحام.'
+  };
+  function trFillPrivacy(ul) {
+    ul.textContent = '';
+    TR_PRIVACY.points.forEach((s) => { const li = document.createElement('li'); li.textContent = s; ul.appendChild(li); });
+  }
+  $('cnLead').textContent = TR_PRIVACY.lead; trFillPrivacy($('cnList')); $('cnFoot').textContent = TR_PRIVACY.foot;
+  $('trPrivLead').textContent = TR_PRIVACY.lead; trFillPrivacy($('trPrivList'));
+  let cnThen = null;
+  // then(وافق؟) يُستدعى بعد جوابك، أو فوراً إذا سبق وجاوبت
+  function trAskConsent(then) {
+    if (trConsented()) { if (then) then(trShareOn()); return; }
+    cnThen = then || null;
+    $('consent').hidden = false;
+    try { $('cnCard').focus(); } catch (e) {}
+  }
+  function trAnswer(yes) {
+    settings.trafficConsent = TR_CONSENT_V; settings.trafficShare = !!yes; saveSettings();
+    $('consent').hidden = true;
+    syncSettingsUI();
+    const f = cnThen; cnThen = null;
+    if (f) f(!!yes);
+  }
+  $('cnYes').onclick = () => trAnswer(true);
+  $('cnNo').onclick = () => trAnswer(false);
+
+  $('startBtn').onclick = () => trAskConsent(() => startNav(false));
   $('simBtn').onclick = () => startNav(true);
   $('cancelBtn').onclick = () => { clearRoute(); if (settings.mapView === '3d') applyMapView(); };
   $('endBtn').onclick = () => endNav('انتهت الملاحة');
@@ -2982,7 +3068,7 @@
     if (state.sim) { trDiag = 'ملاحة تجريبية: لا يرسل'; trRenderLive(); return; }
     if (!okLL(lat, lng)) return;
     if (!trOrigin) trOrigin = [lat, lng]; // نقطة بداية هذي الرحلة
-    if (settings.trafficShare === false) { trDiag = 'المشاركة مطفأة'; trRenderLive(); return; }
+    if (!trShareOn()) { trDiag = trConsented() ? 'المشاركة مطفأة' : 'بانتظار موافقتك على المشاركة'; trRenderLive(); return; }
     if (!navigator.onLine) { trDiag = 'لا يوجد إنترنت'; trRenderLive(); return; }
     if (typeof speedMs !== 'number' || isNaN(speedMs) || speedMs < 0) { trDiag = 'الجهاز لا يعطي سرعة (GPS)'; trRenderLive(); return; }
     // لا نرسل إلا بعد أن تتجاوز سرعتك 15 كم/س مرة واحدة بهذه الملاحة (يعني سيارة، مو ماشي)؛ وبعدها نرسل حتى لو وقفت بالزحام
@@ -3051,6 +3137,7 @@
   trLoad();
   // اختبار: يرسل عينة واحدة ويتأكد أن القاعدة قبلتها، ثم يمسحها بعد 20 ثانية
   $('trafficSend').onclick = async () => {
+    if (!trShareOn()) { $('trLive').textContent = 'شغّل مفتاح مشاركة السرعة أولاً (يحتاج موافقتك)'; return; }
     const out = $('trLive'), c = state.user ? { lat: state.user.lat, lng: state.user.lng } : map.getCenter();
     const lat = c.lat, lng = c.lng;
     out.textContent = 'جاري الإرسال...';

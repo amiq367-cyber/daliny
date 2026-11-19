@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<!-- صفحة ثابتة بلا أي سكربت. السياج يمنع السكربتات وأي اتصال بموقع خارجي، ويسمح فقط بأيقونة التطبيق وأنماط هذي الصفحة. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0a7f8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#172228" media="(prefers-color-scheme: dark)">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="كيف يتعامل تطبيق دليني مع موقعك وبياناتك: ما الذي يُرسل، ولأي جهة، وكم يبقى، وكيف توقفه أو تحذفه.">
+<title>سياسة الخصوصية — دليني</title>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="canonical" href="https://amiq367-cyber.github.io/daliny/privacy.html">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #14232b;
+    --muted: #5d6f78;
+    --line: #dbe4e8;
+    --card: #f2f8f9;
+    --accent: #0a7f8f;
+    --note: #fff7e6;
+    --note-line: #f1dca9;
+    --font: 'Tajawal', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #172228;
+      --fg: #e8f1f4;
+      --muted: #9bb0b9;
+      --line: #2b3b43;
+      --card: #1d2c33;
+      --accent: #2fc0d3;
+      --note: #2a2618;
+      --note-line: #4a4122;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 1.0625rem; line-height: 1.9; }
+  .wrap {
+    max-width: 46rem; margin: 0 auto;
+    padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(40px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+  bdi[dir="ltr"] { overflow-wrap: anywhere; }
+
+  .back {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px;
+    border-radius: 12px; background: var(--card); border: 1px solid var(--line);
+    font-weight: 700; text-decoration: none;
+  }
+  header { text-align: center; padding: 8px 0 4px; }
+  header img { display: block; width: 72px; height: 72px; margin: 14px auto 8px; border-radius: 18px; box-shadow: 0 3px 12px rgba(10, 40, 50, .2); }
+  h1 { margin: 0; font-size: 1.7rem; line-height: 1.4; }
+  .meta { margin: 6px 0 0; color: var(--muted); font-size: .92rem; line-height: 1.7; }
+
+  h2 { margin: 30px 0 8px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.25rem; line-height: 1.5; }
+  h2::before { content: ""; display: inline-block; width: 6px; height: 1.05em; margin-inline-end: 9px; border-radius: 3px; background: var(--accent); vertical-align: -.12em; }
+  p { margin: 8px 0; }
+
+  .sum { margin: 18px 0 0; padding: 14px 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+  .sum h2 { margin: 0 0 6px; padding: 0; border: 0; font-size: 1.15rem; }
+  .sum ul { list-style: none; margin: 0; padding: 0; }
+  .sum li { position: relative; margin: 6px 0; padding-inline-start: 1.6em; }
+  .sum li::before { content: "✓"; position: absolute; inset-inline-start: 0; color: var(--accent); font-weight: 800; }
+
+  dl.feat { margin: 0; }
+  dl.feat > div { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  dl.feat > div:last-child { border-bottom: 0; }
+  dt { font-weight: 800; }
+  dd { margin: 2px 0 0; }
+
+  ul.pts { margin: 8px 0; padding-inline-start: 1.3em; }
+  ul.pts li { margin: 6px 0; }
+
+  .note { margin: 14px 0; padding: 12px 14px; border-radius: 12px; background: var(--note); border: 1px solid var(--note-line); }
+
+  .mails { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+  .mails a { display: inline-block; padding: 9px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); color: var(--fg); font-weight: 700; text-decoration: none; }
+
+  footer { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: .9rem; line-height: 1.8; }
+  footer .back { margin-bottom: 12px; }
+
+  @media print { .back { display: none; } body { font-size: 11pt; } a { color: inherit; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a class="back" href="./">→ العودة إلى دليني</a>
+  <img src="icon-192.png" alt="" width="72" height="72">
+  <h1>سياسة الخصوصية</h1>
+  <p class="meta">تطبيق دليني · آخر تحديث: 19 تشرين الثاني 2026<br>تنطبق على الإصدار <bdi dir="ltr">1.2.0</bdi> وما بعده</p>
+</header>
+
+<main>
+
+<section class="sum" aria-labelledby="h-sum">
+  <h2 id="h-sum">الخلاصة</h2>
+  <ul>
+    <li>دليني بلا حسابات وبلا إعلانات وبلا أدوات تحليل أو تتبّع، ولا يطلب اسمك أو رقمك أو بريدك لتستخدمه.</li>
+    <li>موقعك يُعالَج على جهازك، ولا يخرج منه إلا لتشغيل ميزات التطبيق (المسار، الأماكن القريبة، الطقس، البلاغات)، وبالتفصيل المكتوب أدناه.</li>
+    <li>مشاركة سرعتك لكشف الزحام <b>اختيارية ومطفأة حتى توافق أنت</b>، وتقدر توقفها بأي وقت.</li>
+    <li>لا نبيع بياناتك ولا نعطيها لأي جهة إعلانية.</li>
+  </ul>
+</section>
+
+<h2>من نحن</h2>
+<p>دليني تطبيق ملاحة عراقي، تصمّمه «مركز الذكاء للمعلوماتية والحلول البرمجية» (بابل – العراق). لأي سؤال عن الخصوصية أو لطلب حذف بياناتك راسلنا على أحد البريدين:</p>
+<div class="mails">
+  <a href="mailto:amiq367@gmail.com?subject=%D8%AF%D9%84%D9%8A%D9%86%D9%8A%20-%20%D8%A7%D9%84%D8%AE%D8%B5%D9%88%D8%B5%D9%8A%D8%A9"><bdi dir="ltr">amiq367@gmail.com</bdi></a>
+  <a href="mailto:nonaameer8@gmail.com?subject=%D8%AF%D9%84%D9%8A%D9%86%D9%8A%20-%20%D8%A7%D9%84%D8%AE%D8%B5%D9%88%D8%B5%D9%8A%D8%A9"><bdi dir="ltr">nonaameer8@gmail.com</bdi></a>
+</div>
+
+<h2>ماذا يخرج من جهازك، ولماذا؟</h2>
+<p>كل بند هنا يحدث فقط عندما تعمل الميزة المذكورة. وكل جهة خارجية يتصل بها التطبيق ترى أيضاً عنوان الإنترنت (IP) لجهازك ونوع المتصفح، كأي موقع تفتحه.</p>
+<dl class="feat">
+  <div>
+    <dt>حساب المسار</dt>
+    <dd>نرسل نقطة الانطلاق (موقعك الحالي، أو مركز الخريطة إذا لم يتوفر موقعك) والوجهة <b>بدقتهما الكاملة</b> إلى خادم OSRM العام. ويتكرر ذلك إذا خرجت عن المسار فأعدنا حسابه، أو عندما يبحث التطبيق عن مسار بديل لتجنّب بلاغ على طريقك. لا يمكن حساب الطريق بدون هذه الإحداثيات.</dd>
+  </div>
+  <div>
+    <dt>البحث عن مكان</dt>
+    <dd>النص الذي تكتبه فقط، إلى خدمة Nominatim التابعة لـ OpenStreetMap، عند تنفيذ البحث. لا نرسل موقعك معه.</dd>
+  </div>
+  <div>
+    <dt>أماكن مهمة</dt>
+    <dd>نوع المكان ونصف قطر البحث ومركزه (موقعك، أو مركز الخريطة) <b>بدقة تقارب 100 متر</b>، إلى ثلاثة خوادم Overpass بنفس الوقت (<bdi dir="ltr">overpass-api.de</bdi> و<bdi dir="ltr">overpass.private.coffee</bdi> و<bdi dir="ltr">overpass.kumi.systems</bdi>)، وإن تعذّر ذلك فإلى Nominatim. وإذا طلبت عنوان مكان معيّن نرسل إحداثيات ذلك المكان (لا موقعك).</dd>
+  </div>
+  <div>
+    <dt>الطقس</dt>
+    <dd>مفعّل افتراضياً. نرسل موقعك (أو مركز الخريطة) <b>بدقة تقارب كيلومتراً واحداً</b> إلى Open-Meteo للحصول على الطقس وجودة الهواء، عند فتح التطبيق ثم بشكل دوري. تقدر توقفه من «الإعدادات ← الطقس».</dd>
+  </div>
+  <div>
+    <dt>البلاغات</dt>
+    <dd>عندما تضغط على نوع بلاغ (زحمة سير، حادث، نقطة تفتيش، حفرة أو مطب، طريق مغلق) نرسل نوعه ومكانه (موقعك، أو المكان الذي اخترته على الخريطة) <b>بدقة تقارب المتر</b> ووقته إلى قاعدة بيانات التطبيق في Firebase (من Google، وخوادمها في سنغافورة). يراه كل المستخدمين لمدة 3 ساعات، ويقدر أي مستخدم حذفه بزر «انتهى / حذف». لا يحتوي البلاغ اسمك ولا أي معرّف شخصي.</dd>
+  </div>
+  <div>
+    <dt>الزحام</dt>
+    <dd>مشاركة سرعتك اختيارية ولا تعمل إلا بموافقتك، وتفاصيلها في الفقرة التالية. أما <i>عرض</i> الزحام على الخريطة فلا يحتاج موافقة، ويمكن إيقافه من «الإعدادات ← الزحام».</dd>
+  </div>
+  <div>
+    <dt>الاقتراحات والمشاكل</dt>
+    <dd>نرسل ما تكتبه (حتى 1000 حرف)، ونوعه (اقتراح أو مشكلة)، ورقم إصدار التطبيق، ونوع الجهاز وطريقة التشغيل (مثل <bdi dir="ltr">Android/apk</bdi>)، ووقت الإرسال. وخانة التواصل اختيارية: إن كتبت فيها رقمك أو بريدك نرسله معها حتى نرد عليك. لا نرسل موقعك. تُحفظ الرسالة في قاعدة بيانات التطبيق ولا يقرؤها إلا المطوّر، وتصله نسخة منها بالبريد. الحد الأقصى 5 رسائل في اليوم.</dd>
+  </div>
+  <div>
+    <dt>الدخول المجهول</dt>
+    <dd>عند فتح التطبيق ينشئ حساباً مجهولاً لدى Firebase (بلا اسم ولا بريد ولا رقم) ويجدّده تلقائياً. نحتاجه لأن قاعدة البيانات لا تقبل أي كتابة (بلاغ، زحام، اقتراح) إلا من حساب مسجّل دخوله، ولو كان مجهولاً.</dd>
+  </div>
+  <div>
+    <dt>القراءة من قاعدة البيانات</dt>
+    <dd>بينما التطبيق ظاهر على شاشتك يقرأ البلاغات كل 20 ثانية تقريباً، والزحام كل 30 ثانية تقريباً. طلب الزحام يحدد شريطاً (نحو 33 كم عرضاً) حول خط عرض مركز الخريطة، فتعرف قاعدة البيانات تقريباً أي منطقة تتصفح.</dd>
+  </div>
+  <div>
+    <dt>الخريطة والملفات</dt>
+    <dd>لعرض الخريطة يحمّل التطبيق ملفاته وخرائطه من GitHub Pages، ومكتباته من unpkg، وخطوطه ورموزه من Protomaps، وخط Tajawal من Google Fonts. وإن لم تنزّل «خريطة العراق» للعمل بدون إنترنت، تُحمَّل بلاطات الخريطة من خوادم OpenStreetMap. هذه الطلبات لا تحمل معلومات شخصية، لكنها تكشف لتلك الجهات عنوان IP وتقريباً المنطقة التي تعرضها.</dd>
+  </div>
+</dl>
+
+<h2>مشاركة الزحام (اختيارية)</h2>
+<p>تظهر نافذة موافقة قبل أول ملاحة حقيقية، <b>ولا يُرسل شيء قبل أن تجيب</b>. الرفض لا يؤثر على الملاحة ولا على رؤيتك للزحام، وتقدر تغيّر رأيك بأي وقت من «الإعدادات ← الزحام». إذا وافقت:</p>
+<ul class="pts">
+  <li>يُرسل أثناء الملاحة الحقيقية فقط (لا التجريبية): موقعك <b>بدقة نحو 10 أمتار</b>، وسرعتك، واتجاهك عندما تكون متحركاً، والوقت.</li>
+  <li>لا يبدأ الإرسال إلا بعد أن تتجاوز سرعتك 15 كم/س مرة واحدة في تلك الملاحة (أي أنك في سيارة لا ماشياً أو راكضاً)، وبعد أن تبتعد أكثر من 300 متر عن نقطة البداية. وبعد أن يبدأ يستمر الإرسال حتى لو بطؤت أو وقفت في الزحام. ويتوقف عندما تصير على بُعد أقل من 300 متر من وجهتك. هكذا لا ينكشف بيتك ولا عملك.</li>
+  <li>يُرسل تحديث كل 10 ثوانٍ تقريباً ويحلّ محل السابق، فلا يُحفظ سجل لتنقلاتك بل آخر نقطة فقط.</li>
+  <li>لكل رحلة هوية عشوائية جديدة، فلا يمكن ربط رحلاتك ببعضها. (وإن تعذّر إنشاء الهوية الجديدة، كانقطاع الإنترنت في تلك اللحظة، قد تُستعمل الهوية السابقة.)</li>
+  <li>عند انتهاء الملاحة يُحذف سجلك من قاعدة البيانات.</li>
+  <li>لا يُلوَّن الطريق بالأحمر أو البرتقالي إلا إذا كان جهازان مختلفان على الأقل يمشيان ببطء في المنطقة نفسها وبالاتجاه نفسه، فلا يُعرض شيء اعتماداً على جهاز واحد. فإن كنت وحدك على الطريق فلن ترى زحاماً مهما كانت سرعتك بطيئة.</li>
+</ul>
+<p class="note"><b>ما يجب أن تعرفه:</b> عينات الزحام عامة تقنياً: تقرؤها تطبيقات المستخدمين الآخرين مباشرة من قاعدة البيانات لتلوين الخريطة. لا تحتوي اسماً ولا رقماً ولا بريداً، لكن أي موقع قد يدل على صاحبه لمن يعرف عاداته، ولهذا خفّضنا الدقة وأخفينا أول وآخر 300 متر. وإن لم ترتح لذلك فلا توافق، فالتطبيق يعمل كاملاً بدونها.</p>
+
+<h2>ما يُحفظ على جهازك</h2>
+<p>يحفظ التطبيق على جهازك، ويبقى عليه: إعداداتك وجوابك على نافذة الموافقة، وأماكنك المفضلة (حتى 200 مكان بأسمائها وإحداثياتها)، وآخر منظر للخريطة، والخرائط التي نزّلتها وقائمتها، وآخر نتيجة طقس، وملفات التطبيق ليعمل بدون إنترنت، وعدّاد رسائل الاقتراحات (لتطبيق الحد اليومي)، ومعرّف عشوائي محلي. ويحفظ أيضاً رمز الدخول المجهول، وهو يُستعمل فقط لتجديد دخولك المجهول لدى Firebase.</p>
+<p>لا نستخدم ملفات تعريف الارتباط (Cookies). ولمسح كل ذلك امسح بيانات التطبيق من إعدادات جهازك، أو ألغِ تثبيته.</p>
+
+<h2>الجهات الخارجية</h2>
+<ul class="pts">
+  <li><b>Google:</b> Firebase (قاعدة البيانات والدخول المجهول) وGoogle Fonts.</li>
+  <li><b>OpenStreetMap:</b> البحث (Nominatim) وبلاطات الخريطة.</li>
+  <li><b>OSRM:</b> حساب المسار.</li>
+  <li><b>Overpass:</b> الأماكن القريبة (ثلاثة مشغّلين).</li>
+  <li><b>Open-Meteo:</b> الطقس وجودة الهواء.</li>
+  <li><b>GitHub:</b> استضافة التطبيق وخرائطه.</li>
+  <li><b>unpkg وProtomaps:</b> مكتبات الخريطة وخطوطها ورموزها.</li>
+</ul>
+<p>لكل جهة سياسة خصوصية خاصة بها، ولا نتحكم بما تسجّله. والتطبيق ممنوع تقنياً (بسياج أمان المحتوى CSP) من الاتصال بأي جهة غير هذه.</p>
+
+<h2>كم نحتفظ بالبيانات؟</h2>
+<ul class="pts">
+  <li><b>البلاغات:</b> تظهر 3 ساعات ثم يحذفها التطبيق تلقائياً من قاعدة البيانات (التنظيف يجريه التطبيق نفسه عند مستخدميه)، ويمكن حذفها قبل ذلك بزر «انتهى / حذف».</li>
+  <li><b>عينات الزحام:</b> تعرضها التطبيقات 3 دقائق فقط، وتُحذف عند انتهاء الملاحة. وإن انقطع الاتصال قبل ذلك، يمسح السجلَّ العالق تطبيقُ أي مستخدم آخر يقرؤه بعد مرور 15 دقيقة على آخر تحديث.</li>
+  <li><b>الاقتراحات والمشاكل:</b> تبقى عندنا لنقرأها ونعالجها، وتُحذف عند طلبك.</li>
+  <li><b>على جهازك:</b> حتى تحذفها أنت.</li>
+  <li><b>لدى الجهات الخارجية:</b> حسب سياسة كل جهة.</li>
+</ul>
+
+<h2>خياراتك وحقوقك</h2>
+<ul class="pts">
+  <li><b>الموقع:</b> تقدر تسحب إذن الموقع في أي وقت من إعدادات جهازك أو متصفحك.</li>
+  <li><b>مشاركة الزحام:</b> أوقفها من «الإعدادات ← الزحام». وعرض الزحام له مفتاح مستقل.</li>
+  <li><b>الطقس:</b> أوقفه من «الإعدادات ← الطقس».</li>
+  <li><b>بلاغاتك:</b> تقدر تحذفها بزر «انتهى / حذف» في نافذة البلاغ على الخريطة.</li>
+  <li><b>رسائلك إلينا:</b> راسلنا واذكر نص الرسالة أو وقت إرسالها وسنحذفها. (البلاغات والعينات لا تحمل أي معرّف شخصي فلا نقدر نعرف أيها لك، لكنها تُحذف تلقائياً كما سبق.)</li>
+  <li><b>بيانات جهازك:</b> تُمسح بمسح بيانات التطبيق أو إلغاء تثبيته.</li>
+</ul>
+
+<h2>الأمان</h2>
+<p>كل الاتصالات مشفّرة (HTTPS). نقيّد ما يُسمح بكتابته في قاعدة البيانات بقواعد صارمة (أنواع محددة وحدود لكل حقل)، ونفحص كل ما يصل من الإنترنت قبل استعماله. ومع ذلك لا يوجد نظام آمن بنسبة 100%، فإن لاحظت ثغرة فنرجو إبلاغنا على أحد البريدين أعلاه.</p>
+
+<h2>الأطفال</h2>
+<p>دليني للاستخدام العام في الملاحة وليس موجّهاً للأطفال، ولا نطلب عمر أحد، ولا نجمع عمداً معلومات شخصية عن الأطفال.</p>
+
+<h2>تغيير هذه السياسة</h2>
+<p>قد نحدّث هذه السياسة مع تطور التطبيق. نكتب تاريخ آخر تحديث أعلى الصفحة، ونسجّل التغيير في سجل التغييرات المنشور مع التطبيق، وإذا تغيّر ما يُرسل في مشاركة الزحام نطلب موافقتك من جديد داخل التطبيق.</p>
+
+<h2>الشفافية</h2>
+<p>ما كُتب هنا مبني على كود التطبيق نفسه، وهو منشور علناً على <a href="https://github.com/amiq367-cyber/daliny" rel="noopener noreferrer"><bdi dir="ltr">GitHub</bdi></a> ليتحقق منه من يشاء.</p>
+
+</main>
+
+<footer>
+  <a class="back" href="./">→ العودة إلى دليني</a><br>
+  دليني · مركز الذكاء للمعلوماتية والحلول البرمجية — بابل، العراق
+</footer>
+
+</div>
+</body>
+</html>

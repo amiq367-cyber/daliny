@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- سياج الحماية (CSP): يسمح فقط بسكربت التطبيق نفسه (بصمة SHA-256) ومكتبات الخرائط بنسخ ثابتة، ويمنع أي سكربت أو معالج مدمج ثاني.
      ⚠️ البصمة sha256 تُحسب من نص السكربت الرئيسي حرفياً: أي تعديل بالسكربت لازم تتحدث البصمة (أداة build-csp.js)، وإلا ما يشتغل التطبيق. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-wLREyKjuvduizt/uue4nliz/b5bTXyo4Lt/7hKHm02k=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-kZ5Piq2YN3oTT85o13yFxt+ND/eLRL1mJdXsnew2FF4=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>دليني</title>
@@ -356,6 +356,8 @@
   .cn-yes { background: var(--accent); color: var(--accent-fg); }
   .cn-no { background: var(--line); color: var(--fg); }
   .tr-priv .cn-list { margin: 0 4px 10px; color: var(--muted); font-size: .9rem; }
+  .set-note a { color: var(--accent); font-weight: 700; }
+  .ab-line > span { flex: 1; min-width: 0; line-height: 1.7; }
 
   /* ---------- علامات الخريطة ---------- */
   /* موقعي: مثلث مجسّم، الظل ثابت تحته والمثلث يدور مع اتجاه الحركة */
@@ -366,7 +368,7 @@
   }
   .me3d .arrow {
     position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
-    transform-origin: 50% 50%; transition: transform .3s ease-out;
+    transform-origin: 50% 50%;
   }
   .me3d .arwrap { position: absolute; inset: 0; transform-origin: 50% 50%; }
   .hz {
@@ -495,7 +497,7 @@
       <button class="set-row" data-page="traffic"><span>الزحام</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="about"><span>حول البرنامج</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: v1.1.0</p>
+      <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: v1.2.0</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -528,7 +530,11 @@
         <input class="fav-input" id="fbContact" maxlength="80" dir="auto" placeholder="رقمك أو إيميلك إذا تريد نرد عليك (اختياري)">
         <button class="set-btn" id="fbSend">إرسال</button>
         <div class="fb-status" id="fbStatus" role="status" aria-live="polite" hidden></div>
-        <p class="set-note">نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك أو أي معلومات شخصية.</p>
+        <p class="set-note">نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك. وإذا كتبت رقمك أو إيميلك بالخانة الاختيارية نرسله معها حتى نرد عليك.</p>
+      </div>
+      <div class="ab-sec">
+        <h4>الخصوصية</h4>
+        <div class="ab-line"><span>كيف يتعامل دليني مع موقعك وبياناتك، وشنو يُرسل ولأي جهة.</span><div class="acts"><a href="privacy.html">سياسة الخصوصية</a></div></div>
       </div>
       <p class="set-note" id="abCredits">مصادر الخرائط والبيانات: © مساهمو OpenStreetMap، خرائط Protomaps، مباني العراق © Overture Maps Foundation (رخصة ODbL)، عرض الخريطة بـ MapLibre، حساب المسار OSRM، والطقس من Open-Meteo.com.</p>
     </div>
@@ -547,8 +553,8 @@
     <div id="setTraffic" hidden>
       <label class="set-row" for="trafficShowSwitch"><span>عرض الزحام على الخريطة</span><input type="checkbox" id="trafficShowSwitch" class="switch"></label>
       <label class="set-row" for="trafficShareSwitch"><span>أشارك سرعتي لكشف الزحام (أثناء الملاحة فقط، بدون هوية)</span><input type="checkbox" id="trafficShareSwitch" class="switch"></label>
-      <details class="tr-priv"><summary>ما الذي يُرسل بالضبط؟</summary><p class="set-note" id="trPrivLead"></p><ul class="cn-list" id="trPrivList"></ul></details>
-      <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما عدة سيارات تمشي ببطء بنفس المنطقة.</p>
+      <details class="tr-priv"><summary>ما الذي يُرسل بالضبط؟</summary><p class="set-note" id="trPrivLead"></p><ul class="cn-list" id="trPrivList"></ul><p class="set-note"><a href="privacy.html">سياسة الخصوصية الكاملة</a></p></details>
+      <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما سيارتين أو أكثر (من مستخدمي دليني) تمشي ببطء بنفس المنطقة وبنفس الاتجاه، وإذا كان على طريقك يتلوّن خط المسار نفسه. إذا جهازك لحاله ما يطلع شي.</p>
       <div id="trDev" hidden>
         <p class="set-note">أدوات المطوّر (للتجربة فقط)</p>
       <label class="set-row" for="trafficWalkSwitch"><span>وضع الاختبار: اقبل المشي (للتجربة فقط، أطفئه بعدها)</span><input type="checkbox" id="trafficWalkSwitch" class="switch"></label>
@@ -665,8 +671,8 @@
   const okLL = (a, b) => typeof a === 'number' && typeof b === 'number' && isFinite(a) && isFinite(b) && Math.abs(a) <= 90 && Math.abs(b) <= 180;
   const state = {
     user: null, follow: false, watchId: null, geoMode: 'hi',
-    dest: null, route: null, coords: [],
-    navigating: false, stepIdx: 0, offCount: 0, rerouting: false,
+    dest: null, route: null, coords: [], model: null, nav: null,
+    navigating: false, stepIdx: 0, offCount: 0, rerouting: false, reAt: -Infinity,
     sim: null, wake: null
   };
 
@@ -705,7 +711,7 @@
   const TILT = 50;
   // رقم الإصدار بثلاث خانات: رئيسي.فرعي.إصلاح (MAJOR.MINOR.PATCH) ويظهر بالإعدادات وبصفحة حول البرنامج
   //   الأول (رئيسي): تغيير كبير بالبرنامج. الثاني (فرعي): ميزة جديدة. الثالث (إصلاح): تصليح صغير بدون ميزة جديدة.
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.2.0';
   // نفس الرقم بصيغة رقمية تنرسل مع رسائل الاقتراحات: 1.0.0 => 10000 ، 1.2.3 => 10203 (تقبلها قواعد القاعدة القديمة والجديدة)
   const APP_BUILD = APP_VERSION.split('.').reduce((n, p, i) => n + (parseInt(p, 10) || 0) * [10000, 100, 1][i], 0);
   function verEl(prefix) { // «v1.0.0» تنكتب من اليسار لليمين حتى لو النص عربي
@@ -784,6 +790,219 @@
     const y = Math.sin((b[1] - a[1]) * r) * Math.cos(b[0] * r);
     const x = Math.cos(a[0] * r) * Math.sin(b[0] * r) - Math.sin(a[0] * r) * Math.cos(b[0] * r) * Math.cos((b[1] - a[1]) * r);
     return (Math.atan2(y, x) / r + 360) % 360;
+  }
+
+  /* ================= محرك التقدّم على المسار (NAVCORE) ================= */
+  // دوال صرفة (بدون خريطة ولا صفحة) حتى نكدر نختبرها لحالها.
+  // الفكرة: موقعي يتحسب كـ «مسافة مقطوعة على خط المسار» (s بالمتر)، مو كمسافة مستقيمة لنقطة المنعطف.
+  // الخطوة تتقدّم لما s تعدّي نقطة المنعطف، فاللافتة ما تعلق حتى لو الـ GPS كان بعيد عن الخط بـ 30 متر.
+  const SNAP_IN = 35, SNAP_OUT = 50;   // أقصى بعد (م) عن الخط حتى نلصق المثلث عليه (50 إذا كان ملصوق أصلاً، حتى ما يتذبذب)
+  const SNAP_FAR_IN = 60, SNAP_FAR_OUT = 66; // نفس الشي لكن إذا اتجاه حركتي يوافق اتجاه الخط (غالباً انحراف GPS أو مسار موازي، مو طريق ثاني)
+  const OFF_ROUTE_M = 70;              // أبعد من هذا = طلعت عن المسار
+  const STEP_PASS_M = 6;               // الخطوة تتقدّم لما أكون بحدود 6 م قبل المنعطف أو عدّيته
+  const TRK_MAX_AGE = 3.5;             // أقصى مدة (ثانية) نمشّي فيها المثلث بعد آخر تحديث GPS (إذا مو ملصوق على المسار)
+  const TRK_MAX_AGE_ROUTE = 6;         // نفس الشي إذا ملصوق على المسار (نفق مثلاً): الخط يحدد الاتجاه فنكمل أطول
+  const TRK_GAIN = 0.4;                // قد ما نصدّق قياس الـ GPS الجديد مقابل التوقّع (الباقي تنعيم)
+  const TRK_STILL_M = 25;              // وأنا واقف: أي فرق أقل من هذا بالقياس نتجاهله (ارتجاج GPS)
+
+  function segIndexAt(cum, s) { // رقم آخر قطعة بدايتها <= s
+    let lo = 0, hi = cum.length - 2;
+    if (hi < 0) return 0;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (cum[mid] <= s) lo = mid; else hi = mid - 1; }
+    return lo;
+  }
+  // أقرب نقطة على الخط من p ضمن المدى [sLo,sHi] (مسافة على الخط). يرجّع {s, i, d, q} أو null
+  // pref: المسافة المتوقعة (يفضّل القريب منها بعقوبة kpen لكل متر بعد 20 م)، hdg: اتجاه حركتي (يعاقب الاتجاه المعاكس)
+  function matchRange(m, p, sLo, sHi, pref, kpen, hdg) {
+    const pts = m.pts, cum = m.cum, n = pts.length;
+    if (n < 2) return null;
+    const lo = Math.max(0, Math.min(sLo, m.total)), hi = Math.max(lo, Math.min(sHi, m.total));
+    const i0 = segIndexAt(cum, lo), i1 = Math.min(n - 2, segIndexAt(cum, hi));
+    const k = Math.cos(p[0] * Math.PI / 180), px = p[1] * k, py = p[0];
+    const hasPref = typeof pref === 'number' && isFinite(pref), hasHdg = typeof hdg === 'number' && isFinite(hdg);
+    let best = null, bestScore = Infinity;
+    for (let i = i0; i <= i1; i++) {
+      const a = pts[i], b = pts[i + 1];
+      const ax = a[1] * k, ay = a[0], dx = b[1] * k - ax, dy = b[0] - ay, l2 = dx * dx + dy * dy;
+      let t = l2 > 0 ? ((px - ax) * dx + (py - ay) * dy) / l2 : 0;
+      t = t < 0 ? 0 : (t > 1 ? 1 : t);
+      const d = Math.hypot(px - (ax + t * dx), py - (ay + t * dy)) * 111320;
+      const s = cum[i] + t * (cum[i + 1] - cum[i]);
+      let score = d;
+      if (hasPref) score += kpen * Math.max(0, Math.abs(s - pref) - 20);
+      if (hasHdg && l2 > 0 && Math.abs(angDiff(Math.atan2(dx, dy) * 180 / Math.PI, hdg)) > 100) score += 30;
+      if (score < bestScore) { bestScore = score; best = { s: s, i: i, d: d, q: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] }; }
+    }
+    return best;
+  }
+  // نموذج المسار: نقاط الخط + المسافة التراكمية + مسافة بداية كل خطوة (مكان المنعطف على الخط)
+  function buildRouteModel(route) {
+    try {
+      const g = route && route.geometry && route.geometry.coordinates;
+      const steps = route && route.legs && route.legs[0] && route.legs[0].steps;
+      if (!Array.isArray(g) || g.length < 2 || !Array.isArray(steps) || steps.length < 2) return null;
+      const n = g.length, pts = new Array(n), cum = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const q = g[i];
+        if (!Array.isArray(q) || !okLL(q[1], q[0])) return null;
+        pts[i] = [q[1], q[0]];
+        cum[i] = i ? cum[i - 1] + haversine(pts[i - 1], pts[i]) : 0;
+      }
+      const total = cum[n - 1];
+      if (!(total > 0)) return null;
+      const start = new Array(steps.length); start[0] = 0;
+      let osrm = 0; steps.forEach((st) => { osrm += Math.max(0, +st.distance || 0); });
+      const sc = osrm > 0 ? total / osrm : 1; // مسافات OSRM تختلف قليلاً عن طول الخط، نوفّق بينهم
+      const m = { pts: pts, cum: cum, total: total, start: start, steps: steps };
+      let exp = 0;
+      for (let k = 1; k < steps.length; k++) {
+        exp += Math.max(0, +steps[k - 1].distance || 0) * sc;
+        let s = Math.min(total, exp);
+        if (k === steps.length - 1) s = total; // خطوة الوصول = نهاية الخط
+        else {
+          const loc = steps[k].maneuver && steps[k].maneuver.location;
+          if (Array.isArray(loc) && okLL(loc[1], loc[0])) { // مكان المنعطف بالضبط على الخط، قرب المسافة المتوقعة
+            const win = Math.max(150, 0.08 * exp), h = matchRange(m, [loc[1], loc[0]], exp - win, exp + win, exp, 0.1);
+            if (h && h.d < 40) s = h.s;
+          }
+        }
+        start[k] = Math.max(start[k - 1], Math.min(total, s));
+      }
+      return m;
+    } catch (e) { return null; }
+  }
+  function pointAt(m, s) { // [lat,lng] على الخط عند المسافة s
+    const pts = m.pts;
+    if (!(s > 0)) return [pts[0][0], pts[0][1]];
+    if (s >= m.total) { const e = pts[pts.length - 1]; return [e[0], e[1]]; }
+    const i = segIndexAt(m.cum, s), a = pts[i], b = pts[i + 1], L = m.cum[i + 1] - m.cum[i], t = L > 0 ? (s - m.cum[i]) / L : 0;
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  }
+  function headingAt(m, s, look) { // اتجاه الخط عند s (نقيسه على مسافة look متر قدّام)
+    const e = Math.min(m.total, Math.max(0, s) + look), st = Math.max(0, Math.min(Math.max(0, s) - 2, e - 4));
+    const a = pointAt(m, st), b = pointAt(m, e);
+    return a[0] === b[0] && a[1] === b[1] ? null : bearingA(a, b);
+  }
+  // يطابق نقطة الـ GPS على المسار. prevS: التقدّم السابق (null أول مرة: نبحث بكل الخط)
+  function matchFix(m, p, prevS, dtSec, speed, hdg) {
+    const sp = typeof speed === 'number' && isFinite(speed) && speed > 0 ? speed : 0;
+    const h = sp >= 3 && typeof hdg === 'number' && isFinite(hdg) ? hdg : undefined;
+    if (prevS === null || prevS === undefined) return matchRange(m, p, 0, m.total, 0, 0.01, h);
+    const dt = Math.min(15, Math.max(0.3, dtSec || 1));
+    return matchRange(m, p, prevS - 40, prevS + 50 + 1.6 * Math.max(sp, 8) * dt, prevS + sp * dt, 0.1, h);
+  }
+  function makeNav() { return { s: null, t: 0, snapped: false }; }
+  // يطابق تحديث GPS على المسار ويحدّث حالة الملاحة nav. fx = { lat, lng, speed, heading, t (ms) }
+  // يرجّع { mt: نتيجة المطابقة، snap: ننلصق المثلث على الخط؟، off: طلعت عن المسار؟، s: التقدّم للافتة والمسافات }
+  // التقدّم s ما يرجع لورا بسبب ارتجاج الـ GPS (أقل من 15 م)، حتى ما تتذبذب المسافة المكتوبة على اللافتة
+  function navMatch(nav, m, fx) {
+    const p = [fx.lat, fx.lng], first = nav.s === null;
+    const sp = typeof fx.speed === 'number' && isFinite(fx.speed) && fx.speed > 0 ? fx.speed : 0;
+    const hOk = sp >= 3 && typeof fx.heading === 'number' && isFinite(fx.heading);
+    const dt = nav.t ? Math.min(15, Math.max(0.3, (fx.t - nav.t) / 1000)) : 0;
+    let mt = matchFix(m, p, nav.s, dt, fx.speed, fx.heading);
+    if (!mt) return null;
+    const hAt = headingAt(m, mt.s, 14);
+    const aligned = hOk && hAt !== null && Math.abs(angDiff(hAt, fx.heading)) < 40;
+    const tolIn = aligned ? SNAP_FAR_IN : SNAP_IN, tolOut = aligned ? SNAP_FAR_OUT : SNAP_OUT;
+    let snap = mt.d <= (nav.snapped ? tolOut : tolIn);
+    if (!snap && !first) { // ضايعين عن المسار: نبحث عنه لقدّام (بقدر ما تسمح سرعتي بالوقت اللي مرّ) وشوي لورا إذا رجعنا له
+      const el = Math.min(60, Math.max(0.3, (fx.t - nav.t) / 1000));
+      const g = matchRange(m, p, nav.s - 100, nav.s + 50 + 1.6 * Math.max(sp, 8) * el, nav.s + sp * dt, 0.02, hOk ? fx.heading : undefined);
+      if (g && g.d < mt.d) {
+        const hg = headingAt(m, g.s, 14), al = hOk && hg !== null && Math.abs(angDiff(hg, fx.heading)) < 40;
+        if (g.d <= (al ? SNAP_FAR_IN : SNAP_IN)) { mt = g; snap = true; }
+      }
+    }
+    const off = mt.d > OFF_ROUTE_M;
+    if (first || !off) {
+      let s = mt.s;
+      if (!first && s < nav.s) {
+        if (nav.s - s < 15) s = nav.s;                                 // ارتجاج GPS للخلف: نتجاهله
+        else if (aligned && sp >= 3 && nav.s - s < 120) s = nav.s;     // ماشي بنفس اتجاه الخط: التقدّم ما يرجع لورا (يصير عند المنعطف لما الـ GPS بعيد عن الخط)
+      }
+      // واقف (السرعة معروفة وأقل من 0.7 م/ث): ارتجاج الـ GPS ما يحرّك التقدّم، حتى ما تتقدّم اللافتة وأنا واقف بالإشارة
+      if (!first && typeof fx.speed === 'number' && isFinite(fx.speed) && fx.speed < 0.7 && Math.abs(s - nav.s) < 40) s = nav.s;
+      nav.s = s; nav.t = fx.t;
+    }
+    nav.snapped = snap;
+    return { mt: mt, snap: snap, off: off, s: nav.s };
+  }
+  function stepFor(m, s, idx) { // رقم الخطوة الحالية: المنعطف القادم هو steps[idx+1]
+    const last = m.steps.length - 1;
+    idx = Math.max(0, Math.min(idx, Math.max(0, last - 1)));
+    while (idx + 1 < last && s >= m.start[idx + 1] - STEP_PASS_M) idx++;
+    return idx;
+  }
+  function remainingTime(m, s, idx) { // الوقت المتبقي بالثواني: باقي الخطوة الحالية + الخطوات اللي بعدها
+    const st = m.steps; let t = 0;
+    for (let j = idx + 1; j < st.length; j++) t += +st[j].duration || 0;
+    const a = m.start[idx], b = m.start[idx + 1] !== undefined ? m.start[idx + 1] : m.total;
+    const f = b > a ? Math.min(1, Math.max(0, (b - s) / (b - a))) : 0;
+    return t + (+st[idx].duration || 0) * f;
+  }
+
+  // ---- متتبّع الحركة: يتذكر آخر تحديث GPS ويقول وين لازم يكون المثلث بأي لحظة (بسرعتك الحالية) ----
+  function makeTracker() {
+    return { has: false, t: 0, snap: false, model: null, s: 0, v: 0, lat: 0, lng: 0, vN: 0, vE: 0,
+             rawLat: 0, rawLng: 0, hdgFree: null, hdgLat: 0, hdgLng: 0 };
+  }
+  // تحديث GPS جديد. f = { t (ms), lat, lng, speed (م/ث)، heading، sim، model، s }
+  // model و s موجودين إذا انلصق الموقع على المسار (s = المسافة المقطوعة على الخط)
+  function trackerFix(T, f) {
+    const age = T.has ? Math.min(30, Math.max(0, (f.t - T.t) / 1000)) : 0, ext = Math.min(age, T.snap ? TRK_MAX_AGE_ROUTE : TRK_MAX_AGE);
+    const sp = typeof f.speed === 'number' && isFinite(f.speed) && f.speed >= 0 ? Math.min(f.speed, 70) : null;
+    const still = sp !== null && sp < 0.7;
+    const hOk = typeof f.heading === 'number' && isFinite(f.heading) && (!!f.sim || (sp !== null && sp >= 1.5));
+    // اتجاه الحركة الحرة (للمثلث لما ما أكون ملصوق على المسار): من الـ GPS، وإلا من انتقال 6 م أو أكثر
+    if (hOk) { T.hdgFree = ((f.heading % 360) + 360) % 360; T.hdgLat = f.lat; T.hdgLng = f.lng; }
+    else if (!T.has) { T.hdgLat = f.lat; T.hdgLng = f.lng; }
+    else if (haversine([T.hdgLat, T.hdgLng], [f.lat, f.lng]) >= 6) { T.hdgFree = bearingA([T.hdgLat, T.hdgLng], [f.lat, f.lng]); T.hdgLat = f.lat; T.hdgLng = f.lng; }
+    if (f.model && typeof f.s === 'number') {
+      let s = f.s, v = sp !== null ? sp : 0;
+      if (T.has && T.snap && T.model === f.model) {
+        const pred = T.s + T.v * ext, e = s - pred;
+        if (still && Math.abs(e) < TRK_STILL_M) s = pred;                  // واقف: نتجاهل ارتجاج الـ GPS
+        else if (age <= 4 && Math.abs(e) <= 25) s = pred + TRK_GAIN * e;   // نمزج التوقّع مع القياس (الفرق الكبير نصدّقه كامل والمتابع ينعّمه)
+        if (sp === null) v = age > 0.2 && age < 5 ? Math.max(0, Math.min(70, 0.5 * T.v + 0.5 * ((s - T.s) / age))) : T.v;
+      }
+      T.s = Math.max(0, Math.min(f.model.total, s)); T.v = v; T.snap = true; T.model = f.model;
+    } else {
+      let lat = f.lat, lng = f.lng, vN = 0, vE = 0;
+      if (hOk && sp !== null) { vN = sp * Math.cos(T.hdgFree * Math.PI / 180); vE = sp * Math.sin(T.hdgFree * Math.PI / 180); }
+      else if (T.has && age > 0.2 && age < 5 && !still) {
+        const k = Math.cos(lat * Math.PI / 180);
+        vN = 0.5 * T.vN + 0.5 * ((lat - T.rawLat) * 111320 / age);
+        vE = 0.5 * T.vE + 0.5 * ((lng - T.rawLng) * 111320 * k / age);
+      }
+      if (T.has && !T.snap) {
+        const k = Math.cos(T.lat * Math.PI / 180);
+        const pLat = T.lat + T.vN * ext / 111320, pLng = T.lng + T.vE * ext / (111320 * k);
+        const eN = (lat - pLat) * 111320, eE = (lng - pLng) * 111320 * k;
+        const eM = Math.hypot(eN, eE);
+        if (still && eM < TRK_STILL_M) { lat = pLat; lng = pLng; }
+        else if (age <= 4 && eM <= 25) { lat = pLat + TRK_GAIN * (lat - pLat); lng = pLng + TRK_GAIN * (lng - pLng); }
+      }
+      T.lat = lat; T.lng = lng; T.vN = vN; T.vE = vE; T.snap = false; T.model = null;
+    }
+    T.rawLat = f.lat; T.rawLng = f.lng; T.t = f.t; T.has = true;
+  }
+  // وين لازم يكون المثلث بالوقت tMs (ms)، واتجاهه (أو null إذا ما نعرف)
+  function trackerAt(T, tMs) {
+    const age = Math.min(T.snap ? TRK_MAX_AGE_ROUTE : TRK_MAX_AGE, Math.max(-0.25, (tMs - T.t) / 1000));
+    if (T.snap && T.model) { const s = T.s + T.v * age; return { pos: pointAt(T.model, s), hdg: headingAt(T.model, s, 14) }; }
+    const k = Math.cos(T.lat * Math.PI / 180);
+    return { pos: [T.lat + T.vN * age / 111320, T.lng + T.vE * age / (111320 * k)], hdg: T.hdgFree };
+  }
+  // خطوة التنعيم لكل إطار: المعروض يمشي مثل الهدف تماماً (بدون تأخير)، ويصحّح الفرق القديم بنعومة (ثابت زمني tau ثانية)
+  function followStep(d, tPrev, tNow, dt, tau, maxMps) {
+    const k = Math.cos(d[0] * Math.PI / 180), M = 111320;
+    let cx = (tPrev[1] - d[1]) * k * M, cy = (tPrev[0] - d[0]) * M;
+    const a = 1 - Math.exp(-dt / tau);
+    cx *= a; cy *= a;
+    const cl = Math.hypot(cx, cy), cap = maxMps * dt;
+    if (cl > cap && cl > 0) { cx *= cap / cl; cy *= cap / cl; }
+    return [d[0] + (tNow[0] - tPrev[0]) + cy / M, d[1] + (tNow[1] - tPrev[1]) + cx / (k * M)];
   }
 
   /* ================= الخريطة ================= */
@@ -899,6 +1118,7 @@
   let trSim = null, trSimTimer = null;   // سيارات وهمية للتجربة (على الجوال فقط)
   let trRemote = [];                     // عينات حقيقية (تأتي من القاعدة بالخطوة القادمة)
   let trLines = [];                      // أشرطة الزحام الحالية: {coords, cum, total, color}
+  let trRouteIv = [], trRouteHad = false; // مقاطع من خط المسار نفسه فيها زحام بنفس اتجاهي: {a, b (مسافة بالمتر على المسار), color}
   let trOff = 0, trLast = 0, trTimer = null;
   const RW = [[10, 2], [14, 5], [16, 11], [18, 17], [20, 34]]; // عرض الشارع المرسوم تقريباً
   function rwAt(z) {
@@ -1016,6 +1236,58 @@
       type: 'Feature', properties: { color: l.color, o: l.o }, geometry: { type: 'LineString', coordinates: l.coords.map((q) => [q.lng, q.lat]) }
     })) };
   }
+  /* ---- تلوين خط المسار نفسه ----
+     شريط الزحام العادي ينرسم تحت خط المسار (الأبيض والأزرق فوقه)، فيختفي تحته بالضبط على الطريق اللي أنت ماشي عليه.
+     لذلك نرسم مقاطع المسار المزدحمة بلونها (أحمر/برتقالي) فوق الخط الأزرق.
+     نشتغل على نموذج المسار (مسافة بالمتر على الخط) مو على شوارع الشاشة، فيشتغل حتى لو طبقة الشوارع ما انحمّلت. */
+  const TR_ROUTE_REACH = 120;   // م: نمدّ اللون قبل وبعد مركز الخلية (الخلية ~200 م)
+  function trRouteBuild() {
+    trRouteIv = [];
+    const m = state.model;
+    if (!m || settings.trafficShow === false) return;
+    const s0 = state.navigating && state.nav && state.nav.s !== null ? Math.max(0, state.nav.s - 200) : 0; // الجزء اللي مشيته ما يهمنا
+    trCells().forEach((c) => {
+      const hd = c.h === null ? undefined : c.h;
+      const h = matchRange(m, [c.lat, c.lng], s0, m.total, undefined, 0, hd);
+      if (!h || h.d > (hd === undefined ? 35 : 60)) return;
+      // لازم الزحام بنفس اتجاه سيري: مو الاتجاه المعاكس ولا شارع متقاطع
+      if (hd !== undefined) { const hb = headingAt(m, h.s, 14); if (hb === null || Math.abs(angDiff(hb, hd)) > 50) return; }
+      trRouteIv.push({ a: Math.max(0, h.s - TR_ROUTE_REACH), b: Math.min(m.total, h.s + TR_ROUTE_REACH), color: c.color });
+    });
+  }
+  function routeSlice(m, a, b) { // نقاط خط المسار بين المسافتين a و b (م)
+    const out = [pointAt(m, a)];
+    for (let i = segIndexAt(m.cum, a) + 1; i < m.pts.length && m.cum[i] < b; i++) if (m.cum[i] > a) out.push(m.pts[i]);
+    out.push(pointAt(m, b));
+    return out;
+  }
+  function trRouteGeo() {
+    const m = state.model;
+    if (!m || !trRouteIv.length) return EMPTY_FC;
+    const lo = state.navigating && state.nav && state.nav.s !== null ? state.nav.s : 0; // الجزء اللي مشيته انمسح من الخط فنمسحه من اللون
+    const feats = [];
+    ['#f08c00', '#d6281c'].forEach((col) => { // البرتقالي أولاً والأحمر فوقه
+      const mg = [];
+      trRouteIv.filter((x) => x.color === col).sort((x, y) => x.a - y.a).forEach((x) => {
+        const l = mg[mg.length - 1];
+        if (l && x.a <= l.b + 10) l.b = Math.max(l.b, x.b); else mg.push({ a: x.a, b: x.b });
+      });
+      mg.forEach((x) => {
+        const a = Math.max(x.a, lo);
+        if (x.b - a < 8) return;
+        feats.push({ type: 'Feature', properties: { color: col }, geometry: { type: 'LineString', coordinates: routeSlice(m, a, x.b).map((q) => [q[1], q[0]]) } });
+      });
+    });
+    return feats.length ? { type: 'FeatureCollection', features: feats } : EMPTY_FC;
+  }
+  function trRouteSync() {
+    try {
+      const src = map.getSource('routetr'); if (!src) return;
+      const g = trRouteGeo(), has = g.features.length > 0;
+      if (has || trRouteHad) src.setData(g);
+      trRouteHad = has;
+    } catch (e) {}
+  }
   // أسهم بيضاء تمشي ببطء على الأشرطة (المسافة بين الأسهم ~60 بكسل مهما كان التقريب)
   function trArrowsGeo() {
     if (!trLines.length) return EMPTY_FC;
@@ -1041,6 +1313,7 @@
     try { const sa = map.getSource('trarrows'); if (sa) sa.setData(trArrowsGeo()); } catch (e) {}
   }
   function trRefresh() {
+    try { trRouteBuild(); trRouteSync(); } catch (e) {}
     try {
       trBuildLines();
       const sl = map.getSource('traffic'); if (sl) sl.setData(trGeo());
@@ -1060,7 +1333,8 @@
         osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 19, attribution: '© OpenStreetMap' },
         route: { type: 'geojson', data: routeGeo() },
         traffic: { type: 'geojson', data: trGeo() },
-        trarrows: { type: 'geojson', data: EMPTY_FC }
+        trarrows: { type: 'geojson', data: EMPTY_FC },
+        routetr: { type: 'geojson', data: trRouteGeo() }
       },
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
@@ -1069,7 +1343,8 @@
         { id: 'traffic-line', type: 'line', source: 'traffic', layout: { 'line-cap': 'butt', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.9, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, ['*', 2, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 14, ['*', 5, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 16, ['*', 11, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 18, ['*', 17, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 20, ['*', 34, ['-', 0.85, ['*', 0.3, ['get', 'o']]]]], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, ['*', 0.6, ['get', 'o']], 14, ['*', 1.5, ['get', 'o']], 16, ['*', 3.3, ['get', 'o']], 18, ['*', 5.1, ['get', 'o']], 20, ['*', 10.2, ['get', 'o']]] } },
         { id: 'traffic-arrows', type: 'symbol', source: 'trarrows', minzoom: 14.5, layout: { 'icon-image': 'tr-arrow', 'icon-rotate': ['get', 'b'], 'icon-rotation-alignment': 'map', 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'icon-size': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 0.85, 18, 1.4, 20, 2.2] } },
         { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 11, 'line-opacity': 0.95 } },
-        { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } }
+        { id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0a7f8f', 'line-width': 6 } },
+        { id: 'route-traffic', type: 'line', source: 'routetr', layout: { 'line-cap': 'butt', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-width': 6 } }
       ]
     }, fl);
   }
@@ -1091,16 +1366,31 @@
     return x.getImageData(0, 0, sz, sz);
   }
   map.on('styleimagemissing', (e) => { if (e.id === 'tr-arrow' && !map.hasImage('tr-arrow')) map.addImage('tr-arrow', trArrowImg(), { pixelRatio: 2 }); });
+  // أثناء متابعة الكاميرا (تحديث كل إطار) المعالجات الثقيلة تشتغل مرة كل ثانية أو أبطأ بدل 60 مرة بالثانية
+  const FOLLOW_EV = { dalFollow: true };
+  function atMoveEnd(fn, gap) {
+    let last = 0, tm = null;
+    map.on('moveend', (e) => {
+      if (!(e && e.dalFollow)) { clearTimeout(tm); tm = null; last = performance.now(); fn(); return; }
+      const now = performance.now();
+      if (now - last >= gap) { last = now; fn(); }
+      else if (!tm) tm = setTimeout(() => { tm = null; last = performance.now(); fn(); }, gap - (now - last));
+    });
+  }
   let trMoveT = null;
-  map.on('moveend', () => { clearTimeout(trMoveT); trMoveT = setTimeout(() => { if (trSim || trRemote.length) trRefresh(); }, 250); });
-  map.on('moveend', () => {
+  atMoveEnd(() => { clearTimeout(trMoveT); trMoveT = setTimeout(() => { if (trSim || trRemote.length) trRefresh(); }, 250); }, 1000);
+  atMoveEnd(() => {
     try { const c = map.getCenter(); localStorage.setItem('daliny-view', JSON.stringify({ lng: c.lng, lat: c.lat, z: map.getZoom() })); } catch (e) {}
-  });
-  function setView(lat, lng, z) { map.jumpTo({ center: [lng, lat], zoom: z, pitch: wantTilt() ? TILT : 0, bearing: 0 }); }
+  }, 2000);
+  function setView(lat, lng, z) {
+    state.follow = false; $('btnLocate').classList.remove('on'); // الكاميرا تروح للمكان المختار وما ترجع تلحقني
+    map.jumpTo({ center: [lng, lat], zoom: z, pitch: wantTilt() ? TILT : 0, bearing: 0 });
+  }
   function setRoutePts(pts) {
     routePts = pts;
     const src = map.getSource('route');
     if (src) src.setData(routeGeo());
+    trRouteSync(); // لون الزحام يتقصّر مع الخط
   }
   function mkMarker(el, lat, lng, opts) {
     return new maplibregl.Marker(Object.assign({ element: el }, opts || {})).setLngLat([lng, lat]).addTo(map);
@@ -1118,25 +1408,20 @@
 
   /* ================= عرض الخريطة: 2D / 3D / تلقائي ================= */
   function wantTilt() { return settings.mapView === '3d' || (settings.mapView === 'auto' && state.navigating); }
-  let camB = 0, followT = 0; // اتجاه الكاميرا (درجات)، ووقت آخر تحديث لها
+  let camB = 0; // اتجاه الكاميرا (درجات)
   function angDiff(to, from) { return ((to - from) % 360 + 540) % 360 - 180; }
-  // الكاميرا تتبع موقعي. بالعرض المائل: تدور حسب اتجاه الحركة، وموقعي يكون بالثلث السفلي من الشاشة
+  // الكاميرا تتبع موقعي وتتحرك كل إطار مع المثلث (محرك الحركة أدناه: moCamera). بالعرض المائل: تدور حسب اتجاه الحركة، وموقعي يكون بالثلث السفلي من الشاشة.
+  // هنا نحدد بس الهدف: زوم جديد، أو انسياب من مكان الخريطة الحالي إلى موقعي (duration)
   function followCam(extra) {
     const u = state.user; if (!u) return;
-    const o = { center: [u.lng, u.lat], duration: 400, pitch: 0, bearing: 0, offset: [0, 0] };
-    if (wantTilt()) {
-      const h = u.heading;
-      // اتجاه الـ GPS ما نصدّقه إذا كنت واقف أو ماشي ببطء
-      if (typeof h === 'number' && isFinite(h) && (state.sim || typeof u.speed !== 'number' || u.speed >= 1)) {
-        const d = angDiff(h, camB);
-        if (Math.abs(d) > 1.5) camB = (camB + d * 0.6 + 360) % 360;
-      }
-      o.pitch = TILT; o.bearing = camB;
-      o.offset = [0, Math.round(map.getContainer().clientHeight * 0.16)];
-      const now = performance.now(), dt = now - followT; followT = now;
-      if (!(extra && extra.duration !== undefined)) { o.duration = Math.min(1100, Math.max(300, dt)); o.easing = (t) => t; } // انسياب مستمر بين تحديثات الـ GPS
-    } else camB = 0;
-    map.easeTo(Object.assign(o, extra || {}));
+    const wasOn = MO.camOn;
+    camSync();
+    const ex = extra || {};
+    if (typeof ex.zoom === 'number') CAM.zt = ex.zoom;
+    if (!wasOn && ex.duration > 0 && MO.disp) { const c = map.getCenter(); CAM.fly = { t0: nowMs(), dur: ex.duration, c0: [c.lat, c.lng] }; }
+    else if (!(ex.duration > 0)) CAM.fly = null;
+    CAM.last = null;
+    if (MO.disp) { moCamera(1 / 60, nowMs()); moKick(); }
   }
   // تطبيق الوضع المختار فوراً (عند تغييره بالإعدادات، أو بعد انتهاء الملاحة بالوضع التلقائي)
   function applyMapView() {
@@ -1146,6 +1431,8 @@
   }
   // اتجاه المسار قدّامي (لما نبدأ الملاحة والجهاز واقف وما عنده اتجاه)
   function routeHeading(p) {
+    const mo = state.model;
+    if (mo) { const h = matchRange(mo, p, 0, mo.total, 0, 0.01); if (h) { const b = headingAt(mo, h.s, 25); if (b !== null) return b; } }
     const c = state.coords;
     if (c.length < 2) return null;
     const n = nearestOnRoute(p, 0, 400);
@@ -1169,28 +1456,19 @@
       '<polygon points="22,4 39,40 39,45 22,37 5,45 5,40" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round"/>' +
     '</svg>';
   let meMarker = null;
-  let meAngle = 0; // زاوية تراكمية حتى ما يلف المثلث لفة كاملة عند عبور الشمال
-
+  function ensureMarker(lat, lng) {
+    if (meMarker) return;
+    const mel = document.createElement('div');
+    mel.style.cssText = 'width:44px;height:52px;pointer-events:none;z-index:5';
+    mel.innerHTML = '<div class="me3d"><div class="shd"></div><div class="arwrap">' + ME_SVG + '</div></div>';
+    meMarker = mkMarker(mel, lat, lng, { anchor: 'center' });
+  }
+  // موقعي الخام من الـ GPS (للبلاغات والبحث وغيرها). المثلث نفسه يتحرك بمحرك الحركة (moFrame) مو من هنا.
   function setUser(lat, lng, heading, speed) {
     const firstFix = !state.user;
     state.user = { lat, lng, heading: heading, speed: speed };
     if (firstFix && settings.theme === 'auto') applyTheme();
-    if (!meMarker) {
-      const mel = document.createElement('div');
-      mel.style.cssText = 'width:44px;height:52px;pointer-events:none;z-index:5';
-      mel.innerHTML = '<div class="me3d"><div class="shd"></div><div class="arwrap">' + ME_SVG + '</div></div>';
-      meMarker = mkMarker(mel, lat, lng, { anchor: 'center' });
-    } else meMarker.setLngLat([lng, lat]);
-    const el = meMarker.getElement();
-    if (el && typeof heading === 'number' && !isNaN(heading)) {
-      const arrow = el.querySelector('.arrow');
-      if (arrow) {
-        meAngle += ((heading - meAngle) % 360 + 540) % 360 - 180;
-        arrow.style.transform = 'rotate(' + meAngle + 'deg)';
-      }
-    }
-    updateArrowBearing();
-    if (state.follow && !fingersDown()) followCam();
+    ensureMarker(lat, lng);
   }
   // الخريطة مدوّرة: السهم يتعاكس مع دورانها حتى يبقى يشير لاتجاه حركتك الحقيقي
   let arwB = null;
@@ -1203,6 +1481,101 @@
     if (w) w.style.transform = 'rotate(' + (-b) + 'deg)';
   }
   map.on('rotate', updateArrowBearing);
+
+  /* ================= محرك الحركة: المثلث والكاميرا يمشون سوا بسلاسة (60 إطار بالثانية) ================= */
+  // الـ GPS يوصّل تحديث كل ثانية تقريباً. بدل ما نحط المثلث على كل تحديث (فيقفز)، نتتبّع حركتك (TRK: مكانك وسرعتك)
+  // ونعرض الموقع كل إطار. إذا كنت ملصوق على المسار، المثلث يمشي على خط المسار نفسه (مو على نقطة الـ GPS اللي ممكن تكون بعيدة عنه).
+  const TRK = makeTracker();
+  const MO = { disp: null, prev: null, t: 0, raf: 0, ang: 0, angOk: false, angShown: null, moving: true, camOn: false, hdgT: null };
+  const CAM = { p: 0, o: 0, zt: null, bt: 0, fly: null, last: null };
+  const FOLLOW_TAU = 0.6, FOLLOW_MAX = 30; // ثابت تنعيم التصحيح (ثانية)، وأقصى سرعة تصحيح (م/ث) فوق حركة المثلث نفسها
+  const nowMs = () => performance.now();
+  function camSync() { // الكاميرا ما كانت تتبعني: نبدأ من وضع الخريطة الحالي حتى ما تقفز
+    if (MO.camOn) return;
+    MO.camOn = true;
+    camB = ((map.getBearing() % 360) + 360) % 360; CAM.bt = camB;
+    CAM.p = map.getPitch(); CAM.o = 0; CAM.zt = null; CAM.fly = null; CAM.last = null;
+  }
+  function moCamera(dt, now) {
+    if (!MO.disp) return;
+    const tilt = wantTilt(), H = map.getContainer().clientHeight || 600;
+    const kS = 1 - Math.exp(-dt / 0.3);
+    const pT = tilt ? TILT : 0, oT = tilt ? Math.round(H * 0.16) : 0;
+    CAM.p += (pT - CAM.p) * kS; if (Math.abs(pT - CAM.p) < 0.05) CAM.p = pT;
+    CAM.o += (oT - CAM.o) * kS; if (Math.abs(oT - CAM.o) < 0.5) CAM.o = oT;
+    if (tilt) {
+      if (MO.moving && MO.hdgT !== null) CAM.bt = MO.hdgT; // الكاميرا تدور مع اتجاه الحركة، وأنا واقف تبقى على آخر اتجاه
+      camB = (camB + angDiff(CAM.bt, camB) * (1 - Math.exp(-dt / 0.7)) + 360) % 360;
+    } else {
+      camB = (camB + angDiff(0, camB) * kS + 360) % 360;
+      if (Math.abs(angDiff(0, camB)) < 0.05) camB = 0;
+    }
+    let z = map.getZoom();
+    if (CAM.zt !== null) { z += (CAM.zt - z) * (1 - Math.exp(-dt / 0.25)); if (Math.abs(CAM.zt - z) < 0.01) { z = CAM.zt; CAM.zt = null; } }
+    let c = MO.disp;
+    if (CAM.fly) {
+      const k = Math.min(1, (now - CAM.fly.t0) / CAM.fly.dur), e = k * k * (3 - 2 * k);
+      c = [CAM.fly.c0[0] + (MO.disp[0] - CAM.fly.c0[0]) * e, CAM.fly.c0[1] + (MO.disp[1] - CAM.fly.c0[1]) * e];
+      if (k >= 1) CAM.fly = null;
+    }
+    const L = CAM.last;
+    if (L && Math.abs(L[0] - c[0]) < 1e-8 && Math.abs(L[1] - c[1]) < 1e-8 && Math.abs(L[2] - z) < 1e-4 && Math.abs(L[3] - camB) < 0.01 && Math.abs(L[4] - CAM.p) < 0.01 && Math.abs(L[5] - CAM.o) < 0.01) return; // ما تغيّر شي
+    CAM.last = [c[0], c[1], z, camB, CAM.p, CAM.o];
+    map.easeTo({ center: [c[1], c[0]], zoom: z, bearing: camB, pitch: CAM.p, offset: [0, CAM.o], padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 0 }, FOLLOW_EV);
+  }
+  function moPlace(pos, hdg, dt) {
+    ensureMarker(pos[0], pos[1]);
+    const ll = meMarker.getLngLat();
+    if (Math.abs(ll.lat - pos[0]) > 1e-9 || Math.abs(ll.lng - pos[1]) > 1e-9) meMarker.setLngLat([pos[1], pos[0]]);
+    if (typeof hdg === 'number' && isFinite(hdg)) {
+      if (!MO.angOk) { MO.ang = hdg; MO.angOk = true; }
+      else MO.ang += angDiff(hdg, MO.ang) * (1 - Math.exp(-dt / 0.2));
+      const a = Math.round(MO.ang * 20) / 20;
+      if (a !== MO.angShown) {
+        MO.angShown = a;
+        const el = meMarker.getElement(), arrow = el && el.querySelector('.arrow');
+        if (arrow) arrow.style.transform = 'rotate(' + a + 'deg)';
+      }
+    }
+    updateArrowBearing();
+  }
+  function moFrame() {
+    MO.raf = 0;
+    if (!TRK.has) return;
+    const now = nowMs();
+    let dt = MO.t ? (now - MO.t) / 1000 : 1 / 60;
+    MO.t = now;
+    const gap = dt > 1; // الصفحة كانت مخفية: نلحق فوراً
+    dt = Math.min(0.1, Math.max(0.001, dt));
+    const tg = trackerAt(TRK, now);
+    if (!MO.disp || gap || !MO.prev || haversine(MO.disp, tg.pos) > 150) MO.disp = tg.pos.slice();
+    else MO.disp = followStep(MO.disp, MO.prev, tg.pos, dt, FOLLOW_TAU, FOLLOW_MAX);
+    MO.prev = tg.pos; MO.hdgT = tg.hdg;
+    moPlace(MO.disp, tg.hdg, dt);
+    if (state.follow) { if (!fingersDown()) { camSync(); moCamera(dt, now); } } else MO.camOn = false;
+    if (now - TRK.t < 20000) moKick(); // بعد 20 ثانية بدون تحديث GPS نوقف الحلقة (توفير بطارية)، وأول تحديث يرجّعها
+  }
+  function moKick() {
+    if (MO.raf || document.hidden || !TRK.has) return;
+    MO.raf = requestAnimationFrame(moFrame);
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { MO.t = 0; MO.prev = null; moKick(); } });
+  // تحديث GPS جديد: r = نتيجة المطابقة على المسار (أو null). coast = خلل لحظي بعيد عن المسار، نكمل بالتوقّع وما نصدّقه
+  function moFeed(fx, r, coast) {
+    const f = { t: fx.t, lat: fx.lat, lng: fx.lng, speed: fx.speed, heading: fx.heading, sim: !!state.sim };
+    if (r && r.snap && state.model) { f.model = state.model; f.s = r.s; }
+    MO.moving = state.sim ? true : (typeof fx.speed === 'number' && isFinite(fx.speed) ? fx.speed >= 1 : true);
+    if (!TRK.has) {
+      trackerFix(TRK, f);
+      const tg = trackerAt(TRK, fx.t);
+      MO.disp = tg.pos.slice(); MO.prev = tg.pos.slice(); MO.t = 0;
+      ensureMarker(MO.disp[0], MO.disp[1]);
+    } else if (!coast) {
+      trackerFix(TRK, f);
+      if (MO.disp && MO.t) MO.prev = trackerAt(TRK, MO.t).pos; // القفزة تصير فرق يصحّحه المتابع بنعومة، مو حركة
+    }
+    moKick();
+  }
 
   /* ================= تدوير الخريطة بإصبعين + بوصلة الشمال ================= */
   // أول ما يلف المستخدم الخريطة بإصبعيه (e.originalEvent موجود)، الكاميرا تتوقف عن اللحاق بموقعي مثل السحب.
@@ -1233,9 +1606,38 @@
     map.easeTo({ bearing: 0, duration: 350 });
   };
 
-  function onPosition(lat, lng, heading, speedMs) {
+  // خلل لحظي بالـ GPS: قفزة أكبر بكثير من اللي تسمح فيه سرعتي من آخر موقع مقبول (مثلاً 150 م بثانية). نتجاهل التحديث، ولو تكرر مرتين نقبله (يمكن فعلاً انتقلت)
+  let lastRaw = null, glitchN = 0;
+  function gpsGlitch(lat, lng, speedMs, t) {
+    if (!lastRaw || glitchN >= 2) return false;
+    const dt = Math.min(10, Math.max(0.3, (t - lastRaw.t) / 1000));
+    const sp = typeof speedMs === 'number' && isFinite(speedMs) && speedMs >= 0 ? Math.min(speedMs, 70) : 40;
+    return haversine([lastRaw.lat, lastRaw.lng], [lat, lng]) > 40 + 1.5 * sp * dt;
+  }
+  // قراءة دقتها سيئة (أكثر من 60 م، مثلاً بين العمارات أو بنفق) وعندنا قراءة جيدة قبلها بأقل من 6 ثواني: نتجاهلها، والمثلث يكمل بالتوقّع على المسار.
+  // إذا طالت (6 ثواني بدون قراءة جيدة، وهي مدة توقّع المثلث) نقبلها لأنها كل اللي عندنا.
+  const POOR_ACC_M = 60, POOR_HOLD_MS = 6000;
+  let lastGoodT = 0;
+  function onPosition(lat, lng, heading, speedMs, acc) {
+    const t0 = nowMs();
+    const poor = typeof acc === 'number' && isFinite(acc) && acc > POOR_ACC_M;
+    if (poor && lastGoodT && t0 - lastGoodT < POOR_HOLD_MS) return;
+    if (gpsGlitch(lat, lng, speedMs, t0)) { glitchN++; return; }
+    glitchN = 0; lastRaw = { lat: lat, lng: lng, t: t0 };
+    if (!poor) lastGoodT = t0;
     setUser(lat, lng, heading, speedMs);
-    if (state.navigating) { navUpdate(); trShare(lat, lng, heading, speedMs); }
+    const fx = { lat: lat, lng: lng, speed: speedMs, heading: heading, t: t0 };
+    let r = null, coast = false;
+    // نطابق موقعي على المسار (إلا إذا دقة الـ GPS سيئة، أكثر من 60 م)
+    if (state.navigating && state.model && state.nav && !poor) {
+      r = navMatch(state.nav, state.model, fx);
+      if (r) {
+        if (r.off) state.offCount++; else state.offCount = 0;
+        coast = r.off && state.offCount < 3 && TRK.snap; // خلل لحظي (أقل من 3 تحديثات بعيدة عن المسار): المثلث يكمل مكانه بدل ما يقفز
+      }
+    }
+    moFeed(fx, r, coast);
+    if (state.navigating) { navUpdate(r); trShare(lat, lng, heading, speedMs); }
   }
 
   function geoStop() {
@@ -1260,7 +1662,7 @@
         if (state.sim) return; // أثناء التجربة نتجاهل الـ GPS الحقيقي
         const c = pos.coords;
         const first = !state.user;
-        onPosition(c.latitude, c.longitude, c.heading, c.speed);
+        onPosition(c.latitude, c.longitude, c.heading, c.speed, c.accuracy);
         // أول تحديد للموقع بعد ضغط الزر: نقرّب الخريطة حتى يبين المكان
         if (first && state.follow && !state.navigating && map.getZoom() < 15)
           followCam({ zoom: 16, duration: 700 });
@@ -1533,6 +1935,9 @@
   function drawRoute(route) {
     state.route = route;
     state.coords = route.geometry.coordinates.map((c) => [c[1], c[0]]);
+    state.model = buildRouteModel(route); // مكان كل منعطف على الخط: نقيس التقدّم بالمسافة على المسار مو بالمسافة المستقيمة
+    state.nav = makeNav();
+    trRouteBuild();
     setRoutePts(state.coords);
     routeLine = routeCasing = true;
     state.routeIdx = 0;
@@ -1560,6 +1965,14 @@
   // نقصّر الخط: يبدأ من موقعي، والجزء اللي مشيته يختفي
   function trimRoute(p) {
     if (!routeLine || state.coords.length < 2) return;
+    const mo = state.model, nv = state.nav;
+    if (mo && nv && nv.s !== null) { // نقصّ عند تقدّمي على الخط (نفس المكان اللي تعتمد عليه اللافتة)
+      const i = segIndexAt(mo.cum, nv.s);
+      state.routeIdx = i;
+      setRoutePts([pointAt(mo, nv.s)].concat(mo.pts.slice(i + 1)));
+      return;
+    }
+    if (!p) return;
     const best = nearestOnRoute(p, state.routeIdx || 0, (state.routeIdx || 0) + 400);
     if (best.d > 70) return; // طلعت عن المسار، ننتظر إعادة الحساب
     state.routeIdx = best.i;
@@ -1611,10 +2024,11 @@
   }
 
   function clearRoute() {
+    trRouteIv = [];
     setRoutePts([]);
     if (destMarker) destMarker.remove();
     routeCasing = routeLine = destMarker = null;
-    state.route = null; state.coords = []; state.dest = null;
+    state.route = null; state.coords = []; state.dest = null; state.model = null; state.nav = null;
     $('sheet').hidden = true;
   }
 
@@ -1763,8 +2177,10 @@
   }
   // خطة بديلة: خدمة Nominatim (نفس خدمة البحث بالتطبيق)
   async function nominatimPlaces(cat, o) {
-    const dLat = poiRadius / 111320, dLng = poiRadius / (111320 * Math.cos(o.lat * Math.PI / 180));
-    const vb = [o.lng - dLng, o.lat + dLat, o.lng + dLng, o.lat - dLat].map((n) => n.toFixed(5)).join(',');
+    // مركز الصندوق يتقرّب لـ 3 خانات (~100م) مثل Overpass حتى ما ينكشف موقعك بدقة المتر، ونوسّع الصندوق 80م ليبقى يغطي كل دائرة البحث بعد التقريب
+    const cLat = Math.round(o.lat * 1000) / 1000, cLng = Math.round(o.lng * 1000) / 1000, R = poiRadius + 80;
+    const dLat = R / 111320, dLng = R / (111320 * Math.cos(cLat * Math.PI / 180));
+    const vb = [cLng - dLng, cLat + dLat, cLng + dLng, cLat - dLat].map((n) => n.toFixed(5)).join(',');
     const out = [], seen = {};
     for (let i = 0; i < cat.nq.length; i++) {
       if (i) await new Promise((r) => setTimeout(r, 1100));
@@ -2140,7 +2556,7 @@
       setTimeout(() => { if (!bldOk[id]) bldRemove(id); b3dSync(); bldStat(); }, 0);
     } catch (_) {}
   });
-  map.on('moveend', bldSync);
+  atMoveEnd(bldSync, 1000);
   window.addEventListener('online', () => { bldBad = {}; bldErr = {}; bldLoadIdx(); bldSync(); });
   map.on('style.load', () => {                                 // أول تحميل + بعد تبديل نهاري/ليلي (كل المصادر تنمسح وتنبني من جديد)
     bldReady = true; bldAct = {};
@@ -2468,9 +2884,20 @@
       return pts.length ? pts : null;
     } catch (e) { return null; }
   }
+  // إذا فيه مسار مرسوم: السيارات الوهمية تنحط على المسار نفسه قدّامك (أحمر ثم برتقالي)، حتى تشوف تلوين المسار بدون سيارات حقيقية
+  function trRoutePoints() {
+    const m = state.model; if (!m) return null;
+    const lo = state.navigating && state.nav && state.nav.s !== null ? state.nav.s + 150 : 0;
+    const a = Math.max(0, Math.min(lo, m.total - 700)), b = Math.min(m.total, a + 700), pts = [];
+    for (let d = a; d <= b; d += 45) {
+      const p = pointAt(m, d), hd = headingAt(m, d, 20);
+      if (hd !== null) pts.push({ lat: p[0], lng: p[1], h: hd, sv: d < a + 350 ? 6 : 19 });
+    }
+    return pts.length >= 3 ? pts : null;
+  }
   $('trafficSim').onclick = () => {
     const c = map.getCenter(), now = Date.now(), sim = [];
-    let pts = trRoadPoints(), onRoad = !!pts;
+    let pts = trRoutePoints() || trRoadPoints(), onRoad = !!pts;
     if (!pts) { pts = []; for (let i = 0; i < 10; i++) pts.push({ lng: c.lng + (i - 4) * 0.0008, lat: c.lat }); }
         pts.forEach((q, i) => {
       const v = q.sv !== undefined ? q.sv : (i < pts.length / 2 ? 6 : 19), hh = q.h;
@@ -2679,7 +3106,7 @@
     if (!state.route) return;
     const steps = state.route.legs[0].steps;
     steps.forEach((s) => { s._said = false; });
-    state.navigating = true; state.stepIdx = 0; state.offCount = 0;
+    state.navigating = true; state.stepIdx = 0; state.offCount = 0; state.reAt = -Infinity; state.nav = makeNav();
     untrimRoute();
     state.follow = true; $('btnLocate').classList.add('on');
     $('top').hidden = true; $('nav').hidden = false;
@@ -2695,10 +3122,10 @@
     if (!simulate && !state.user) toast('جاري تحديد موقعك...');
     speak(arInstr(steps[0]));
     if (state.user) {
-      if (wantTilt()) { const hd = routeHeading([state.user.lat, state.user.lng]); if (hd !== null) camB = hd; } // نبدأ والخريطة باتجاه المسار
       followCam({ zoom: 17, duration: wantTilt() ? 800 : 0 });
+      if (wantTilt()) { const hd = routeHeading([state.user.lat, state.user.lng]); if (hd !== null) CAM.bt = hd; } // نبدأ والخريطة باتجاه المسار
     }
-    navUpdate();
+    navTick();
   }
 
   function endNav(msg) {
@@ -2723,27 +3150,43 @@
     svg.style.transform = 'rotate(' + rot + 'deg)';
   }
 
-  function navUpdate() {
+  const ARRIVE_M = 25; // نعتبرك وصلت إذا باقي على نهاية المسار أقل من هذا
+  // r = نتيجة مطابقة آخر تحديث GPS على المسار (navMatch)، أو null إذا ما اكو
+  function navUpdate(r) {
     if (!state.navigating || !state.route || !state.user) return;
-    const steps = state.route.legs[0].steps;
-    const p = [state.user.lat, state.user.lng];
-    trimRoute(p);
+    const steps = state.route.legs[0].steps, mo = state.model, nv = state.nav;
+    let p = [state.user.lat, state.user.lng];
 
     // السرعة
     const spdVal = state.user.speed ? Math.round(state.user.speed * (settings.units === 'mi' ? 2.23694 : 3.6)) : 0;
     $('spd').textContent = spdVal;
 
-    // التقدّم بالخطوات
-    let idx = state.stepIdx;
-    let up = steps[idx + 1];
-    if (!up) return;
-    let d = haversine(p, [up.maneuver.location[1], up.maneuver.location[0]]);
-    if (d < 25) {
-      if (idx + 1 >= steps.length - 1) { speak('وصلت إلى وجهتك'); endNav('وصلت إلى وجهتك'); return; }
-      state.stepIdx = ++idx;
-      up = steps[idx + 1];
-      d = haversine(p, [up.maneuver.location[1], up.maneuver.location[0]]);
+    // التقدّم بالخطوات: بمسافة التقدّم على خط المسار (مو المسافة المستقيمة لنقطة المنعطف، لأنها تعلق إذا الـ GPS بعيد عن الخط ولا تدخل بدائرة 25 م)
+    let idx = state.stepIdx, d, remD, remT;
+    if (mo && nv && nv.s !== null) {
+      trimRoute(p);
+      if (!(r && r.off)) idx = state.stepIdx = stepFor(mo, nv.s, idx);
+      if (!steps[idx + 1]) return;
+      if (idx + 1 >= steps.length - 1 && mo.total - nv.s < ARRIVE_M) { speak('وصلت إلى وجهتك'); endNav('وصلت إلى وجهتك'); return; }
+      d = Math.max(0, mo.start[idx + 1] - nv.s);
+      remD = Math.max(0, mo.total - nv.s);
+      remT = remainingTime(mo, nv.s, idx);
+      if (r && r.snap) p = r.mt.q; // نقطة على الخط: أدق للتنبيهات
+    } else { // احتياط: ما اكو نموذج للمسار (رد غريب من الخادم): الأسلوب القديم بالمسافة المستقيمة
+      trimRoute(p);
+      let up0 = steps[idx + 1];
+      if (!up0) return;
+      d = haversine(p, [up0.maneuver.location[1], up0.maneuver.location[0]]);
+      if (d < 25) {
+        if (idx + 1 >= steps.length - 1) { speak('وصلت إلى وجهتك'); endNav('وصلت إلى وجهتك'); return; }
+        state.stepIdx = ++idx;
+        up0 = steps[idx + 1];
+        d = haversine(p, [up0.maneuver.location[1], up0.maneuver.location[0]]);
+      }
+      remD = d; remT = 0;
+      for (let j = idx + 1; j < steps.length; j++) { remD += steps[j].distance; remT += steps[j].duration; }
     }
+    const up = steps[idx + 1];
 
     // اللافتة
     $('navDist').textContent = fmtDist(d);
@@ -2757,32 +3200,37 @@
     }
 
     // المتبقي
-    let remD = d, remT = 0;
-    for (let j = idx + 1; j < steps.length; j++) { remD += steps[j].distance; remT += steps[j].duration; }
     state.remT = remT;
     $('sumTime').textContent = fmtTime(remT || 60);
     $('sumDist').textContent = fmtDist(remD);
     $('sumEta').textContent = 'الوصول ' + fmtClock(remT);
 
-    // خروج عن المسار
-    if (!state.sim) {
-      if (distToRoute(p) > 70) {
-        if (++state.offCount >= 3 && !state.rerouting) reroute();
-      } else state.offCount = 0;
-    }
+    // خروج عن المسار: 3 تحديثات متتالية بعيدة أكثر من 70 م، وبعد آخر إعادة حساب بأكثر من 20 ثانية
+    if (!state.sim && r && r.off && state.offCount >= 3 && !state.rerouting && nowMs() - state.reAt > 20000) reroute();
 
     hazardCheck(p);
   }
+  // نطابق موقعي الحالي على المسار الحالي بدون انتظار تحديث GPS جديد (بعد بدء الملاحة أو تغيير المسار)
+  function navTick() {
+    const u = state.user;
+    if (!u || !state.model || !state.nav) { navUpdate(null); return; }
+    const fx = { lat: u.lat, lng: u.lng, speed: u.speed, heading: u.heading, t: nowMs() };
+    const r = navMatch(state.nav, state.model, fx);
+    moFeed(fx, r, false);
+    navUpdate(r);
+  }
 
   async function reroute() {
-    state.rerouting = true; state.offCount = 0;
+    state.rerouting = true; state.offCount = 0; state.reAt = nowMs();
     toast('طلعت عن الطريق، أعيد الحساب...');
     speak('أعيد حساب الطريق');
     try {
       const route = await fetchRoute([state.user.lat, state.user.lng], [state.dest.lat, state.dest.lng]);
+      if (!state.navigating) { state.rerouting = false; return; } // انتهت الملاحة وأنا أنتظر الرد
       route.legs[0].steps.forEach((s) => { s._said = false; });
       drawRoute(route);
       state.stepIdx = 0;
+      navTick();
     } catch (e) { toast('ما كدرت أعيد حساب الطريق'); }
     state.rerouting = false;
   }
@@ -2813,15 +3261,16 @@
   /* ================= موافقة مشاركة الزحام ================= */
   // ما نرسل موقعك ولا سرعتك لأحد إلا بعد موافقتك. السؤال يظهر مرة وحدة قبل أول ملاحة حقيقية، وتغيّر جوابك بأي وقت من الإعدادات ← الزحام.
   // هذا النص هو نفسه اللي يظهر بالنافذة وبالإعدادات، وكل نقطة فيه لازم تطابق شغل trShare فعلاً؛ إذا تغيّر الإرسال لازم يتغيّر النص ويرتفع TR_CONSENT_V.
+  const TR_MIN_KMH = 15; // حد السرعة قبل ما نبدأ نرسل (المشاة والركض أقل منه). النص تحت يقرأه من هنا حتى ما يختلف عن الشغل
   const TR_PRIVACY = {
     lead: 'أثناء الملاحة، يكدر دليني يرسل سرعتك واتجاهك وموقعك (بدقة حوالي 10 أمتار) حتى يظهر الزحام لباقي السواق.',
     points: [
       'بدون اسمك أو رقمك أو حسابك، وبهوية عشوائية جديدة لكل رحلة.',
-      'ما يرسل إلا أثناء الملاحة، وبعد ما تتجاوز سرعتك 15 كم/س (يعني بالسيارة، مو ماشي).',
+      'ما يرسل إلا أثناء الملاحة، وبعد ما تتجاوز سرعتك ' + TR_MIN_KMH + ' كم/س (يعني بالسيارة، مو ماشي).',
       'ما يرسل أول 300 متر ولا آخر 300 متر من رحلتك، حتى ما ينكشف بيتك أو شغلك.',
       'يبقى آخر موقع بس (مو سجل لتنقلاتك)، ويتمسح لما تنتهي الملاحة.'
     ],
-    foot: 'إذا ما وافقت، الملاحة وعرض الزحام يشتغلون عادي. وتكدر تغيّر رأيك بأي وقت من الإعدادات ← الزحام.'
+    foot: 'إذا ما وافقت، الملاحة وعرض الزحام يشتغلون عادي. وتكدر تغيّر رأيك بأي وقت من الإعدادات ← الزحام. وكل التفاصيل بـ«سياسة الخصوصية» داخل الإعدادات ← حول البرنامج.'
   };
   function trFillPrivacy(ul) {
     ul.textContent = '';
@@ -3071,9 +3520,11 @@
     if (!trShareOn()) { trDiag = trConsented() ? 'المشاركة مطفأة' : 'بانتظار موافقتك على المشاركة'; trRenderLive(); return; }
     if (!navigator.onLine) { trDiag = 'لا يوجد إنترنت'; trRenderLive(); return; }
     if (typeof speedMs !== 'number' || isNaN(speedMs) || speedMs < 0) { trDiag = 'الجهاز لا يعطي سرعة (GPS)'; trRenderLive(); return; }
-    // لا نرسل إلا بعد أن تتجاوز سرعتك 15 كم/س مرة واحدة بهذه الملاحة (يعني سيارة، مو ماشي)؛ وبعدها نرسل حتى لو وقفت بالزحام
+    // لا نرسل إلا بعد أن تتجاوز سرعتك TR_MIN_KMH كم/س مرة واحدة بهذه الملاحة (يعني سيارة، مو ماشي)؛ وبعدها نرسل حتى لو وقفت أو زحفت بالزحام.
+    // الحد يُفحص مرة وحدة بالرحلة لا لكل قراءة: يمنع المشاة والركض فقط، أما السيارة البطيئة بعد ما تعدّيه فكل قراءاتها تنرسل.
+    // ما ننزّله أكثر (مثلاً 8): يقرّب من سرعة الركض والدراجات، وتدخل بيانات مو سيارات بالزحام.
     trMaxV = Math.max(trMaxV, speedMs * 3.6);
-    const need = (devMode && settings.trafficWalk === true) ? 2 : 15;
+    const need = (devMode && settings.trafficWalk === true) ? 2 : TR_MIN_KMH;
     if (trMaxV < need) { trDiag = 'بانتظار السرعة: أعلى سرعة ' + Math.round(trMaxV) + ' كم/س (يلزم ' + need + ')'; trRenderLive(); return; }
     // أول 300 متر من رحلتك ما تنرسل (مكان بيتك/شغلك)
     if (!trLeft) {
@@ -3444,7 +3895,7 @@
     if (state.sim) { stopSim(); startSim(); }
     speak('تم تغيير المسار');
     toast('تم تغيير المسار');
-    navUpdate();
+    navTick();
   };
 
   /* ================= بداية ================= */

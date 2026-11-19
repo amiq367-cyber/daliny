@@ -1,8 +1,10 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت
-const CACHE = 'daliny-v13';
+const CACHE = 'daliny-v14';
 const LIBS = 'daliny-libs-v2';
 const PACK_CACHE = 'daliny-packs-v1';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+// صفحة الخصوصية: نحفظها حتى تنفتح بدون إنترنت، لكن لو غابت (مثلاً ما انرفعت) ما تمنع تثبيت التحديث
+const EXTRA = ['privacy.html'];
 
 const LIB_URLS = [
   'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css',
@@ -14,7 +16,10 @@ const LIB_URLS = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     Promise.all([
-      caches.open(CACHE).then((c) => c.addAll(SHELL)),
+      caches.open(CACHE).then(async (c) => {
+        await c.addAll(SHELL);
+        await Promise.all(EXTRA.map((u) => c.add(u).catch(() => {})));
+      }),
       // نحفظ مكتبات التطبيق من البداية حتى يشتغل بدون إنترنت حتى لو انفتح أول مرة بعد التحديث
       caches.open(LIBS).then((c) => Promise.all(LIB_URLS.map(async (u) => {
         try {

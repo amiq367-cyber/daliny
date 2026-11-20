@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- سياج الحماية (CSP): يسمح فقط بسكربت التطبيق نفسه (بصمة SHA-256) ومكتبات الخرائط بنسخ ثابتة، ويمنع أي سكربت أو معالج مدمج ثاني.
      ⚠️ البصمة sha256 تُحسب من نص السكربت الرئيسي حرفياً: أي تعديل بالسكربت لازم تتحدث البصمة (أداة build-csp.js)، وإلا ما يشتغل التطبيق. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-kZ5Piq2YN3oTT85o13yFxt+ND/eLRL1mJdXsnew2FF4=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-IlPHoTOnRz9UNloFV/jkd7bZDdjoeOM3KCeZGoByz2M=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>دليني</title>
@@ -16,11 +16,30 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon-180.png">
 
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<!-- شاشة البداية (صورة الأيقونة): تنرسم من أول لحظة، قبل ما تتحمّل أي مكتبة، وتبقى فوق الخريطة لحد ما تكتمل خلفها.
+     ⚠️ لازم ستايلها يجي قبل ملفات الخريطة (وهذي كلها defer أو media=print) حتى ما تطلع شاشة بيضاء. -->
+<style>
+  html { background: #172228; }
+  #splash {
+    position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center;
+    background: #172228; opacity: 1; visibility: visible;
+    animation: splashfail .4s ease 15s forwards; /* حاجز أخير بدون سكربت: لو تعطّل كل شي ما تبقى الشاشة للأبد */
+  }
+  #splash img { display: block; width: min(76vw, 360px); height: auto; aspect-ratio: 1 / 1; -webkit-user-drag: none; user-select: none; }
+  #splash .sp-msg {
+    position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 11vh); margin: 0; text-align: center;
+    color: #9bb0b9; font: 500 15px/1.4 var(--font, system-ui, sans-serif); opacity: 0; animation: splashmsg .6s ease 4s forwards;
+  }
+  #splash.out { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .4s ease, visibility 0s linear .4s; }
+  @keyframes splashfail { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+  @keyframes splashmsg { to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #splash.out { transition: none; } }
+</style>
+<link id="mlcss" rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" media="print">
 <link id="fontcss" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" media="print">
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
-<script src="https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js"></script>
+<script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script defer src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+<script defer src="https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js"></script>
 
 <style>
   :root {
@@ -269,6 +288,7 @@
   .seg button { flex: 1; padding: 11px 8px; border-radius: 10px; background: var(--line); font-weight: 500; }
   .seg button.on { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
   .set-btn { padding: 12px 18px; border-radius: 12px; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+  .set-btn:disabled { opacity: .45; }
   .pack-row { gap: 12px; }
   .pack-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .pack-info small { color: var(--muted); }
@@ -389,6 +409,12 @@
 </style>
 </head>
 <body>
+
+<!-- شاشة البداية: تذوب لما تكتمل الخريطة خلفها (انظر splashHide بالسكربت) -->
+<div id="splash" aria-hidden="true">
+  <img src="icon-512.png" width="512" height="512" alt="">
+  <p class="sp-msg">جاري تحميل الخريطة…</p>
+</div>
 
 <div id="map"></div>
 
@@ -635,6 +661,9 @@
       <label class="set-row" for="bldAllSwitch"><span>كل المباني (من الإنترنت)</span><input type="checkbox" id="bldAllSwitch" class="switch"></label>
       <p class="set-note">تظهر كل مباني العراق على الخريطة بأشكالها الحقيقية، وبارتفاعها الحقيقي لما يكون معروف. المباني اللي ارتفاعها مجهول تظهر بارتفاع تقديري (7 م). تحتاج إنترنت. إذا حسّيت الخريطة تثقل أطفئها.</p>
       <p class="set-note" id="bldStat"></p>
+      <label class="set-row" for="bldKeepSwitch"><span>حفظ مباني أماكنك على الجوال</span><input type="checkbox" id="bldKeepSwitch" class="switch"></label>
+      <p class="set-note">يحفظ تلقائياً مباني الأماكن اللي تفتحها حتى تظهر بسرعة المرة الجاية، وحتى بدون إنترنت للأماكن المحفوظة. الحد الأقصى 100 ميغا، وإذا امتلأ ينحذف الأقدم أول. تقدر تطفيه أو تمسح المحفوظ بأي وقت.</p>
+      <div class="set-row"><span id="bldKeepInfo">المحفوظ هسه: …</span><button id="bldKeepClear" class="set-btn" disabled>مسح</button></div>
       <label class="set-row" for="speedoSwitch"><span>عداد السرعة أثناء الملاحة</span><input type="checkbox" id="speedoSwitch" class="switch"></label>
       <p class="set-note">المظهر التلقائي: نهاري من شروق الشمس إلى غروبها حسب موقعك، وليلي بعد الغروب. زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.</p>
     </div>
@@ -662,8 +691,28 @@
 <script>
 (function () {
   'use strict';
-  // ملف الخطوط يتحمّل بالخلفية بدون ما يوقف ظهور الصفحة، وهنا نفعّله (كان يتفعّل بوسم onload، وهذا ممنوع بسياج الحماية)
+  // كل التطبيق داخل boot (بدون إزاحة الأسطر): مكتبات الخريطة تتحمّل بوضع defer حتى ما توقف أول رسمة (شاشة البداية)،
+  // فنبدأ بعد نهاية قراءة الصفحة (وصلت المكتبات) وبعد أول رسمة. الاستدعاء بآخر السكربت (whenReady).
+  function boot() {
+  // ملفات الستايل (الخطوط + ستايل الخريطة) تتحمّل بالخلفية بدون ما توقف ظهور الصفحة، وهنا نفعّلها (كانت تتفعّل بوسم onload، وهذا ممنوع بسياج الحماية)
   try { const fc = document.getElementById('fontcss'); if (fc) fc.media = 'all'; } catch (e) {}
+  try { const mc = document.getElementById('mlcss'); if (mc) mc.media = 'all'; } catch (e) {}
+
+  /* ================= شاشة البداية ================= */
+  // صورة الأيقونة فوق الخريطة من أول رسمة، وتذوب لما تكتمل الخريطة خلفها: أول idle من MapLibre = كل قطع الخريطة اللي تحتاجها الشاشة وصلت ورُسمت.
+  // ما تعلّق المستخدم أبداً: أقصى مدة 12 ثانية من فتح الصفحة (وفوقها حاجز ستايل بدون سكربت بعد 15 ثانية)، ولمسة عليها بعد 5 ثواني تفتح الخريطة.
+  const SPLASH_MAX_MS = 12000, SPLASH_TAP_MS = 5000;
+  const splashEl = document.getElementById('splash');
+  let splashGone = false, splashIdxWait = false;
+  function splashHide() {
+    if (splashGone) return;
+    splashGone = true;
+    if (!splashEl) return;
+    splashEl.classList.add('out');
+    setTimeout(() => { try { splashEl.remove(); } catch (e) {} }, 800);
+  }
+  setTimeout(splashHide, Math.max(2500, SPLASH_MAX_MS - performance.now())); // بحد أدنى 2.5 ثانية بعد ما يبدأ التطبيق (لو المكتبات تأخرت كثير بأول تشغيل)
+  if (splashEl) splashEl.addEventListener('click', () => { if (performance.now() >= SPLASH_TAP_MS) splashHide(); });
 
   /* ================= أدوات مساعدة ================= */
   const $ = (id) => document.getElementById(id);
@@ -681,7 +730,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: false, trafficConsent: 0, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true, bldAll: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: false, trafficConsent: 0, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true, bldAll: true, bldKeep: true
   };
   // نقرأ فقط المفاتيح المعروفة وبنفس النوع (يمنع أي قيمة غريبة بالتخزين المحلي من التأثير على التطبيق)
   try {
@@ -711,7 +760,7 @@
   const TILT = 50;
   // رقم الإصدار بثلاث خانات: رئيسي.فرعي.إصلاح (MAJOR.MINOR.PATCH) ويظهر بالإعدادات وبصفحة حول البرنامج
   //   الأول (رئيسي): تغيير كبير بالبرنامج. الثاني (فرعي): ميزة جديدة. الثالث (إصلاح): تصليح صغير بدون ميزة جديدة.
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.2.2';
   // نفس الرقم بصيغة رقمية تنرسل مع رسائل الاقتراحات: 1.0.0 => 10000 ، 1.2.3 => 10203 (تقبلها قواعد القاعدة القديمة والجديدة)
   const APP_BUILD = APP_VERSION.split('.').reduce((n, p, i) => n + (parseInt(p, 10) || 0) * [10000, 100, 1][i], 0);
   function verEl(prefix) { // «v1.0.0» تنكتب من اليسار لليمين حتى لو النص عربي
@@ -1047,6 +1096,7 @@
   const FONT_BASE = 'https://protomaps.github.io/basemaps-assets/';
   const hasGL = !!(window.maplibregl && window.pmtiles && window.basemaps);
   if (!hasGL) {
+    splashHide(); // نكشف رسالة الخطأ
     document.getElementById('map').innerHTML = '<p style="padding:90px 20px;text-align:center">تعذّر تحميل محرك الخريطة. وصّل بالإنترنت (أول مرة فقط) وحدّث الصفحة.</p>';
     throw new Error('map libs missing');
   }
@@ -1357,6 +1407,9 @@
     attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false,
     pitch: settings.mapView === '3d' ? TILT : 0
   });
+  // الخريطة جاهزة = ما بقى شي يتحمّل (idle بعد أول load) وما ننتظر فهرس المباني (أول تشغيل فقط) → تذوب شاشة البداية
+  function splashCheck() { if (!splashGone && !splashIdxWait && map.loaded()) splashHide(); }
+  map.on('idle', splashCheck);
   // تدوير الخريطة بإصبعين (مع التكبير) شغّال: touchZoomRotate الافتراضي، وما نستدعي disableRotation
   function trArrowImg() {
     const sz = 48, cv = document.createElement('canvas'); cv.width = cv.height = sz;
@@ -2095,6 +2148,7 @@
     if (p === 'about') renderAbout();
     if (p === 'favs') { favEditing = null; renderFavList(); }
     if (p === 'offline') refreshTileStats();
+    if (p === 'display') bldKeepShow();
     if (p === 'places') poiOpen();
   }
 
@@ -2534,11 +2588,17 @@
       .then((j) => {
         const sh = bldClean(j && j.shards);
         if (!Object.keys(sh).length) return;
+        const was = bldIdx;
         bldIdx = sh;
         try { localStorage.setItem(BLD_IDX_KEY, JSON.stringify({ shards: sh })); } catch (e) {}
+        // نسخة ملف محافظة تغيّرت: المصدر المفتوح ما زال يطلب النسخة القديمة (ومنها أجزاء محفوظة بالجوال)، فنشيله وينضاف من جديد بالنسخة الجديدة
+        Object.keys(bldAct).forEach((id) => {
+          if (was[id] && sh[id] && bldVer(was[id]) !== bldVer(sh[id])) { bldRemove(id); delete bldOk[id]; delete bldBad[id]; delete bldErr[id]; }
+        });
         bldSync();
       })
-      .catch(() => { bldStat(); });
+      .catch(() => { bldStat(); })
+      .then(() => { splashIdxWait = false; splashCheck(); }); // وصل الفهرس (أو فشل): شاشة البداية ما تنتظره بعد الآن
   }
   map.on('sourcedata', (e) => {                                // وصل وصف الملف = الملف يشتغل
     const m = /^bld-(.+)$/.exec((e && e.sourceId) || '');
@@ -2564,6 +2624,7 @@
     bldSync();
   });
   try { const j = JSON.parse(localStorage.getItem(BLD_IDX_KEY) || 'null'); if (j && j.shards) bldIdx = bldClean(j.shards); } catch (e) {}
+  if (!Object.keys(bldIdx).length) splashIdxWait = true; // أول تشغيل بدون فهرس محفوظ: شاشة البداية تنتظر فهرس المباني حتى تظهر المباني خلفها
   bldLoadIdx();
 
   // نحفظ الخطوط والرموز للعمل بدون إنترنت (يحفظها الـ service worker)
@@ -2577,6 +2638,50 @@
   }
 
   function fmtMB(n) { return (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' ميغا'; }
+
+  /* ---- حفظ مباني أماكنك على الجوال ----
+     الـ service worker هو اللي يحفظ أجزاء ملفات المباني اللي تطلبها الخريطة (حد أقصى 100 ميغا، والأقدم ينحذف أول).
+     هنا بس التحكم: المفتاح (نرسله للـ worker وهو يحفظه عنده)، شكد محفوظ، والمسح. */
+  const BLD_KEEP_CACHE = 'daliny-bld-v1';
+  function swPost(msg) {
+    try {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.ready.then((reg) => { if (reg.active) reg.active.postMessage(msg); }).catch(() => {});
+    } catch (e) {}
+  }
+  const bldKeepSend = () => swPost({ t: 'bld-keep', on: settings.bldKeep !== false });
+  async function bldKeepStat() {                               // الحجم من مفاتيح الكاش (المدى مكتوب بالمفتاح) بدون ما نفتح الأجزاء
+    try {
+      if (!window.caches || !(await caches.has(BLD_KEEP_CACHE))) return { n: 0, bytes: 0 };
+      const ks = await (await caches.open(BLD_KEEP_CACHE)).keys();
+      let bytes = 0;
+      ks.forEach((k) => { const m = /&r=(\d+)-(\d+)$/.exec(k.url); if (m) bytes += +m[2] - +m[1] + 1; });
+      return { n: ks.length, bytes: bytes };
+    } catch (e) { return null; }
+  }
+  let bldKeepSeq = 0;
+  function bldKeepShow() {
+    const el = $('bldKeepInfo'), btn = $('bldKeepClear');
+    if (!el || !btn) return;
+    const my = ++bldKeepSeq;
+    bldKeepStat().then((s) => {
+      if (my !== bldKeepSeq) return;                           // وصل طلب أحدث
+      if (!s) { el.textContent = 'المحفوظ هسه: ما نقدر نعرف'; btn.disabled = true; return; }
+      el.textContent = 'المحفوظ هسه: ' + (!s.n ? 'ما محفوظ شي بعد' : s.bytes < 52429 ? 'أقل من 0.1 ميغا' : fmtMB(s.bytes));
+      btn.disabled = !s.n;
+    });
+  }
+  $('bldKeepSwitch').onchange = () => { settings.bldKeep = $('bldKeepSwitch').checked; saveSettings(); bldKeepSend(); };
+  $('bldKeepClear').onclick = async () => {
+    const btn = $('bldKeepClear');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const s = await bldKeepStat();
+    try { await caches.delete(BLD_KEEP_CACHE); } catch (e) {}
+    swPost({ t: 'bld-reset' });                                // الـ worker يعيد حساب الحجم من الصفر
+    toast('انمسحت المباني المحفوظة' + (s && s.bytes >= 52429 ? ' (' + fmtMB(s.bytes) + ')' : ''), 3500);
+    bldKeepShow();
+  };
 
   const CHUNK = 4 * 1048576;
   const packSizes = {};
@@ -2757,6 +2862,7 @@
     $('speedoSwitch').checked = settings.speedo;
     $('bld3dSwitch').checked = settings.bld3d !== false;
     $('bldAllSwitch').checked = settings.bldAll !== false;
+    $('bldKeepSwitch').checked = settings.bldKeep !== false;
     bldStat();
     $('navSpeed').hidden = !settings.speedo;
     $('spdUnit').textContent = speedUnitLabel();
@@ -3901,7 +4007,10 @@
   /* ================= بداية ================= */
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideResults(); });
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+    const regSW = () => { navigator.serviceWorker.register('sw.js').catch(() => {}); };
+    if (document.readyState === 'complete') regSW(); else window.addEventListener('load', regSW); // ممكن حدث load قبل ما نبدأ (نبدأ بعد أول رسمة)
+    bldKeepSend();                                                          // نخبر الـ worker إذا حفظ المباني شغّال
+    navigator.serviceWorker.addEventListener('controllerchange', bldKeepSend); // وإذا تحدّث الـ worker نخبره من جديد
   }
   // لو المستخدم سمح بالموقع سابقاً نبدأ بدون ما نزعجه
   if (navigator.permissions && navigator.permissions.query) {
@@ -3909,6 +4018,14 @@
       if (r.state === 'granted') { startWatch(); }
     }).catch(() => {});
   }
+  }  // نهاية boot
+  function whenReady(fn) {
+    let started = false;
+    const go = () => { if (!started) { started = true; fn(); } };
+    const afterPaint = () => { requestAnimationFrame(() => setTimeout(go, 0)); setTimeout(go, 300); }; // الثانية احتياط لو الصفحة بالخلفية (ما فيه إطارات)
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', afterPaint); else afterPaint();
+  }
+  whenReady(boot);
 })();
 </script>
 </body>

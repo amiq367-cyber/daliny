@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- سياج الحماية (CSP): يسمح فقط بسكربت التطبيق نفسه (بصمة SHA-256) ومكتبات الخرائط بنسخ ثابتة، ويمنع أي سكربت أو معالج مدمج ثاني.
      ⚠️ البصمة sha256 تُحسب من نص السكربت الرئيسي حرفياً: أي تعديل بالسكربت لازم تتحدث البصمة (أداة build-csp.js)، وإلا ما يشتغل التطبيق. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-IlPHoTOnRz9UNloFV/jkd7bZDdjoeOM3KCeZGoByz2M=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-1xbhc4jHH7RAeL1FjWpzumiPIIKtK67/RdwSKxOyg/o=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>دليني</title>
@@ -151,7 +151,7 @@
   .nav .ntext { flex: 1; min-width: 0; }
   .nav .big { font-size: 1.9rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
   .nav #navText { font-size: 1.05rem; line-height: 1.35; opacity: .95; }
-  .nav .speed { text-align: center; border-right: 1px solid rgba(255,255,255,.35); padding-right: 12px; flex: none; }
+  .nav .speed { text-align: center; border-inline-start: 1px solid rgba(255,255,255,.35); padding-inline-start: 12px; flex: none; }
   .nav .speed b { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1; }
   .nav .speed small { font-size: .75rem; opacity: .9; }
 
@@ -215,7 +215,7 @@
   .favbtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
   .favbtn.on svg { fill: #f5b301; stroke: #f5b301; }
   .set-row.fav { gap: 8px; }
-  .favgo { flex: 1; min-width: 0; text-align: right; background: transparent; padding: 0; font-size: 1.05rem; }
+  .favgo { flex: 1; min-width: 0; text-align: start; background: transparent; padding: 0; font-size: 1.05rem; }
   .favact { padding: 8px 12px; border-radius: 10px; background: var(--line); font-size: .9rem; flex: none; }
   .favact.danger { color: var(--danger); }
   .fav-input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-family: inherit; font-size: 1rem; }
@@ -259,7 +259,7 @@
   .set-row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;
     padding: 16px 4px; border: 0; border-bottom: 1px solid var(--line); background: transparent;
-    color: inherit; font-size: 1.05rem; text-align: right;
+    color: inherit; font-size: 1.05rem; text-align: start;
   }
   .set-row.col { flex-direction: column; align-items: stretch; gap: 10px; }
   .set-row .line { display: flex; justify-content: space-between; }
@@ -332,16 +332,16 @@
   .poi .acts .go { background: var(--accent); color: var(--accent-fg); font-weight: 700; }
   details { margin-top: 10px; }
   summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
-  ol.steps { margin: 6px 0 0; padding: 0 22px 0 0; max-height: 28vh; overflow-y: auto; line-height: 1.6; }
+  ol.steps { margin: 6px 0 0; padding: 0; padding-inline-start: 22px; max-height: 28vh; overflow-y: auto; line-height: 1.6; }
   ol.steps li { padding: 4px 0; border-bottom: 1px dashed var(--line); }
-  ol.steps small { color: var(--muted); margin-right: 6px; }
+  ol.steps small { color: var(--muted); margin-inline-start: 6px; }
 
   .altbox {
     position: fixed; z-index: 1500;
     top: calc(env(safe-area-inset-top, 0px) + 100px);
     right: max(10px, env(safe-area-inset-right, 0px)); left: max(10px, env(safe-area-inset-left, 0px));
     background: var(--bg); color: var(--fg); border-radius: 16px; box-shadow: var(--shadow);
-    padding: 12px 14px; border-right: 6px solid #e8590c; display: flex; flex-direction: column; gap: 4px;
+    padding: 12px 14px; border-inline-start: 6px solid #e8590c; display: flex; flex-direction: column; gap: 4px;
   }
   .altbox small { color: var(--muted); line-height: 1.5; }
   .altbox .altacts { display: flex; gap: 8px; margin-top: 6px; }
@@ -368,7 +368,7 @@
   }
   .cn-card h3 { margin: 0 0 8px; font-size: 1.25rem; }
   .cn-lead { margin: 0 0 10px; line-height: 1.8; }
-  .cn-list { margin: 0 0 10px; padding: 0 20px 0 0; line-height: 1.8; }
+  .cn-list { margin: 0 0 10px; padding: 0; padding-inline-start: 20px; line-height: 1.8; }
   .cn-list li { margin-bottom: 4px; }
   .cn-foot { color: var(--muted); font-size: .9rem; line-height: 1.7; margin: 0 0 14px; }
   .cn-acts { display: flex; gap: 10px; }
@@ -406,6 +406,15 @@
   .maplibregl-popup-content button.popcancel { background: #e4e9eb; color: #31434a; min-width: 96px; }
   .maplibregl-ctrl-attrib { font-size: 10px; }
   .maplibregl-marker { will-change: transform; }
+  /* ---------- اللغة: اتجاه الصفحة (rtl للعربي والكردي، ltr للإنكليزي) وخط الكردي ---------- */
+  html[lang="ckb"] { --font: 'Noto Sans Arabic', 'Tajawal', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif; }
+  html[dir="ltr"] .fabs { align-self: flex-end; }                                     /* أزرار الخريطة تبقى على اليمين بكل اللغات */
+  html[dir="ltr"] .searchbox { padding: 4px 4px 4px 6px; }
+  html[dir="ltr"] #setBack svg, html[dir="ltr"] .chev { transform: scaleX(-1); }      /* أسهم الإعدادات تنقلب مع الاتجاه */
+  html[dir="ltr"] .ab-line bdi { text-align: left; }
+  html[dir="ltr"] .fb-count { text-align: right; }
+  .lang-row.on { font-weight: 700; color: var(--accent); }
+  .lang-row.on::after { content: "\2713"; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -514,6 +523,7 @@
   </div>
   <div class="set-body">
     <div id="setMain">
+      <button class="set-row" data-page="language"><span>اللغة</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="sound"><span>الصوت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="display"><span>العرض</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="hazards"><span>البلاغات</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -524,6 +534,12 @@
       <button class="set-row" data-page="offline"><span>الخرائط بدون إنترنت</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button class="set-row" data-page="about"><span>حول البرنامج</span><svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <p class="set-note" id="verNote" style="text-align:center;margin-top:18px;user-select:none;-webkit-user-select:none">رقم الإصدار: v1.2.0</p>
+    </div>
+    <div id="setLanguage" hidden>
+      <button class="set-row lang-row" data-lang="ar" lang="ar" translate="no"><span>العربية</span></button>
+      <button class="set-row lang-row" data-lang="en" lang="en" translate="no"><span>English</span></button>
+      <button class="set-row lang-row" data-lang="ckb" lang="ckb" translate="no"><span>کوردی (سۆرانی)</span></button>
+      <p class="set-note">اختيار اللغة يعيد تشغيل التطبيق (وإذا الملاحة شغّالة ينتظر لحد ما تخلّص). إذا لقيت خطأ بالترجمة، أرسله لنا من حول البرنامج ← اقتراح أو مشكلة.</p>
     </div>
     <div id="setOffline" hidden>
       <p class="set-note">نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.</p>
@@ -691,6 +707,825 @@
 <script>
 (function () {
   'use strict';
+  /*@@I18N-DICT-BEGIN@@*/
+  // قاموس الترجمة: يُولَّد بأداة من جداول الترجمة (لا يُعدَّل يدوياً). المفتاح = النص العربي، {0} {1} = قيم متغيّرة، ~ = نسخة منطوقة.
+  const I18N = {
+  "en": {
+    "\n\nالسبب:\n{0}": "\n\nReason:\n{0}",
+    " (قديم)": " (outdated)",
+    " تعذّر فتح: {0}.": " Could not open: {0}.",
+    " جاري التحميل: {0}.": " Loading: {0}.",
+    " شغّالة هنا: {0}.": " Active here: {0}.",
+    " قرّب الخريطة (مستوى 13 وفوق) حتى تظهر.": " Zoom in (level 13 and above) for them to appear.",
+    " و ": ", ",
+    " و {0} دقيقة": " {0} min",
+    "،": ", ",
+    "، ": ", ",
+    "، فشل {0} طلب": ", {0} requests failed",
+    "{0} (بدون اسم)": "{0} (unnamed)",
+    "{0} أمامك بعد {1}": "{0} ahead in {1}",
+    "{0} دقيقة": "{0} min",
+    "{0} ساعة{1}": "{0} h{1}",
+    "{0} قدم": "{0} ft",
+    "~{0} قدم": "{0} feet",
+    "{0} كم": "{0} km",
+    "{0} كيلومتر": "{0} kilometers",
+    "{0} م": "{0} m",
+    "{0} متر": "{0} meters",
+    "{0} من {1}": "{0} of {1}",
+    "{0} ميغا": "{0} MB",
+    "{0} ميل": "{0} mi",
+    "~{0} ميل": "{0} miles",
+    "<li>جاري البحث...</li>": "<li>Searching...</li>",
+    "<li>صار خلل بالبحث. تأكد من الإنترنت وجرّب مرة ثانية.</li>": "<li>Search failed. Check your internet connection and try again.</li>",
+    "<li>ما لقيت شي. جرّب اسم ثاني أو اسم المنطقة.</li>": "<li>Nothing found. Try another name or the area name.</li>",
+    "<p style=\"padding:90px 20px;text-align:center\">تعذّر تحميل محرك الخريطة. وصّل بالإنترنت (أول مرة فقط) وحدّث الصفحة.</p>": "<p style=\"padding:90px 20px;text-align:center\">Could not load the map engine. Connect to the internet (first time only) and refresh the page.</p>",
+    "⚠️ {0} — قُد بحذر": "⚠️ {0} — drive carefully",
+    "1 كم": "1 km",
+    "1.5 كم": "1.5 km",
+    "15 كم": "15 km",
+    "2 كم": "2 km",
+    "200 م": "200 m",
+    "30 كم": "30 km",
+    "350 م": "350 m",
+    "5 كم": "5 km",
+    "500 م": "500 m",
+    "800 م": "800 m",
+    "ابحث": "Search",
+    "ابدأ الملاحة": "Start navigation",
+    "اتجه {0} إلى المنحدر": "Head {0} onto the ramp",
+    "اتجه {0} إلى المنحدر إلى {1}": "Head {0} onto the ramp toward {1}",
+    "اتصال": "Call",
+    "أثناء الملاحة، يكدر دليني يرسل سرعتك واتجاهك وموقعك (بدقة حوالي 10 أمتار) حتى يظهر الزحام لباقي السواق.": "During navigation, Daliny can send your speed, direction and location (accurate to about 10 meters) so traffic can be shown to other drivers.",
+    "اختبار": "Test",
+    "اختر أنواع البلاغات اللي تظهر على الخريطة وتنبّهك:": "Choose the report types that show on the map and alert you:",
+    "اختر نوع المكان حتى أعرض لك الأقرب إليك.": "Choose the type of place and I will show you the closest ones.",
+    "اختيار اللغة يعيد تشغيل التطبيق (وإذا الملاحة شغّالة ينتظر لحد ما تخلّص). إذا لقيت خطأ بالترجمة، أرسله لنا من حول البرنامج ← اقتراح أو مشكلة.": "Changing the language restarts the app (if navigation is running, it waits until you finish). If you find a translation mistake, send it to us from About → Suggestion or problem.",
+    "اخرج من الدوّار": "Exit the roundabout",
+    "اخرج من الدوّار إلى {0}": "Exit the roundabout onto {0}",
+    "ادخل الدوّار وخذ المخرج رقم {0}": "Enter the roundabout and take exit {0}",
+    "ادخل الدوّار وخذ المخرج رقم {0} إلى {1}": "Enter the roundabout and take exit {0} onto {1}",
+    "إذا ما وافقت، الملاحة وعرض الزحام يشتغلون عادي. وتكدر تغيّر رأيك بأي وقت من الإعدادات ← الزحام. وكل التفاصيل بـ«سياسة الخصوصية» داخل الإعدادات ← حول البرنامج.": "If you do not agree, navigation and traffic display work as normal. You can change your mind any time in Settings → Traffic. All the details are in the \"Privacy Policy\" inside Settings → About.",
+    "اذهب إلى هنا": "Go here",
+    "أربيل": "Erbil",
+    "إرسال": "Send",
+    "استدر للخلف": "Make a U-turn",
+    "استمر للأمام": "Continue straight",
+    "استمر للأمام إلى {0}": "Continue straight onto {0}",
+    "أسرع بـ {0} دقيقة": "{0} min faster",
+    "اسم المكان": "Place name",
+    "اسمح للتطبيق باستخدام موقعك من إعدادات الجوال": "Allow the app to use your location in your phone settings",
+    "أشارك سرعتي لكشف الزحام (أثناء الملاحة فقط، بدون هوية)": "I share my speed to detect traffic (during navigation only, anonymous)",
+    "اشرح المشكلة: شنو صار؟ وين؟ وبأي خطوة؟": "Describe the problem: what happened? Where? At which step?",
+    "اضغط على الاسم لعرض العنوان": "Tap the name to show the address",
+    "إظهار الطقس على الخريطة": "Show weather on the map",
+    "أعيد حساب الطريق": "Recalculating the route",
+    "إغلاق": "Close",
+    "أغلق التطبيق وافتحه مرة ثانية، وبعدها جرّب التنزيل": "Close the app and open it again, then try the download",
+    "اقتراح": "Suggestion",
+    "اقتراح أو مشكلة": "Suggestion or problem",
+    "اقتراح مسار بديل عند نقطة تفتيش أيضاً": "Also suggest an alternative route at a checkpoint",
+    "اقتراح مسار بديل عند وجود حادث أو طريق مغلق أو زحمة": "Suggest an alternative route when there is an accident, a closed road or a traffic jam",
+    "أقل من 0.1 ميغا": "less than 0.1 MB",
+    "اكتب اقتراحك لتحسين دليني...": "Write your suggestion to improve Daliny...",
+    "اكتب رسالة أوضح شوي (5 أحرف على الأقل)": "Write a slightly clearer message (at least 5 characters)",
+    "الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما سيارتين أو أكثر (من مستخدمي دليني) تمشي ببطء بنفس المنطقة وبنفس الاتجاه، وإذا كان على طريقك يتلوّن خط المسار نفسه. إذا جهازك لحاله ما يطلع شي.": "Red = nearly stopped traffic, orange = slow traffic. Traffic appears when two or more cars (from Daliny users) move slowly in the same area and direction, and if it is on your route the route line itself changes color. If only your device is there, nothing shows.",
+    "الإصدار ": "Version ",
+    "الإعدادات": "Settings",
+    "الأقرب إلى موقعك الحالي. اختر نوع المكان:": "Closest to your current location. Choose the type of place:",
+    "الأماكن المفضلة": "Favorite places",
+    "الأماكن تنحفظ على جوالك بس. اضغط اسم المكان حتى تروح له. تحفظ المكان من النجمة اللي تظهر جنب اسم الوجهة بعد البحث.": "Places are saved on your phone only. Tap a place name to go there. Save a place with the star that appears next to the destination name after searching.",
+    "الأنبار": "Anbar",
+    "الأوسط": "middle",
+    "الأيسر": "left",
+    "الأيمن": "right",
+    "البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.": "Searching for places and calculating routes need internet. Downloaded maps stay on your phone until you delete them.",
+    "البحث عن الأماكن يحتاج إنترنت، والبيانات من خرائط OpenStreetMap فقد تنقص بعض الأماكن أو عناوينها. اضغط اسم المكان لعرض عنوانه.": "Searching for places needs internet, and the data comes from OpenStreetMap, so some places or their addresses may be missing. Tap a place name to show its address.",
+    "البديل يزيد {0} دقيقة، ما اقترحته. كمّل على نفس الطريق بحذر": "The alternative adds {0} minutes, so I did not suggest it. Continue on the same road carefully",
+    "البصرة": "Basra",
+    "البلاغات": "Reports",
+    "التنبيه يظهر بالشاشة وينطق بالصوت أثناء الملاحة فقط، للبلاغات اللي على مسارك. كل ما كبرت المسافة يصير عندك وقت أكثر تغيّر فيه المسار. المسار البديل يظهر فقط إذا لقيت طريق يتجنب البلاغ.": "The alert appears on screen and is spoken during navigation only, for reports on your route. The larger the distance, the more time you have to change route. The alternative route only appears if a road that avoids the report is found.",
+    "التواصل مع المطوّر": "Contact the developer",
+    "التوجيه الصوتي": "Voice guidance",
+    "الجهة المصممة": "Designed by",
+    "الحالة: جاهزة ({0} محافظة).": "Status: ready ({0} governorates).",
+    "الحالة: ما وصلت قائمة المباني بعد. تحتاج إنترنت (أول مرة بس).": "Status: the buildings list has not arrived yet. Needs internet (first time only).",
+    "الحالة: مطفأة.": "Status: off.",
+    "الخرائط بدون إنترنت": "Offline maps",
+    "الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة). كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.": "The map is tilted and rotates with your direction of travel while it follows your location. Buildings appear in 3D (zoom in). Labels on the online map rotate with it, and stay clearer on downloaded maps.",
+    "الخريطة مسطّحة والشمال فوق. تكدر تدوّرها بإصبعين (مثل التكبير)، وتظهر بوصلة ترجّعها للشمال.": "The map is flat with north at the top. You can rotate it with two fingers (like pinch-to-zoom), and a compass appears to snap it back to north.",
+    "الخصوصية": "Privacy",
+    "الرؤية": "Visibility",
+    "الرطوبة": "Humidity",
+    "الرياح": "Wind",
+    "الزحام": "Traffic",
+    "السليمانية": "Sulaymaniyah",
+    "الصغرى": "Low",
+    "الصوت": "Voice",
+    "الطقس": "Weather",
+    "العراق (خريطة عامة)": "Iraq (overview map)",
+    "العرض": "Display",
+    "العظمى": "High",
+    "إلغاء": "Cancel",
+    "الغبار": "Dust",
+    "القائمة": "Menu",
+    "القادسية": "Al-Qadisiyah",
+    "اللغة": "Language",
+    "اللغة الجديدة تشتغل بعد ما تنهي الملاحة": "The new language will apply when you end navigation",
+    "المباني المجسّمة (3D)": "3D buildings",
+    "المثنى": "Muthanna",
+    "المحسوسة": "Feels like",
+    "المحفوظ هسه: …": "Saved now: …",
+    "المحفوظ هسه: {0}": "Saved now: {0}",
+    "المحفوظ هسه: ما نقدر نعرف": "Saved now: unknown",
+    "المسافة": "Distance",
+    "المظهر": "Appearance",
+    "المظهر التلقائي: نهاري من شروق الشمس إلى غروبها حسب موقعك، وليلي بعد الغروب. زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.": "Automatic appearance: day mode from sunrise to sunset based on your location, and night mode after sunset. The moon button on the map quickly switches between day and night.",
+    "الموقع غير متاح حالياً": "Location is not available right now",
+    "النجف": "Najaf",
+    "الوحدات": "Units",
+    "الوصول {0}": "Arrive {0}",
+    "الوضع الليلي": "Night mode",
+    "أماكن سياحية": "Tourist places",
+    "أماكن مهمة": "Useful places",
+    "انتظر {0} ثانية قبل ما ترسل رسالة ثانية": "Wait {0} seconds before sending another message",
+    "انتهت الملاحة": "Navigation ended",
+    "انتهى / حذف": "Cleared / delete",
+    "انتهى الوقت": "Timed out",
+    "انحذف من المفضلة": "Removed from favorites",
+    "انحذفت خريطة {0}": "Deleted the {0} map",
+    "انحفظ بالمفضلة": "Saved to favorites",
+    "انحفظ. تكدر تغيّر اسمه من الإعدادات، الأماكن المفضلة": "Saved. You can rename it in Settings, Favorite places",
+    "اندمج {0}": "Merge {0}",
+    "اندمج {0} إلى {1}": "Merge {0} onto {1}",
+    "انرسل البلاغ للجميع: {0}": "Report sent to everyone: {0}",
+    "انطلق": "Start driving",
+    "انطلق على {0}": "Start driving on {0}",
+    "انعطف {0}": "Turn {0}",
+    "انعطف {0} إلى {1}": "Turn {0} onto {1}",
+    "انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت": "Internet is down. Saved maps still show, but search and routes need internet",
+    "انمسحت المباني المحفوظة{0}": "Saved buildings cleared{0}",
+    "أنهِ الملاحة الحالية أول": "End the current navigation first",
+    "إنهاء": "End",
+    "انوقف التنزيل. إذا نزّلت مرة ثانية يكمل من نفس المكان": "Download stopped. If you download again it resumes from the same place",
+    "أوافق": "I agree",
+    "بابل": "Babylon",
+    "بحدة يساراً": "sharply left",
+    "بحدة يميناً": "sharply right",
+    "بدون اسمك أو رقمك أو حسابك، وبهوية عشوائية جديدة لكل رحلة.": "Without your name, number or account, and with a new random identity for every trip.",
+    "بعد {0}، {1}": "In {0}, {1}",
+    "بغداد": "Baghdad",
+    "بلاغ هنا": "Report here",
+    "بلّغ عن شي بالطريق": "Report something on the road",
+    "بنفس الوقت تقريباً": "About the same time",
+    "تجربة بدون تحرك": "Try without moving",
+    "تحتاج إنترنت لعرض العنوان": "You need internet to show the address",
+    "تحديد الموقع بطيء، جرّب قرب شباك أو برا البيت": "Finding your location is slow. Try near a window or outdoors",
+    "تشارك سرعتك لكشف الزحام؟": "Share your speed to detect traffic?",
+    "تظهر المباني ببروز عند تقريب الخريطة (من مستوى 15) بالعرض المائل فقط. إذا حسّيت الجهاز يثقل أطفئها.": "Buildings appear raised when you zoom in (from level 15), in tilted view only. If the device feels slow, turn this off.",
+    "تظهر كل مباني العراق على الخريطة بأشكالها الحقيقية، وبارتفاعها الحقيقي لما يكون معروف. المباني اللي ارتفاعها مجهول تظهر بارتفاع تقديري (7 م). تحتاج إنترنت. إذا حسّيت الخريطة تثقل أطفئها.": "All buildings in Iraq appear on the map with their real shapes, and their real height when known. Buildings with unknown height appear at an estimated height (7 m). Needs internet. If the map feels slow, turn this off.",
+    "تعديل": "Edit",
+    "تعذّر الإرسال، تأكد من الإنترنت وجرّب مرة ثانية ({0})": "Sending failed. Check your internet and try again ({0})",
+    "تلقائي": "Auto",
+    "تلقائي (حسب الجهاز)": "Device default",
+    "تم تشغيل الصوت": "Voice turned on",
+    "تم تغيير المسار": "Route changed",
+    "تم تنزيل خريطة {0}": "Downloaded the {0} map",
+    "تنبيه صوتي عند طقس خطر أثناء الملاحة (مطر غزير، ضباب، غبار، رياح قوية)": "Voice alert for dangerous weather during navigation (heavy rain, fog, dust, strong winds)",
+    "تنبيه طقس: {0}. قُد بحذر": "Weather alert: {0}. Drive carefully",
+    "تنبيه عند الاقتراب من بلاغ على طريقك": "Alert when approaching a report on your route",
+    "تنزيل": "Download",
+    "ثلج": "Snow",
+    "ثلج خفيف": "Light snow",
+    "ثلج كثيف": "Heavy snow",
+    "جاري الإرسال...": "Sending...",
+    "جاري البحث عن {0}...": "Searching for {0}...",
+    "جاري البدء...": "Starting...",
+    "جاري تحديد موقعك...": "Finding your location...",
+    "جاري تحميل الخريطة…": "Loading the map…",
+    "جاري جلب العنوان...": "Getting the address...",
+    "جاري حساب الطريق...": "Calculating the route...",
+    "جامع": "Mosque",
+    "جرّب الصوت الحالي": "Try the current voice",
+    "جرّب كل صوت بزر الاختبار حتى تلقى الذكوري. المتصفح ما يعرض نوع الصوت، فالاسم هو الدليل.": "Try each voice with the test button until you find the one you like. The browser does not show the voice type, so the name is the clue.",
+    "جهازك ما يدعم تحديد الموقع": "Your device does not support location",
+    "جوامع": "Mosques",
+    "حادث": "Accident",
+    "حبيبات ثلج": "Snow grains",
+    "حذف": "Delete",
+    "حسينيات": "Husayniyyas",
+    "حسينية": "Husayniyya",
+    "حفرة أو مطب": "Pothole or bump",
+    "حفظ": "Save",
+    "حفظ ★": "Save ★",
+    "حفظ بالمفضلة": "Save to favorites",
+    "حفظ مباني أماكنك على الجوال": "Save buildings of your places on the phone",
+    "حول البرنامج": "About",
+    "خذ المسار {0}": "Take the {0} fork",
+    "خذ المسار {0} إلى {1}": "Take the {0} fork onto {1}",
+    "خطوات الطريق": "Route steps",
+    "خفيف": "Light",
+    "دلّني": "Navigate",
+    "دليني": "Daliny",
+    "دليني - ملاحظة": "Daliny - feedback",
+    "دليني: تطبيق ملاحة عراقي. خرائط تشتغل بدون إنترنت، توجيه صوتي بالعربي، وتنبيهات الحوادث والزحام من المستخدمين نفسهم.": "Daliny: an Iraqi navigation app. Maps that work offline, voice guidance, and accident and traffic alerts from the users themselves.",
+    "دهوك": "Duhok",
+    "ديالى": "Diyala",
+    "ذي قار": "Dhi Qar",
+    "راسلنا": "Contact us",
+    "رجع الإنترنت": "Internet is back",
+    "رجّع الخريطة للشمال": "Reset the map to north",
+    "رجوع": "Back",
+    "رد غير مفهوم": "Unrecognized response",
+    "رذاذ": "Drizzle",
+    "رذاذ خفيف": "Light drizzle",
+    "رذاذ كثيف": "Heavy drizzle",
+    "رذاذ متجمد": "Freezing drizzle",
+    "رقم الإصدار: ": "Version: ",
+    "رقم الإصدار: v1.2.0": "Version: v1.2.0",
+    "رقمك أو إيميلك إذا تريد نرد عليك (اختياري)": "Your number or email if you want us to reply (optional)",
+    "رياح قوية": "Strong winds",
+    "زحمة سير": "Traffic jam",
+    "زخات ثلج": "Snow showers",
+    "زخات ثلج كثيفة": "Heavy snow showers",
+    "زخات مطر": "Rain showers",
+    "زخات مطر غزيرة": "Violent rain showers",
+    "زخات مطر قوية": "Heavy rain showers",
+    "سياسة الخصوصية": "Privacy Policy",
+    "سياسة الخصوصية الكاملة": "Full privacy policy",
+    "شرطة": "Police",
+    "شنو شفت بالطريق؟ (يوصل لكل المستخدمين)": "What did you see on the road? (sent to all users)",
+    "ص": "AM",
+    "صحو": "Clear",
+    "صلاح الدين": "Salah al-Din",
+    "صوت": "Voice",
+    "صيدليات": "Pharmacies",
+    "صيدلية": "Pharmacy",
+    "ضباب": "Fog",
+    "ضباب صقيعي": "Freezing fog",
+    "ضباب ورؤية ضعيفة": "Fog and poor visibility",
+    "طريق مغلق": "Road closed",
+    "طلعت عن الطريق، أعيد الحساب...": "You left the route, recalculating...",
+    "عاصفة رعدية": "Thunderstorm",
+    "عاصفة رعدية وبَرَد": "Thunderstorm with hail",
+    "عاصفة رعدية وبَرَد قوي": "Thunderstorm with heavy hail",
+    "عداد السرعة أثناء الملاحة": "Speedometer during navigation",
+    "عرض الخريطة": "Map view",
+    "عرض الزحام على الخريطة": "Show traffic on the map",
+    "على الخريطة": "On map",
+    "غائم": "Cloudy",
+    "غائم جزئياً": "Partly cloudy",
+    "غالباً صحو": "Mostly clear",
+    "غبار كثيف": "Heavy dust",
+    "غيّر المسار": "Change route",
+    "غير منزّلة • حوالي {0} ميغا": "Not downloaded • about {0} MB",
+    "فشل التنزيل. تأكد من الإنترنت والمساحة وجرّب مرة ثانية (يكمل من نفس المكان)": "Download failed. Check your internet and storage space and try again (it resumes from the same place)",
+    "فنادق": "Hotels",
+    "فندق": "Hotel",
+    "فهرنهايت °F": "Fahrenheit °F",
+    "في مسار بديل يتجنب {0}، {1}. اضغط تغيير المسار إذا تريد.": "There is an alternative route avoiding {0}, {1}. Tap Change route if you want.",
+    "قبل {0} دقيقة": "{0} min ago",
+    "قليلاً يساراً": "slightly left",
+    "قليلاً يميناً": "slightly right",
+    "كثيف": "Heavy",
+    "كربلاء": "Karbala",
+    "كركوك": "Kirkuk",
+    "كل المباني (من الإنترنت)": "All buildings (from the internet)",
+    "كم/س": "km/h",
+    "كيف يتعامل دليني مع موقعك وبياناتك، وشنو يُرسل ولأي جهة.": "How Daliny handles your location and data, and what is sent and to whom.",
+    "كيلومتر": "Kilometers",
+    "لا يوجد": "None",
+    "لا، أكمل": "No, continue",
+    "لا، شكراً": "No, thanks",
+    "للأمام": "ahead",
+    "ليلي": "Night",
+    "م": "PM",
+    "ما اكو أماكن محفوظة. ابحث عن مكان واضغط النجمة جنب اسمه حتى تحفظه.": "No saved places yet. Search for a place and tap the star next to its name to save it.",
+    "ما اكو موقعك الحالي، المسار من مركز الخريطة": "Your current location is unknown; the route starts from the map center",
+    "ما الذي يُرسل بالضبط؟": "What exactly is sent?",
+    "ما انرسل البلاغ، تأكد من الإنترنت": "The report was not sent. Check your internet",
+    "ما فيه صوت كردي على هذا الجهاز، فالتعليمات الصوتية تنقرأ بالعربي (والنص المكتوب كردي).": "There is no Kurdish voice on this device, so voice directions are read in Arabic (the written text stays Kurdish).",
+    "ما كدرت أبحث عن مسار بديل الآن (تأكد من الإنترنت)": "Couldn't look for an alternative route right now (check your internet)",
+    "ما كدرت أجيب العنوان. جرّب مرة ثانية": "Couldn't get the address. Try again",
+    "ما كدرت أجيب النتائج الآن. جرّب مرة ثانية بعد شوية.{0}": "Couldn't get the results right now. Try again in a little while.{0}",
+    "ما كدرت أحدد مكان البلاغ": "Couldn't determine the report location",
+    "ما كدرت أحذف البلاغ، جرّب مرة ثانية": "Couldn't delete the report, try again",
+    "ما كدرت أحفظ، مساحة التخزين بالجهاز ممتلئة": "Couldn't save: the device storage is full",
+    "ما كدرت أحمّل بلاغات الآخرين، تأكد من الإنترنت": "Couldn't load other people's reports. Check your internet",
+    "ما كدرت أعيد حساب الطريق": "Couldn't recalculate the route",
+    "ما كدرت ألقى طريق لهذا المكان": "Couldn't find a route to this place",
+    "ما لقيت {0} ضمن هذي المسافة. جرّب مسافة أكبر.": "No {0} found within this distance. Try a larger distance.",
+    "ما لقيت أصوات إنكليزية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم الإنكليزية، وحمّل صوت.": "No English voices found on this device. On iPhone: Settings, then Accessibility, then Spoken Content, then Voices, then English, and download a voice.",
+    "ما لقيت أصوات عربية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم العربية، وحمّل صوت.": "No Arabic voices found on this device. On iPhone: Settings, then Accessibility, then Spoken Content, then Voices, then Arabic, and download a voice.",
+    "ما لقيت عنوان لهذا المكان": "No address found for this place",
+    "ما لقيت مسار بديل يتجنب {0} (جربت {1} مسار، أبعدها {2} م من البلاغ والمطلوب {3} م{4})": "Couldn't find an alternative route avoiding {0} (tried {1} routes, the farthest was {2} m from the report and {3} m was required{4})",
+    "ما محفوظ شي بعد": "none yet",
+    "ما يرسل إلا أثناء الملاحة، وبعد ما تتجاوز سرعتك {0} كم/س (يعني بالسيارة، مو ماشي).": "It only sends during navigation, and only after your speed exceeds {0} km/h (meaning in a car, not on foot).",
+    "ما يرسل أول 300 متر ولا آخر 300 متر من رحلتك، حتى ما ينكشف بيتك أو شغلك.": "It does not send the first 300 meters or the last 300 meters of your trip, so your home or workplace is not revealed.",
+    "مئوي °C": "Celsius °C",
+    "متوسط": "Moderate",
+    "محطات وقود": "Fuel stations",
+    "محطة وقود": "Fuel station",
+    "مراقد ومقامات": "Shrines & holy sites",
+    "مرقد": "Shrine",
+    "مركز الذكاء للمعلوماتية والحلول البرمجية\nبابل - العراق": "Intelligence Center for Informatics and Software Solutions\nBabylon - Iraq",
+    "مركز شرطة": "Police station",
+    "مسار بديل يتجنب {0}": "Alternative route avoiding {0}",
+    "مسافة التنبيه": "Alert distance",
+    "مستشفى": "Hospital",
+    "مستشفيات": "Hospitals",
+    "مستوى الصوت": "Volume",
+    "مسح": "Clear",
+    "مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.": "Flat while you browse; it tilts and rotates with your direction of travel during navigation only.",
+    "مشكلة": "Problem",
+    "مصادر الخرائط والبيانات: © مساهمو OpenStreetMap، خرائط Protomaps، مباني العراق © Overture Maps Foundation (رخصة ODbL)، عرض الخريطة بـ MapLibre، حساب المسار OSRM، والطقس من Open-Meteo.com.": "Map and data sources: © OpenStreetMap contributors, Protomaps maps, Iraq buildings © Overture Maps Foundation (ODbL license), map rendering by MapLibre, route calculation by OSRM, and weather from Open-Meteo.com.",
+    "مطاعم ومقاهي": "Restaurants & cafés",
+    "مطر": "Rain",
+    "مطر خفيف": "Light rain",
+    "مطر غزير": "Heavy rain",
+    "مطر متجمد": "Freezing rain",
+    "مطر متجمد غزير": "Heavy freezing rain",
+    "مطعم": "Restaurant",
+    "مكان سياحي": "Tourist spot",
+    "مكان محفوظ": "Saved place",
+    "منزّلة{0}": "Downloaded{0}",
+    "موقعك غير معروف حالياً، فالبحث حول مركز الخريطة. اختر نوع المكان:": "Your location is unknown, so the search is around the map center. Choose the type of place:",
+    "موقعي": "My location",
+    "مول": "Mall",
+    "مولات": "Malls",
+    "ميسان": "Maysan",
+    "ميل": "Miles",
+    "ميل/س": "mph",
+    "نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك. وإذا كتبت رقمك أو إيميلك بالخانة الاختيارية نرسله معها حتى نرد عليك.": "We send only the app version and device type with your message, never your location. If you enter your number or email in the optional field, we send it along so we can reply to you.",
+    "نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.": "Download the general Iraq map once (it covers the whole country with little detail), then download the governorates you need so streets, names and buildings appear in detail. All of them work without internet. It is best to download while on Wi-Fi.",
+    "نقطة تفتيش": "Checkpoint",
+    "نقطة على الخريطة": "Point on the map",
+    "نهاري": "Day",
+    "نوع الصوت": "Voice type",
+    "نينوى": "Nineveh",
+    "هبّات الرياح": "Gusts",
+    "هذا اختبار للصوت. دليني يوجّهك بالطريق.": "This is a voice test. Daliny will guide you along the way.",
+    "هذا المكان محفوظ من قبل": "This place is already saved",
+    "هذي الميزة تحتاج إنترنت. وصّل بالإنترنت وجرّب مرة ثانية.": "This feature needs internet. Connect and try again.",
+    "واسط": "Wasit",
+    "وجهتك أمامك": "Your destination is ahead",
+    "وحدة الحرارة": "Temperature unit",
+    "وصلت إلى وجهتك": "You have arrived at your destination",
+    "وصلت رسالتك، شكراً لك ✓": "Your message was received, thank you ✓",
+    "وصلت للحد اليومي للرسائل، جرّب باجر": "You've reached the daily message limit, try tomorrow",
+    "وين تريد تروح؟": "Where to?",
+    "يبقى آخر موقع بس (مو سجل لتنقلاتك)، ويتمسح لما تنتهي الملاحة.": "Only the last location is kept (not a log of your movements), and it is deleted when navigation ends.",
+    "يُحدَّث الطقس كل 20 دقيقة تقريباً حسب موقعك، ويُحفظ على جوالك. بيانات الطقس من Open-Meteo.com (رخصة CC BY 4.0). تحذير الغبار تقديري ويعتمد على نماذج جوية، فلا تعتمد عليه وحده.": "Weather updates about every 20 minutes based on your location and is saved on your phone. Weather data is from Open-Meteo.com (CC BY 4.0 license). The dust warning is an estimate based on atmospheric models, so do not rely on it alone.",
+    "يحفظ تلقائياً مباني الأماكن اللي تفتحها حتى تظهر بسرعة المرة الجاية، وحتى بدون إنترنت للأماكن المحفوظة. الحد الأقصى 100 ميغا، وإذا امتلأ ينحذف الأقدم أول. تقدر تطفيه أو تمسح المحفوظ بأي وقت.": "Automatically saves the buildings of places you open so they appear quickly next time, and even without internet for saved places. The maximum is 100 MB, and when it is full the oldest are deleted first. You can turn it off or clear the saved data any time.",
+    "يزيد {0} دقيقة": "Adds {0} min",
+    "يساراً": "left",
+    "يشمل تعليمات المنعطفات وتنبيهات البلاغات. بعض أجهزة الايفون تحدد شدة الصوت من أزرار الجهاز، فقد لا يؤثر المنزلق عليها.": "Covers turn instructions and report alerts. Some iPhones set the volume from the device buttons, so the slider may have no effect on them.",
+    "يميناً": "right"
+  },
+  "ckb": {
+    "\n\nالسبب:\n{0}": "\n\nهۆکار:\n{0}",
+    " (قديم)": " (کۆن)",
+    " تعذّر فتح: {0}.": " نەکرایەوە: {0}.",
+    " جاري التحميل: {0}.": " بار دەکرێت: {0}.",
+    " شغّالة هنا: {0}.": " لێرە کارا: {0}.",
+    " قرّب الخريطة (مستوى 13 وفوق) حتى تظهر.": " نەخشەکە گەورە بکە (ئاستی 13 و سەرووتر) بۆ ئەوەی دەربکەون.",
+    " و ": "، ",
+    " و {0} دقيقة": " و {0} خولەک",
+    "،": "، ",
+    "، ": "، ",
+    "، فشل {0} طلب": "، {0} داواکاری شکستی هێنا",
+    "{0} (بدون اسم)": "{0} (بێ ناو)",
+    "{0} أمامك بعد {1}": "{0} لە پێشەوەتە دوای {1}",
+    "{0} دقيقة": "{0} خولەک",
+    "{0} ساعة{1}": "{0} کاتژمێر{1}",
+    "{0} قدم": "{0} فووت",
+    "{0} كم": "{0} کم",
+    "{0} كيلومتر": "{0} کیلۆمەتر",
+    "{0} م": "{0} م",
+    "{0} متر": "{0} مەتر",
+    "{0} من {1}": "{0} لە {1}",
+    "{0} ميغا": "{0} مێگابایت",
+    "{0} ميل": "{0} میل",
+    "<li>جاري البحث...</li>": "<li>گەڕان بەردەوامە...</li>",
+    "<li>صار خلل بالبحث. تأكد من الإنترنت وجرّب مرة ثانية.</li>": "<li>لە گەڕاندا کێشەیەک ڕوویدا. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵ بدەرەوە.</li>",
+    "<li>ما لقيت شي. جرّب اسم ثاني أو اسم المنطقة.</li>": "<li>هیچ نەدۆزرایەوە. ناوێکی تر یان ناوی ناوچەکە تاقی بکەرەوە.</li>",
+    "<p style=\"padding:90px 20px;text-align:center\">تعذّر تحميل محرك الخريطة. وصّل بالإنترنت (أول مرة فقط) وحدّث الصفحة.</p>": "<p style=\"padding:90px 20px;text-align:center\">نەتوانرا بزوێنەری نەخشە باربکرێت. بە ئینتەرنێتەوە پەیوەندی بکە (تەنها جاری یەکەم) و پەڕەکە نوێ بکەرەوە.</p>",
+    "⚠️ {0} — قُد بحذر": "⚠️ {0} — بە ئاگاداری لێبخوڕە",
+    "1 كم": "1 کم",
+    "1.5 كم": "1.5 کم",
+    "15 كم": "15 کم",
+    "2 كم": "2 کم",
+    "200 م": "200 م",
+    "30 كم": "30 کم",
+    "350 م": "350 م",
+    "5 كم": "5 کم",
+    "500 م": "500 م",
+    "800 م": "800 م",
+    "ابحث": "بگەڕێ",
+    "ابدأ الملاحة": "دەستپێکردنی ڕێنیشاندان",
+    "اتجه {0} إلى المنحدر": "بڕۆ {0} بۆ ڕێچکەکە",
+    "اتجه {0} إلى المنحدر إلى {1}": "بڕۆ {0} بۆ ڕێچکەکە بەرەو {1}",
+    "اتصال": "پەیوەندی",
+    "أثناء الملاحة، يكدر دليني يرسل سرعتك واتجاهك وموقعك (بدقة حوالي 10 أمتار) حتى يظهر الزحام لباقي السواق.": "لە کاتی ڕێنیشاندان، دليني دەتوانێت خێرایی و ئاراستە و شوێنەکەت بنێرێت (بە وردی نزیکەی 10 مەتر) بۆ ئەوەی قەرەباڵغی بۆ شۆفێرەکانی تر دەربکەوێت.",
+    "اختبار": "تاقیکردنەوە",
+    "اختر أنواع البلاغات اللي تظهر على الخريطة وتنبّهك:": "جۆری ئەو ڕاپۆرتانە هەڵبژێرە کە لەسەر نەخشە دەردەکەون و ئاگادارت دەکەنەوە:",
+    "اختر نوع المكان حتى أعرض لك الأقرب إليك.": "جۆری شوێنەکە هەڵبژێرە تا نزیکترینەکانت پیشان بدەم.",
+    "اختيار اللغة يعيد تشغيل التطبيق (وإذا الملاحة شغّالة ينتظر لحد ما تخلّص). إذا لقيت خطأ بالترجمة، أرسله لنا من حول البرنامج ← اقتراح أو مشكلة.": "گۆڕینی زمان بەرنامەکە دووبارە دەکاتەوە (ئەگەر ڕێنیشاندان کار بکات چاوەڕێ دەکات تا تەواو دەبیت). ئەگەر هەڵەیەکی وەرگێڕانت دۆزییەوە، لە دەربارەی بەرنامە ← پێشنیار یان کێشە بۆمانی بنێرە.",
+    "اخرج من الدوّار": "لە فلکەکە دەربچۆ",
+    "اخرج من الدوّار إلى {0}": "لە فلکەکە دەربچۆ بۆ {0}",
+    "ادخل الدوّار وخذ المخرج رقم {0}": "بچۆ ناو فلکەکە و دەرچەی ژمارە {0} بگرە",
+    "ادخل الدوّار وخذ المخرج رقم {0} إلى {1}": "بچۆ ناو فلکەکە و دەرچەی ژمارە {0} بگرە بۆ {1}",
+    "إذا ما وافقت، الملاحة وعرض الزحام يشتغلون عادي. وتكدر تغيّر رأيك بأي وقت من الإعدادات ← الزحام. وكل التفاصيل بـ«سياسة الخصوصية» داخل الإعدادات ← حول البرنامج.": "ئەگەر ڕازی نەبیت، ڕێنیشاندان و پیشاندانی قەرەباڵغی بە ئاسایی کار دەکەن. دەتوانیت لە هەر کاتێکدا بیروڕات بگۆڕیت لە ڕێکخستنەکان ← قەرەباڵغی. هەموو وردەکارییەکان لە «سیاسەتی تایبەتێتی» دایە لە ناو ڕێکخستنەکان ← دەربارەی بەرنامە.",
+    "اذهب إلى هنا": "بڕۆ بۆ ئێرە",
+    "أربيل": "هەولێر",
+    "إرسال": "ناردن",
+    "استدر للخلف": "بسوڕێوە بۆ دواوە",
+    "استمر للأمام": "ڕاستەوخۆ بەردەوام بە",
+    "استمر للأمام إلى {0}": "ڕاستەوخۆ بەردەوام بە بۆ {0}",
+    "أسرع بـ {0} دقيقة": "{0} خولەک خێراتر",
+    "اسم المكان": "ناوی شوێن",
+    "اسمح للتطبيق باستخدام موقعك من إعدادات الجوال": "ڕێگە بە بەرنامەکە بدە شوێنەکەت بەکاربهێنێت لە ڕێکخستنەکانی مۆبایلەکەتەوە",
+    "أشارك سرعتي لكشف الزحام (أثناء الملاحة فقط، بدون هوية)": "خێراییەکەم هاوبەش دەکەم بۆ دۆزینەوەی قەرەباڵغی (تەنها لە کاتی ڕێنیشاندان، بەبێ ناسنامە)",
+    "اشرح المشكلة: شنو صار؟ وين؟ وبأي خطوة؟": "کێشەکە ڕوون بکەرەوە: چی ڕوویدا؟ لە کوێ؟ و لە کام هەنگاو؟",
+    "اضغط على الاسم لعرض العنوان": "کرتە لە ناوەکە بکە بۆ پیشاندانی ناونیشان",
+    "إظهار الطقس على الخريطة": "پیشاندانی کەشوهەوا لەسەر نەخشە",
+    "أعيد حساب الطريق": "ڕێگاکە دووبارە دەژمێردرێتەوە",
+    "إغلاق": "داخستن",
+    "أغلق التطبيق وافتحه مرة ثانية، وبعدها جرّب التنزيل": "بەرنامەکە دابخە و دووبارە بیکەرەوە، پاشان داگرتنەکە تاقی بکەرەوە",
+    "اقتراح": "پێشنیار",
+    "اقتراح أو مشكلة": "پێشنیار یان کێشە",
+    "اقتراح مسار بديل عند نقطة تفتيش أيضاً": "هەروەها پێشنیارکردنی ڕێگای جێگرەوە لە خاڵی پشکنین",
+    "اقتراح مسار بديل عند وجود حادث أو طريق مغلق أو زحمة": "پێشنیارکردنی ڕێگای جێگرەوە کاتێک ڕووداو یان ڕێگای داخراو یان قەرەباڵغی هەبێت",
+    "أقل من 0.1 ميغا": "کەمتر لە 0.1 مێگابایت",
+    "اكتب اقتراحك لتحسين دليني...": "پێشنیارەکەت بنووسە بۆ باشترکردنی دليني...",
+    "اكتب رسالة أوضح شوي (5 أحرف على الأقل)": "نامەیەکی کەمێک ڕوونتر بنووسە (بەلایەنی کەمەوە 5 پیت)",
+    "الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما سيارتين أو أكثر (من مستخدمي دليني) تمشي ببطء بنفس المنطقة وبنفس الاتجاه، وإذا كان على طريقك يتلوّن خط المسار نفسه. إذا جهازك لحاله ما يطلع شي.": "سوور = هاتوچۆی نزیک لە وەستان، پرتەقاڵی = هاتوچۆی هێواش. قەرەباڵغی دەردەکەوێت کاتێک دوو ئۆتۆمبێل یان زیاتر (لە بەکارهێنەرانی دليني) بە هێواشی لە هەمان ناوچە و ئاڕاستەدا دەڕۆن، و ئەگەر لەسەر ڕێگاکەت بێت هێڵی ڕێگاکە خۆی ڕەنگ دەگۆڕێت. ئەگەر ئامێرەکەت بە تەنها بێت هیچ دەرناکەوێت.",
+    "الإصدار ": "وەشان ",
+    "الإعدادات": "ڕێکخستنەکان",
+    "الأقرب إلى موقعك الحالي. اختر نوع المكان:": "نزیکترین بۆ شوێنی ئێستات. جۆری شوێنەکە هەڵبژێرە:",
+    "الأماكن المفضلة": "شوێنە دڵخوازەکان",
+    "الأماكن تنحفظ على جوالك بس. اضغط اسم المكان حتى تروح له. تحفظ المكان من النجمة اللي تظهر جنب اسم الوجهة بعد البحث.": "شوێنەکان تەنها لەسەر مۆبایلەکەت پاشەکەوت دەکرێن. کرتە لە ناوی شوێنەکە بکە بۆ ئەوەی بچیت بۆی. شوێنێک پاشەکەوت دەکەیت بە ئەستێرەکەی کە لەتەنیشت ناوی مەبەست دەردەکەوێت دوای گەڕان.",
+    "الأنبار": "ئەنبار",
+    "الأوسط": "ناوەڕاست",
+    "الأيسر": "چەپ",
+    "الأيمن": "ڕاست",
+    "البحث عن الأماكن وحساب المسارات يحتاجون إنترنت. الخرائط المنزّلة تبقى على جوالك لين تحذفها.": "گەڕان بەدوای شوێنەکان و ژماردنی ڕێگاکان ئینتەرنێتیان پێویستە. نەخشە داگیراوەکان لەسەر مۆبایلەکەت دەمێننەوە تا دەیانسڕیتەوە.",
+    "البحث عن الأماكن يحتاج إنترنت، والبيانات من خرائط OpenStreetMap فقد تنقص بعض الأماكن أو عناوينها. اضغط اسم المكان لعرض عنوانه.": "گەڕان بەدوای شوێنەکان ئینتەرنێتی پێویستە، و داتاکان لە OpenStreetMap وەرگیراون، بۆیە لەوانەیە هەندێک شوێن یان ناونیشانەکانیان کەم بن. کرتە لە ناوی شوێنەکە بکە بۆ پیشاندانی ناونیشانەکەی.",
+    "البديل يزيد {0} دقيقة، ما اقترحته. كمّل على نفس الطريق بحذر": "جێگرەوەکە {0} خولەک زیاد دەکات، بۆیە پێشنیارم نەکرد. بەردەوام بە لەسەر هەمان ڕێگا بە ئاگاداری",
+    "البصرة": "بەسڕە",
+    "البلاغات": "ڕاپۆرتەکان",
+    "التنبيه يظهر بالشاشة وينطق بالصوت أثناء الملاحة فقط، للبلاغات اللي على مسارك. كل ما كبرت المسافة يصير عندك وقت أكثر تغيّر فيه المسار. المسار البديل يظهر فقط إذا لقيت طريق يتجنب البلاغ.": "ئاگادارکردنەوەکە لەسەر شاشە دەردەکەوێت و بە دەنگ دەگوترێت تەنها لە کاتی ڕێنیشاندان، بۆ ئەو ڕاپۆرتانەی لەسەر ڕێگاکەتن. هەرچەندە مەودا گەورەتر بێت کاتی زیاترت دەبێت بۆ گۆڕینی ڕێگا. ڕێگای جێگرەوە تەنها کاتێک دەردەکەوێت ڕێگایەک بدۆزرێتەوە کە ڕاپۆرتەکە بهێڵێتە لاوە.",
+    "التواصل مع المطوّر": "پەیوەندی بە گەشەپێدەرەوە",
+    "التوجيه الصوتي": "ڕێنمایی دەنگی",
+    "الجهة المصممة": "دیزاینکراوە لەلایەن",
+    "الحالة: جاهزة ({0} محافظة).": "دۆخ: ئامادەیە ({0} پارێزگا).",
+    "الحالة: ما وصلت قائمة المباني بعد. تحتاج إنترنت (أول مرة بس).": "دۆخ: لیستی باڵەخانەکان هێشتا نەگەیشتووە. ئینتەرنێتی پێویستە (تەنها جاری یەکەم).",
+    "الحالة: مطفأة.": "دۆخ: کوژاوەتەوە.",
+    "الخرائط بدون إنترنت": "نەخشەی بێ ئینتەرنێت",
+    "الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة). كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.": "نەخشەکە لار دەبێتەوە و بەپێی ئاراستەی ڕۆیشتنت دەسووڕێت کاتێک لەگەڵ شوێنەکەتدا دەڕوات. باڵەخانەکان بە سێ ڕەهەند دەردەکەون (نەخشەکە گەورە بکە). نووسینی نەخشەی ئۆنلاین لەگەڵیدا دەسووڕێت، و لە نەخشە داگیراوەکاندا ڕوونتر دەمێنێتەوە.",
+    "الخريطة مسطّحة والشمال فوق. تكدر تدوّرها بإصبعين (مثل التكبير)، وتظهر بوصلة ترجّعها للشمال.": "نەخشەکە تەختە و باکوور لە سەرەوەیە. دەتوانیت بە دوو پەنجە بیسووڕێنیت (وەک گەورەکردن)، و کۆمپاسێک دەردەکەوێت بۆ گەڕاندنەوەی بۆ باکوور.",
+    "الخصوصية": "تایبەتێتی",
+    "الرؤية": "بینین",
+    "الرطوبة": "شێ",
+    "الرياح": "با",
+    "الزحام": "قەرەباڵغی",
+    "السليمانية": "سلێمانی",
+    "الصغرى": "نزمترین",
+    "الصوت": "دەنگ",
+    "الطقس": "کەشوهەوا",
+    "العراق (خريطة عامة)": "عێراق (نەخشەی گشتی)",
+    "العرض": "پیشاندان",
+    "العظمى": "بەرزترین",
+    "إلغاء": "هەڵوەشاندنەوە",
+    "الغبار": "تۆز",
+    "القائمة": "مێنیو",
+    "القادسية": "قادسیە",
+    "اللغة": "زمان",
+    "اللغة الجديدة تشتغل بعد ما تنهي الملاحة": "زمانە نوێیەکە دوای کۆتایی هێنان بە ڕێنیشاندان کار دەکات",
+    "المباني المجسّمة (3D)": "باڵەخانە سێ ڕەهەندەکان (3D)",
+    "المثنى": "موسەننا",
+    "المحسوسة": "هەستپێکراو",
+    "المحفوظ هسه: …": "ئێستا پاشەکەوتکراوە: …",
+    "المحفوظ هسه: {0}": "ئێستا پاشەکەوتکراوە: {0}",
+    "المحفوظ هسه: ما نقدر نعرف": "ئێستا پاشەکەوتکراوە: نازانرێت",
+    "المسافة": "مەودا",
+    "المظهر": "ڕووکار",
+    "المظهر التلقائي: نهاري من شروق الشمس إلى غروبها حسب موقعك، وليلي بعد الغروب. زر القمر على الخريطة يبدّل بسرعة بين النهاري والليلي.": "ڕووکاری خۆکار: ڕۆژ لە هەڵهاتنی خۆرەوە تا ئاوابوونی بەپێی شوێنەکەت، و شەو دوای ئاوابوون. دوگمەی مانگ لەسەر نەخشە بە خێرایی لە نێوان ڕۆژ و شەو دەگۆڕێت.",
+    "الموقع غير متاح حالياً": "شوێن لە ئێستادا بەردەست نییە",
+    "النجف": "نەجەف",
+    "الوحدات": "یەکەکان",
+    "الوصول {0}": "گەیشتن {0}",
+    "الوضع الليلي": "دۆخی شەو",
+    "أماكن سياحية": "شوێنە گەشتیارییەکان",
+    "أماكن مهمة": "شوێنە گرنگەکان",
+    "انتظر {0} ثانية قبل ما ترسل رسالة ثانية": "{0} چرکە چاوەڕێ بکە پێش ناردنی نامەیەکی تر",
+    "انتهت الملاحة": "ڕێنیشاندان کۆتایی هات",
+    "انتهى / حذف": "تەواو بوو / سڕینەوە",
+    "انتهى الوقت": "کات تەواو بوو",
+    "انحذف من المفضلة": "لە دڵخوازەکان سڕایەوە",
+    "انحذفت خريطة {0}": "نەخشەی {0} سڕایەوە",
+    "انحفظ بالمفضلة": "لە دڵخوازەکان پاشەکەوت کرا",
+    "انحفظ. تكدر تغيّر اسمه من الإعدادات، الأماكن المفضلة": "پاشەکەوت کرا. دەتوانیت ناوەکەی لە ڕێکخستنەکان، شوێنە دڵخوازەکان بگۆڕیت",
+    "اندمج {0}": "تێکەڵ ببە {0}",
+    "اندمج {0} إلى {1}": "تێکەڵ ببە {0} بۆ {1}",
+    "انرسل البلاغ للجميع: {0}": "ڕاپۆرتەکە بۆ هەمووان نێردرا: {0}",
+    "انطلق": "دەست بە ڕۆیشتن بکە",
+    "انطلق على {0}": "دەست بە ڕۆیشتن بکە لە {0}",
+    "انعطف {0}": "بپێچە {0}",
+    "انعطف {0} إلى {1}": "بپێچە {0} بۆ {1}",
+    "انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت": "ئینتەرنێت پچڕا. نەخشە پاشەکەوتکراوەکان دەردەکەون، بەڵام گەڕان و ڕێگاکان ئینتەرنێتیان پێویستە",
+    "انمسحت المباني المحفوظة{0}": "باڵەخانە پاشەکەوتکراوەکان سڕانەوە{0}",
+    "أنهِ الملاحة الحالية أول": "سەرەتا ڕێنیشاندانی ئێستا کۆتایی پێبهێنە",
+    "إنهاء": "کۆتایی",
+    "انوقف التنزيل. إذا نزّلت مرة ثانية يكمل من نفس المكان": "داگرتن ڕاگیرا. ئەگەر دووبارە دایبگریت لە هەمان شوێنەوە بەردەوام دەبێت",
+    "أوافق": "ڕازیم",
+    "بابل": "بابل",
+    "بحدة يساراً": "بە توندی بۆ چەپ",
+    "بحدة يميناً": "بە توندی بۆ ڕاست",
+    "بدون اسمك أو رقمك أو حسابك، وبهوية عشوائية جديدة لكل رحلة.": "بەبێ ناو و ژمارە و هەژمارەکەت، و بە ناسنامەیەکی هەڕەمەکی نوێ بۆ هەر گەشتێک.",
+    "بعد {0}، {1}": "دوای {0}، {1}",
+    "بغداد": "بەغدا",
+    "بلاغ هنا": "ڕاپۆرت لێرە",
+    "بلّغ عن شي بالطريق": "ڕاپۆرتی شتێک بدە لەسەر ڕێگا",
+    "بنفس الوقت تقريباً": "نزیکەی هەمان کات",
+    "تجربة بدون تحرك": "تاقیکردنەوە بەبێ جووڵە",
+    "تحتاج إنترنت لعرض العنوان": "بۆ پیشاندانی ناونیشان ئینتەرنێت پێویستە",
+    "تحديد الموقع بطيء، جرّب قرب شباك أو برا البيت": "دیاریکردنی شوێن هێواشە، هەوڵ بدە لە نزیک پەنجەرە یان لە دەرەوەی ماڵ",
+    "تشارك سرعتك لكشف الزحام؟": "خێراییەکەت هاوبەش دەکەیت بۆ دۆزینەوەی قەرەباڵغی؟",
+    "تظهر المباني ببروز عند تقريب الخريطة (من مستوى 15) بالعرض المائل فقط. إذا حسّيت الجهاز يثقل أطفئها.": "باڵەخانەکان بە بەرزی دەردەکەون کاتێک نەخشەکە گەورە دەکەیت (لە ئاستی 15 بەدواوە)، تەنها لە پیشاندانی لار. ئەگەر ئامێرەکەت هێواش بوو بیکوژێنەرەوە.",
+    "تظهر كل مباني العراق على الخريطة بأشكالها الحقيقية، وبارتفاعها الحقيقي لما يكون معروف. المباني اللي ارتفاعها مجهول تظهر بارتفاع تقديري (7 م). تحتاج إنترنت. إذا حسّيت الخريطة تثقل أطفئها.": "هەموو باڵەخانەکانی عێراق لەسەر نەخشە بە شێوە ڕاستەقینەکانیانەوە دەردەکەون، و بە بەرزی ڕاستەقینەیانەوە کاتێک بزانرێت. ئەو باڵەخانانەی بەرزییان نەزانراوە بە بەرزییەکی خەمڵێنراو (7 م) دەردەکەون. ئینتەرنێتی پێویستە. ئەگەر نەخشەکە هێواش بوو بیکوژێنەرەوە.",
+    "تعديل": "دەستکاری",
+    "تعذّر الإرسال، تأكد من الإنترنت وجرّب مرة ثانية ({0})": "ناردن شکستی هێنا. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵ بدەرەوە ({0})",
+    "تلقائي": "خۆکار",
+    "تلقائي (حسب الجهاز)": "خۆکار (ئامێر)",
+    "تم تشغيل الصوت": "دەنگ چالاک کرا",
+    "تم تغيير المسار": "ڕێگاکە گۆڕدرا",
+    "تم تنزيل خريطة {0}": "نەخشەی {0} داگیرا",
+    "تنبيه صوتي عند طقس خطر أثناء الملاحة (مطر غزير، ضباب، غبار، رياح قوية)": "ئاگادارکردنەوەی دەنگی لە کاتی کەشوهەوای مەترسیدار لە ڕێنیشاندان (بارانی زۆر، مژ، تۆز، بای بەهێز)",
+    "تنبيه طقس: {0}. قُد بحذر": "ئاگادارکردنەوەی کەشوهەوا: {0}. بە ئاگاداری لێبخوڕە",
+    "تنبيه عند الاقتراب من بلاغ على طريقك": "ئاگادارکردنەوە کاتێک لە ڕاپۆرتێک نزیک دەبیتەوە لەسەر ڕێگاکەت",
+    "تنزيل": "داگرتن",
+    "ثلج": "بەفر",
+    "ثلج خفيف": "بەفری سووک",
+    "ثلج كثيف": "بەفری زۆر",
+    "جاري الإرسال...": "دەنێردرێت...",
+    "جاري البحث عن {0}...": "گەڕان بەدوای {0}...",
+    "جاري البدء...": "دەست پێدەکات...",
+    "جاري تحديد موقعك...": "شوێنەکەت دیاری دەکرێت...",
+    "جاري تحميل الخريطة…": "نەخشەکە بار دەکرێت…",
+    "جاري جلب العنوان...": "ناونیشانەکە دەهێنرێت...",
+    "جاري حساب الطريق...": "ڕێگاکە دەژمێردرێت...",
+    "جامع": "مزگەوت",
+    "جرّب الصوت الحالي": "دەنگی ئێستا تاقی بکەرەوە",
+    "جرّب كل صوت بزر الاختبار حتى تلقى الذكوري. المتصفح ما يعرض نوع الصوت، فالاسم هو الدليل.": "هەموو دەنگێک بە دوگمەی تاقیکردنەوە تاقی بکەرەوە تا ئەوەی دەتەوێت دەدۆزیتەوە. وێبگەڕ جۆری دەنگ پیشان نادات، بۆیە ناوەکە ڕێنیشاندەرە.",
+    "جهازك ما يدعم تحديد الموقع": "ئامێرەکەت پشتگیری دیاریکردنی شوێن ناکات",
+    "جوامع": "مزگەوتەکان",
+    "حادث": "ڕووداو",
+    "حبيبات ثلج": "دەنکە بەفر",
+    "حذف": "سڕینەوە",
+    "حسينيات": "حوسێنییەکان",
+    "حسينية": "حوسێنیە",
+    "حفرة أو مطب": "چاڵ یان بەرزایی",
+    "حفظ": "پاشەکەوت",
+    "حفظ ★": "پاشەکەوت ★",
+    "حفظ بالمفضلة": "پاشەکەوتکردن لە دڵخوازەکان",
+    "حفظ مباني أماكنك على الجوال": "پاشەکەوتکردنی باڵەخانەی شوێنەکانت لەسەر مۆبایل",
+    "حول البرنامج": "دەربارەی بەرنامە",
+    "خذ المسار {0}": "لقی {0} بگرە",
+    "خذ المسار {0} إلى {1}": "لقی {0} بگرە بۆ {1}",
+    "خطوات الطريق": "هەنگاوەکانی ڕێگا",
+    "خفيف": "کەم",
+    "دلّني": "ڕێنیشانم بدە",
+    "دليني": "دليني",
+    "دليني - ملاحظة": "دليني - تێبینی",
+    "دليني: تطبيق ملاحة عراقي. خرائط تشتغل بدون إنترنت، توجيه صوتي بالعربي، وتنبيهات الحوادث والزحام من المستخدمين نفسهم.": "دليني: بەرنامەیەکی ڕێنیشاندەری عێراقییە. نەخشەی بێ ئینتەرنێت، ڕێنمایی دەنگی، و ئاگادارکردنەوەی ڕووداو و قەرەباڵغی لەلایەن بەکارهێنەرانەوە.",
+    "دهوك": "دهۆک",
+    "ديالى": "دیالە",
+    "ذي قار": "زیقار",
+    "راسلنا": "پەیوەندی",
+    "رجع الإنترنت": "ئینتەرنێت گەڕایەوە",
+    "رجّع الخريطة للشمال": "نەخشەکە بگەڕێنەرەوە بۆ باکوور",
+    "رجوع": "گەڕانەوە",
+    "رد غير مفهوم": "وەڵامی نەناسراو",
+    "رذاذ": "نەرمەباران",
+    "رذاذ خفيف": "نەرمەبارانی سووک",
+    "رذاذ كثيف": "نەرمەبارانی زۆر",
+    "رذاذ متجمد": "نەرمەبارانی بەستەڵەکاو",
+    "رقم الإصدار: ": "ژمارەی وەشان: ",
+    "رقم الإصدار: v1.2.0": "ژمارەی وەشان: v1.2.0",
+    "رقمك أو إيميلك إذا تريد نرد عليك (اختياري)": "ژمارە یان ئیمەیڵەکەت ئەگەر دەتەوێت وەڵامت بدەینەوە (ئارەزوومەندانە)",
+    "رياح قوية": "با بەهێز",
+    "زحمة سير": "قەرەباڵغی ڕێگا",
+    "زخات ثلج": "بەفری کتوپڕ",
+    "زخات ثلج كثيفة": "بەفری کتوپڕی زۆر",
+    "زخات مطر": "بارانی کتوپڕ",
+    "زخات مطر غزيرة": "بارانی کتوپڕی زۆر بەهێز",
+    "زخات مطر قوية": "بارانی کتوپڕی بەهێز",
+    "سياسة الخصوصية": "سیاسەتی تایبەتێتی",
+    "سياسة الخصوصية الكاملة": "سیاسەتی تایبەتێتی تەواو",
+    "شرطة": "پۆلیس",
+    "شنو شفت بالطريق؟ (يوصل لكل المستخدمين)": "لە ڕێگا چیت بینی؟ (بۆ هەموو بەکارهێنەران دەگات)",
+    "ص": "ب.ن",
+    "صحو": "ئاسمان ساماڵ",
+    "صلاح الدين": "سەلاحەدین",
+    "صوت": "دەنگ",
+    "صيدليات": "دەرمانخانەکان",
+    "صيدلية": "دەرمانخانە",
+    "ضباب": "مژ",
+    "ضباب صقيعي": "مژی بەستەڵەکاو",
+    "ضباب ورؤية ضعيفة": "مژ و بینینی لاواز",
+    "طريق مغلق": "ڕێگا داخراوە",
+    "طلعت عن الطريق، أعيد الحساب...": "لە ڕێگاکە دەرچوویت، دووبارە دەژمێردرێتەوە...",
+    "عاصفة رعدية": "تۆفانی ڕەعدوبروسکە",
+    "عاصفة رعدية وبَرَد": "تۆفانی ڕەعدوبروسکە لەگەڵ تەرزە",
+    "عاصفة رعدية وبَرَد قوي": "تۆفانی ڕەعدوبروسکە لەگەڵ تەرزەی بەهێز",
+    "عداد السرعة أثناء الملاحة": "خێراییپێو لە کاتی ڕێنیشاندان",
+    "عرض الخريطة": "شێوازی پیشاندانی نەخشە",
+    "عرض الزحام على الخريطة": "پیشاندانی قەرەباڵغی لەسەر نەخشە",
+    "على الخريطة": "لەسەر نەخشە",
+    "غائم": "هەوراوی",
+    "غائم جزئياً": "تا ڕادەیەک هەوراوی",
+    "غالباً صحو": "زۆرجار ساماڵ",
+    "غبار كثيف": "تۆزی زۆر",
+    "غيّر المسار": "ڕێگا بگۆڕە",
+    "غير منزّلة • حوالي {0} ميغا": "داننەگیراوە • نزیکەی {0} مێگابایت",
+    "فشل التنزيل. تأكد من الإنترنت والمساحة وجرّب مرة ثانية (يكمل من نفس المكان)": "داگرتن شکستی هێنا. ئینتەرنێت و شوێنی بەتاڵ بپشکنە و دووبارە هەوڵ بدەرەوە (لە هەمان شوێنەوە بەردەوام دەبێت)",
+    "فنادق": "ئۆتێلەکان",
+    "فندق": "ئۆتێل",
+    "فهرنهايت °F": "فارنهایت °F",
+    "في مسار بديل يتجنب {0}، {1}. اضغط تغيير المسار إذا تريد.": "ڕێگایەکی جێگرەوە هەیە بۆ دوورکەوتنەوە لە {0}، {1}. ئەگەر دەتەوێت کرتە لە گۆڕینی ڕێگا بکە.",
+    "قبل {0} دقيقة": "پێش {0} خولەک",
+    "قليلاً يساراً": "کەمێک بۆ چەپ",
+    "قليلاً يميناً": "کەمێک بۆ ڕاست",
+    "كثيف": "زۆر",
+    "كربلاء": "کەربەلا",
+    "كركوك": "کەرکووک",
+    "كل المباني (من الإنترنت)": "هەموو باڵەخانەکان (لە ئینتەرنێتەوە)",
+    "كم/س": "کم/ک",
+    "كيف يتعامل دليني مع موقعك وبياناتك، وشنو يُرسل ولأي جهة.": "دليني چۆن مامەڵە لەگەڵ شوێن و داتاکانت دەکات، و چی دەنێردرێت و بۆ کێ.",
+    "كيلومتر": "کیلۆمەتر",
+    "لا يوجد": "هیچ",
+    "لا، أكمل": "نەخێر، بەردەوام بە",
+    "لا، شكراً": "نەخێر، سوپاس",
+    "للأمام": "بەرەو پێش",
+    "ليلي": "شەو",
+    "م": "د.ن",
+    "ما اكو أماكن محفوظة. ابحث عن مكان واضغط النجمة جنب اسمه حتى تحفظه.": "هیچ شوێنێکی پاشەکەوتکراو نییە. بەدوای شوێنێکدا بگەڕێ و کرتە لە ئەستێرەکەی تەنیشت ناوەکەی بکە بۆ پاشەکەوتکردنی.",
+    "ما اكو موقعك الحالي، المسار من مركز الخريطة": "شوێنی ئێستات نازانرێت، ڕێگاکە لە ناوەندی نەخشەکەوە دەست پێدەکات",
+    "ما الذي يُرسل بالضبط؟": "بەدڵنیاییەوە چی دەنێردرێت؟",
+    "ما انرسل البلاغ، تأكد من الإنترنت": "ڕاپۆرتەکە نەنێردرا، ئینتەرنێتەکەت بپشکنە",
+    "ما فيه صوت كردي على هذا الجهاز، فالتعليمات الصوتية تنقرأ بالعربي (والنص المكتوب كردي).": "دەنگی کوردی لەم ئامێرەدا نییە، بۆیە ڕێنماییە دەنگییەکان بە عەرەبی دەخوێندرێنەوە (نووسینەکە بە کوردی دەمێنێتەوە).",
+    "ما كدرت أبحث عن مسار بديل الآن (تأكد من الإنترنت)": "نەتوانرا ئێستا بەدوای ڕێگای جێگرەوەدا بگەڕێم (ئینتەرنێتەکەت بپشکنە)",
+    "ما كدرت أجيب العنوان. جرّب مرة ثانية": "نەتوانرا ناونیشان بهێنرێت. دووبارە هەوڵ بدەرەوە",
+    "ما كدرت أجيب النتائج الآن. جرّب مرة ثانية بعد شوية.{0}": "نەتوانرا ئەنجامەکان ئێستا بهێنرێن. دوای کەمێک دووبارە هەوڵ بدەرەوە.{0}",
+    "ما كدرت أحدد مكان البلاغ": "نەتوانرا شوێنی ڕاپۆرتەکە دیاری بکرێت",
+    "ما كدرت أحذف البلاغ، جرّب مرة ثانية": "نەتوانرا ڕاپۆرتەکە بسڕدرێتەوە، دووبارە هەوڵ بدەرەوە",
+    "ما كدرت أحفظ، مساحة التخزين بالجهاز ممتلئة": "نەتوانرا پاشەکەوت بکرێت، شوێنی هەڵگرتنی ئامێرەکە پڕە",
+    "ما كدرت أحمّل بلاغات الآخرين، تأكد من الإنترنت": "نەتوانرا ڕاپۆرتەکانی کەسانی تر باربکرێن، ئینتەرنێتەکەت بپشکنە",
+    "ما كدرت أعيد حساب الطريق": "نەتوانرا ڕێگاکە دووبارە بژمێردرێتەوە",
+    "ما كدرت ألقى طريق لهذا المكان": "نەتوانرا ڕێگا بۆ ئەم شوێنە بدۆزرێتەوە",
+    "ما لقيت {0} ضمن هذي المسافة. جرّب مسافة أكبر.": "هیچ {0} لەم مەودایەدا نەدۆزرایەوە. مەودایەکی گەورەتر تاقی بکەرەوە.",
+    "ما لقيت أصوات إنكليزية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم الإنكليزية، وحمّل صوت.": "هیچ دەنگێکی ئینگلیزی لەم ئامێرەدا نەدۆزرایەوە. لە ئایفۆندا: ڕێکخستنەکان، پاشان ئاسانکاری، پاشان ناوەڕۆکی گوتراو، پاشان دەنگەکان، پاشان ئینگلیزی، و دەنگێک دابگرە.",
+    "ما لقيت أصوات عربية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم العربية، وحمّل صوت.": "هیچ دەنگێکی عەرەبی لەم ئامێرەدا نەدۆزرایەوە. لە ئایفۆندا: ڕێکخستنەکان، پاشان ئاسانکاری، پاشان ناوەڕۆکی گوتراو، پاشان دەنگەکان، پاشان عەرەبی، و دەنگێک دابگرە.",
+    "ما لقيت عنوان لهذا المكان": "هیچ ناونیشانێک بۆ ئەم شوێنە نەدۆزرایەوە",
+    "ما لقيت مسار بديل يتجنب {0} (جربت {1} مسار، أبعدها {2} م من البلاغ والمطلوب {3} م{4})": "ڕێگایەکی جێگرەوە نەدۆزرایەوە کە {0} بهێڵێتە لاوە (هەوڵی {1} ڕێگا درا، دوورترینیان {2} م لە ڕاپۆرتەکەوە بوو و {3} م پێویست بوو{4})",
+    "ما محفوظ شي بعد": "هێشتا هیچ",
+    "ما يرسل إلا أثناء الملاحة، وبعد ما تتجاوز سرعتك {0} كم/س (يعني بالسيارة، مو ماشي).": "تەنها لە کاتی ڕێنیشاندان دەنێرێت، و دوای ئەوەی خێراییت لە {0} کم/ک تێپەڕێت (واتە بە ئۆتۆمبێل، نەک بە پێ).",
+    "ما يرسل أول 300 متر ولا آخر 300 متر من رحلتك، حتى ما ينكشف بيتك أو شغلك.": "یەکەم 300 مەتر و کۆتا 300 مەتری گەشتەکەت نانێرێت، بۆ ئەوەی ماڵ یان شوێنی کارەکەت ئاشکرا نەبێت.",
+    "مئوي °C": "سەدی °C",
+    "متوسط": "مامناوەند",
+    "محطات وقود": "وێستگەکانی بەنزین",
+    "محطة وقود": "وێستگەی بەنزین",
+    "مراقد ومقامات": "مەرقەد و مەقامەکان",
+    "مرقد": "مەرقەد",
+    "مركز الذكاء للمعلوماتية والحلول البرمجية\nبابل - العراق": "ناوەندی زیرەکی بۆ زانیاری و چارەسەری نەرمەکاڵا\nبابل - عێراق",
+    "مركز شرطة": "بنکەی پۆلیس",
+    "مسار بديل يتجنب {0}": "ڕێگای جێگرەوە بۆ دوورکەوتنەوە لە {0}",
+    "مسافة التنبيه": "مەودای ئاگادارکردنەوە",
+    "مستشفى": "نەخۆشخانە",
+    "مستشفيات": "نەخۆشخانەکان",
+    "مستوى الصوت": "ئاستی دەنگ",
+    "مسح": "سڕینەوە",
+    "مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.": "کاتێک گەڕان دەکەیت تەخت دەبێت، و تەنها لە کاتی ڕێنیشاندان لار دەبێتەوە و بەپێی ئاراستەی ڕۆیشتنت دەسووڕێت.",
+    "مشكلة": "کێشە",
+    "مصادر الخرائط والبيانات: © مساهمو OpenStreetMap، خرائط Protomaps، مباني العراق © Overture Maps Foundation (رخصة ODbL)، عرض الخريطة بـ MapLibre، حساب المسار OSRM، والطقس من Open-Meteo.com.": "سەرچاوەکانی نەخشە و داتا: © بەشداربووانی OpenStreetMap، نەخشەکانی Protomaps، باڵەخانەکانی عێراق © Overture Maps Foundation (مۆڵەتی ODbL)، پیشاندانی نەخشە بە MapLibre، ژماردنی ڕێگا بە OSRM، و کەشوهەوا لە Open-Meteo.com.",
+    "مطاعم ومقاهي": "چێشتخانە و قاوەخانەکان",
+    "مطر": "باران",
+    "مطر خفيف": "بارانی سووک",
+    "مطر غزير": "بارانی زۆر",
+    "مطر متجمد": "بارانی بەستەڵەکاو",
+    "مطر متجمد غزير": "بارانی بەستەڵەکاوی زۆر",
+    "مطعم": "چێشتخانە",
+    "مكان سياحي": "شوێنی گەشتیاری",
+    "مكان محفوظ": "شوێنی پاشەکەوتکراو",
+    "منزّلة{0}": "داگیراوە{0}",
+    "موقعك غير معروف حالياً، فالبحث حول مركز الخريطة. اختر نوع المكان:": "شوێنەکەت نەزانراوە، بۆیە گەڕانەکە دەوروبەری ناوەندی نەخشەکەیە. جۆری شوێنەکە هەڵبژێرە:",
+    "موقعي": "شوێنی من",
+    "مول": "مۆڵ",
+    "مولات": "مۆڵەکان",
+    "ميسان": "میسان",
+    "ميل": "میل",
+    "ميل/س": "میل/ک",
+    "نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك. وإذا كتبت رقمك أو إيميلك بالخانة الاختيارية نرسله معها حتى نرد عليك.": "تەنها ژمارەی وەشان و جۆری ئامێر لەگەڵ نامەکەت دەنێرین، بەبێ شوێنەکەت. ئەگەر ژمارە یان ئیمەیڵەکەت لە خانەی ئارەزوومەندانە بنووسیت لەگەڵیدا دەینێرین بۆ ئەوەی وەڵامت بدەینەوە.",
+    "نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.": "نەخشەی گشتی عێراق جارێک دابگرە (هەموو وڵات دادەپۆشێت بە وردەکاری کەم)، پاشان ئەو پارێزگایانە دابگرە کە پێویستتن بۆ ئەوەی شەقام و ناو و باڵەخانەکان بە وردی دەربکەون. هەموویان بێ ئینتەرنێت کار دەکەن. باشترە لەکاتی بەکارهێنانی Wi-Fi دایبگریت.",
+    "نقطة تفتيش": "خاڵی پشکنین",
+    "نقطة على الخريطة": "خاڵێک لەسەر نەخشە",
+    "نهاري": "ڕۆژ",
+    "نوع الصوت": "جۆری دەنگ",
+    "نينوى": "نەینەوا",
+    "هبّات الرياح": "شەپۆلەکانی با",
+    "هذا اختبار للصوت. دليني يوجّهك بالطريق.": "ئەمە تاقیکردنەوەی دەنگە. دليني ڕێنماییت دەکات لە ڕێگادا.",
+    "هذا المكان محفوظ من قبل": "ئەم شوێنە پێشتر پاشەکەوت کراوە",
+    "هذي الميزة تحتاج إنترنت. وصّل بالإنترنت وجرّب مرة ثانية.": "ئەم تایبەتمەندییە ئینتەرنێتی پێویستە. بە ئینتەرنێتەوە پەیوەندی بکە و دووبارە هەوڵ بدەرەوە.",
+    "واسط": "واست",
+    "وجهتك أمامك": "شوێنی مەبەستەکەت لە پێشەوەیە",
+    "وحدة الحرارة": "یەکەی پلەی گەرمی",
+    "وصلت إلى وجهتك": "گەیشتیتە شوێنی مەبەستەکەت",
+    "وصلت رسالتك، شكراً لك ✓": "نامەکەت گەیشت، سوپاس ✓",
+    "وصلت للحد اليومي للرسائل، جرّب باجر": "گەیشتیتە سنووری ڕۆژانەی نامەکان، سبەینێ هەوڵ بدەرەوە",
+    "وين تريد تروح؟": "دەتەوێت بچیت بۆ کوێ؟",
+    "يبقى آخر موقع بس (مو سجل لتنقلاتك)، ويتمسح لما تنتهي الملاحة.": "تەنها دوا شوێن دەمێنێتەوە (نەک تۆماری هاتوچۆکانت)، و کاتێک ڕێنیشاندان تەواو دەبێت دەسڕێتەوە.",
+    "يُحدَّث الطقس كل 20 دقيقة تقريباً حسب موقعك، ويُحفظ على جوالك. بيانات الطقس من Open-Meteo.com (رخصة CC BY 4.0). تحذير الغبار تقديري ويعتمد على نماذج جوية، فلا تعتمد عليه وحده.": "کەشوهەوا نزیکەی هەر 20 خولەک جارێک بەپێی شوێنەکەت نوێ دەبێتەوە و لەسەر مۆبایلەکەت پاشەکەوت دەکرێت. داتای کەشوهەوا لە سەرچاوەی Open-Meteo.com (مۆڵەتی CC BY 4.0) وەرگیراوە. ئاگادارکردنەوەی تۆز خەمڵاندنە و پشت بە نموونەی کەشناسی دەبەستێت، بۆیە تەنها پشتی پێ مەبەستە.",
+    "يحفظ تلقائياً مباني الأماكن اللي تفتحها حتى تظهر بسرعة المرة الجاية، وحتى بدون إنترنت للأماكن المحفوظة. الحد الأقصى 100 ميغا، وإذا امتلأ ينحذف الأقدم أول. تقدر تطفيه أو تمسح المحفوظ بأي وقت.": "بە خۆکاری باڵەخانەی ئەو شوێنانە پاشەکەوت دەکات کە دەیانکەیتەوە بۆ ئەوەی جاری داهاتوو بە خێرایی دەربکەون، تەنانەت بێ ئینتەرنێتیش بۆ شوێنە پاشەکەوتکراوەکان. زۆرترین قەبارە 100 مێگابایتە، و کاتێک پڕ بێت کۆنترینەکان دەسڕدرێنەوە. دەتوانیت لە هەر کاتێکدا بیکوژێنیتەوە یان پاشەکەوتکراوەکان بسڕیتەوە.",
+    "يزيد {0} دقيقة": "{0} خولەک زیاد دەکات",
+    "يساراً": "بۆ چەپ",
+    "يشمل تعليمات المنعطفات وتنبيهات البلاغات. بعض أجهزة الايفون تحدد شدة الصوت من أزرار الجهاز، فقد لا يؤثر المنزلق عليها.": "ڕێنماییەکانی پێچ و ئاگادارکردنەوەی ڕاپۆرتەکان دەگرێتەوە. هەندێک ئایفۆن ئاستی دەنگ لە دوگمەکانی ئامێرەکەوە دیاری دەکەن، بۆیە لەوانەیە سلایدەرەکە کاریگەری لەسەریان نەبێت.",
+    "يميناً": "بۆ ڕاست"
+  }
+  };
+  /*@@I18N-DICT-END@@*/
+  /*@@I18N-CORE-BEGIN@@*/
+  /* ================= اللغة والترجمة =================
+     اللغات: ar (الأصل: العربي)، en (English)، ckb (الكردية السورانية).
+     مفتاح الترجمة = النص العربي نفسه، ويرجع كما هو إذا ما لقى ترجمة، فبالعربي ما يتغيّر شي أبداً.
+     {0} {1}… أماكن القيم المتغيّرة. المفتاح اللي يبدأ بـ ~ نسخة «منطوقة» (للصوت) إذا تختلف عن المكتوبة.
+     اللغة تنقرأ مرة وحدة وقت التشغيل، وتغييرها من الإعدادات يعيد تشغيل التطبيق. القاموس I18N فوق (يُولَّد بأداة، لا يُعدَّل يدوياً).
+     اسم الدالة tr (مو t) لأن t متغيّر محلي بأكثر من مكان. */
+  const LANGS = { ar: { dir: 'rtl', html: 'ar' }, en: { dir: 'ltr', html: 'en' }, ckb: { dir: 'rtl', html: 'ckb' } };
+  const LANG = (() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('daliny-settings') || '{}');
+      return s && typeof s.lang === 'string' && Object.prototype.hasOwnProperty.call(LANGS, s.lang) ? s.lang : 'ar';
+    } catch (e) { return 'ar'; }
+  })();
+  const K = (s) => s; // يعلّم نصاً عربياً كمفتاح ترجمة تتم ترجمته لاحقاً بـ tr(k) أو trv(k)
+  const trCache = {};
+  function trFor(lg, spoken) { // دالة ترجمة للغة معيّنة (spoken: تفضّل النسخة المنطوقة ~)
+    const ck = lg + (spoken ? '!' : '');
+    if (trCache[ck]) return trCache[ck];
+    const D = lg === 'ar' ? null : I18N[lg];
+    return (trCache[ck] = (k, ...a) => {
+      let s = k;
+      if (D) { const v = (spoken && D['~' + k]) || D[k]; if (typeof v === 'string' && v) s = v; }
+      return a.length ? s.replace(/\{(\d+)\}/g, (m, i) => (+i < a.length ? String(a[+i]) : m)) : s;
+    });
+  }
+  const tr = trFor(LANG, false);
+  const CLOCK_LOCALE = (() => { // لغة تنسيق الساعة
+    if (LANG === 'en') return 'en-US';
+    if (LANG === 'ckb') { try { if (Intl.DateTimeFormat.supportedLocalesOf(['ckb-IQ']).length) return 'ckb-IQ'; } catch (e) {} }
+    return 'ar-IQ';
+  })();
+  const MAP_LANG = LANG;                                              // لغة أسماء الخريطة (basemaps lang)، وترجع للاسم المحلي إذا ما فيه اسم بهذي اللغة
+  const NOM_LANG = { ar: 'ar', en: 'en,ar', ckb: 'ckb,ar,en' }[LANG];   // accept-language لنتائج البحث والعناوين (Nominatim)
+  const NOM_SPLIT = LANG === 'ar' ? /*keep*/'،' : /\s*[،,]\s*/;                  // فاصل أجزاء العنوان (بالعربي الفاصلة العربية، وباللغات الثانية فاصلة عادية أو عربية)
+  // ترجمة الصفحة الثابتة (النصوص + placeholder وaria-label وtitle) واتجاه الصفحة. تنفّذ فوراً: كل الصفحة موجودة قبل هذا السكربت.
+  (function i18nStatic() {
+    const de = document.documentElement;
+    de.lang = LANGS[LANG].html; de.dir = LANGS[LANG].dir;
+    if (LANG === 'ar') return;
+    try {
+      const qi = document.getElementById('q'); if (qi) qi.setAttribute('dir', 'auto'); // يكتب اسم مكان بلغة غير لغة الواجهة: الاتجاه يتبع الكتابة
+      const D = I18N[LANG], AR = /[؀-ۿ]/, norm = (s) => s.replace(/\s+/g, ' ').trim();
+      const skip = (el) => !el || (el.closest && el.closest('[translate="no"]'));
+      const w = document.createTreeWalker(de, NodeFilter.SHOW_TEXT), nodes = [];
+      for (let n = w.nextNode(); n; n = w.nextNode()) nodes.push(n);
+      nodes.forEach((n) => {
+        const p = n.parentNode;
+        if (!p || p.nodeName === 'SCRIPT' || p.nodeName === 'STYLE' || skip(p)) return;
+        const raw = n.nodeValue;
+        if (!AR.test(raw)) return;
+        const v = D[norm(raw)];
+        if (typeof v === 'string' && v) n.nodeValue = raw.replace(/^(\s*)[\s\S]*?(\s*)$/, (m, a, b) => a + v + b);
+      });
+      document.querySelectorAll('[placeholder],[aria-label],[title],[alt]').forEach((el) => {
+        if (skip(el)) return;
+        ['placeholder', 'aria-label', 'title', 'alt'].forEach((at) => {
+          const raw = el.getAttribute(at);
+          if (!raw || !AR.test(raw)) return;
+          const v = D[norm(raw)];
+          if (typeof v === 'string' && v) el.setAttribute(at, v);
+        });
+      });
+      const mt = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (mt) { const v = D[norm(mt.content)]; if (typeof v === 'string' && v) mt.content = v; }
+      if (LANG === 'ckb') { // خط يغطي حروف الكردية (ڕ ڵ ێ ۆ ە ڤ)
+        const fc = document.getElementById('fontcss');
+        if (fc) fc.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700;800&display=swap';
+      }
+    } catch (e) {}
+  })();
+  /*@@I18N-CORE-END@@*/
   // كل التطبيق داخل boot (بدون إزاحة الأسطر): مكتبات الخريطة تتحمّل بوضع defer حتى ما توقف أول رسمة (شاشة البداية)،
   // فنبدأ بعد نهاية قراءة الصفحة (وصلت المكتبات) وبعد أول رسمة. الاستدعاء بآخر السكربت (whenReady).
   function boot() {
@@ -730,7 +1565,7 @@
   // الإعدادات المحفوظة على الجهاز
   const settings = {
     voice: true, volume: 1, voiceURI: '', theme: 'auto', units: 'km', speedo: true,
-    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: false, trafficConsent: 0, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true, bldAll: true, bldKeep: true
+    hazShow: {}, hazAlert: true, hazDist: 350, hazAlt: true, hazAltPolice: true, trafficShow: true, trafficShare: false, trafficConsent: 0, trafficWalk: false, wxShow: true, wxAlert: true, wxUnit: 'c', mapView: '2d', bld3d: true, bldAll: true, bldKeep: true, lang: 'ar'
   };
   // نقرأ فقط المفاتيح المعروفة وبنفس النوع (يمنع أي قيمة غريبة بالتخزين المحلي من التأثير على التطبيق)
   try {
@@ -750,6 +1585,7 @@
     }
   } catch (e) {}
   if (settings.mapView !== '2d' && settings.mapView !== '3d' && settings.mapView !== 'auto') settings.mapView = '2d';
+  if (!Object.prototype.hasOwnProperty.call(LANGS, settings.lang)) settings.lang = 'ar';
   function saveSettings() { try { localStorage.setItem('daliny-settings', JSON.stringify(settings)); } catch (e) {} }
   // الإرسال (موقعي وسرعتي) ما يصير إلا إذا جاوبت على نافذة الموافقة بـ«أوافق» وما طفّيت المفتاح
   const trConsented = () => settings.trafficConsent === TR_CONSENT_V;
@@ -760,7 +1596,7 @@
   const TILT = 50;
   // رقم الإصدار بثلاث خانات: رئيسي.فرعي.إصلاح (MAJOR.MINOR.PATCH) ويظهر بالإعدادات وبصفحة حول البرنامج
   //   الأول (رئيسي): تغيير كبير بالبرنامج. الثاني (فرعي): ميزة جديدة. الثالث (إصلاح): تصليح صغير بدون ميزة جديدة.
-  const APP_VERSION = '1.2.2';
+  const APP_VERSION = '1.3.0';
   // نفس الرقم بصيغة رقمية تنرسل مع رسائل الاقتراحات: 1.0.0 => 10000 ، 1.2.3 => 10203 (تقبلها قواعد القاعدة القديمة والجديدة)
   const APP_BUILD = APP_VERSION.split('.').reduce((n, p, i) => n + (parseInt(p, 10) || 0) * [10000, 100, 1][i], 0);
   function verEl(prefix) { // «v1.0.0» تنكتب من اليسار لليمين حتى لو النص عربي
@@ -771,9 +1607,9 @@
     return f;
   }
   const VIEW_NOTES = {
-    '2d': 'الخريطة مسطّحة والشمال فوق. تكدر تدوّرها بإصبعين (مثل التكبير)، وتظهر بوصلة ترجّعها للشمال.',
-    '3d': 'الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة). كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.',
-    'auto': 'مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.'
+    '2d': tr('الخريطة مسطّحة والشمال فوق. تكدر تدوّرها بإصبعين (مثل التكبير)، وتظهر بوصلة ترجّعها للشمال.'),
+    '3d': tr('الخريطة مائلة وتدور حسب اتجاه سيرك لما تتبع موقعك. المباني تظهر مجسّمة (قرّب الخريطة). كتابات الخريطة الأونلاين تدور وياها، وتبقى أوضح بالخرائط المحمّلة.'),
+    'auto': tr('مسطّحة وانت تتصفح، وتميل وتدور حسب اتجاه سيرك أثناء الملاحة فقط.')
   };
 
   function toast(msg, ms) {
@@ -785,31 +1621,32 @@
   const MILE = 1609.344, FOOT = 3.28084;
   function fmtDist(m) {
     if (settings.units === 'mi') {
-      if (m < 160) return Math.max(50, Math.round(m * FOOT / 50) * 50) + ' قدم';
+      if (m < 160) return tr('{0} قدم', Math.max(50, Math.round(m * FOOT / 50) * 50));
       const mi = m / MILE;
-      return mi.toFixed(mi < 10 ? 1 : 0) + ' ميل';
+      return tr('{0} ميل', mi.toFixed(mi < 10 ? 1 : 0));
     }
-    if (m < 1000) return Math.max(10, Math.round(m / 10) * 10) + ' م';
-    return (m / 1000).toFixed(m < 10000 ? 1 : 0) + ' كم';
+    if (m < 1000) return tr('{0} م', Math.max(10, Math.round(m / 10) * 10));
+    return tr('{0} كم', (m / 1000).toFixed(m < 10000 ? 1 : 0));
   }
   // المسافة بصيغة تنطق بالصوت
-  function spokenDist(m) {
+  function spokenDist(m, T) { // T: دالة الترجمة (الافتراضي لغة الصوت trv؛ مرّر tr إذا النص يظهر على الشاشة)
+    T = T || trv;
     if (settings.units === 'mi') {
-      if (m < 160) return Math.max(50, Math.round(m * FOOT / 50) * 50) + ' قدم';
-      return (m / MILE).toFixed(1) + ' ميل';
+      if (m < 160) return T('{0} قدم', Math.max(50, Math.round(m * FOOT / 50) * 50));
+      return T('{0} ميل', (m / MILE).toFixed(1));
     }
-    return m < 1000 ? Math.max(10, Math.round(m / 10) * 10) + ' متر' : (m / 1000).toFixed(1) + ' كيلومتر';
+    return m < 1000 ? T('{0} متر', Math.max(10, Math.round(m / 10) * 10)) : T('{0} كيلومتر', (m / 1000).toFixed(1));
   }
-  function speedUnitLabel() { return settings.units === 'mi' ? 'ميل/س' : 'كم/س'; }
+  function speedUnitLabel() { return settings.units === 'mi' ? tr('ميل/س') : tr('كم/س'); }
   function fmtTime(s) {
     const mins = Math.max(1, Math.round(s / 60));
-    if (mins < 60) return mins + ' دقيقة';
+    if (mins < 60) return tr('{0} دقيقة', mins);
     const h = Math.floor(mins / 60), r = mins % 60;
-    return h + ' ساعة' + (r ? ' و ' + r + ' دقيقة' : '');
+    return tr('{0} ساعة{1}', h, r ? tr(' و {0} دقيقة', r) : '');
   }
   function fmtClock(secFromNow) {
     const d = new Date(Date.now() + secFromNow * 1000);
-    return d.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString(CLOCK_LOCALE, LANG === 'en' ? { hour: 'numeric', minute: '2-digit' } : { hour: '2-digit', minute: '2-digit' });
   }
   function haversine(a, b) { // [lat,lng] , [lat,lng] -> متر
     const R = 6371000, r = Math.PI / 180;
@@ -1097,7 +1934,7 @@
   const hasGL = !!(window.maplibregl && window.pmtiles && window.basemaps);
   if (!hasGL) {
     splashHide(); // نكشف رسالة الخطأ
-    document.getElementById('map').innerHTML = '<p style="padding:90px 20px;text-align:center">تعذّر تحميل محرك الخريطة. وصّل بالإنترنت (أول مرة فقط) وحدّث الصفحة.</p>';
+    document.getElementById('map').innerHTML = tr('<p style="padding:90px 20px;text-align:center">تعذّر تحميل محرك الخريطة. وصّل بالإنترنت (أول مرة فقط) وحدّث الصفحة.</p>');
     throw new Error('map libs missing');
   }
   maplibregl.addProtocol('pmtiles', new pmtiles.Protocol().tile);
@@ -1105,25 +1942,25 @@
   try { maplibregl.setRTLTextPlugin(new URL('mapbox-gl-rtl-text.js', location.href).href, false); } catch (e) { console.warn('rtl', e); }
   // إذا حزمة العراق منزّلة ما نعرض خريطة الإنترنت القديمة أبداً (حتى ما تومض قبل الجديدة)
   const PACKS = [
-    { id: 'iraq', name: 'العراق (خريطة عامة)', url: 'packs/iraq.pmtiles', maxZoom: 12, mb: 61 },
-    { id: 'baghdad', name: 'بغداد', url: 'packs/baghdad.pmtiles', maxZoom: 15, mb: 19, bbox: [43.9, 32.8, 44.9, 33.8] },
-    { id: 'basra', name: 'البصرة', url: 'packs/basra.pmtiles', maxZoom: 15, mb: 36, bbox: [46.4, 29.05, 48.6, 31.2] },
-    { id: 'nineveh', name: 'نينوى', url: 'packs/nineveh.pmtiles', maxZoom: 15, mb: 81, bbox: [40.9, 35.2, 44.1, 37.4] },
-    { id: 'erbil', name: 'أربيل', url: 'packs/erbil.pmtiles', maxZoom: 15, mb: 47, bbox: [43.4, 35.7, 45.1, 37.2] },
-    { id: 'sulaymaniyah', name: 'السليمانية', url: 'packs/sulaymaniyah.pmtiles', maxZoom: 15, mb: 41, bbox: [44.5, 34.6, 46.3, 36.3] },
-    { id: 'duhok', name: 'دهوك', url: 'packs/duhok.pmtiles', maxZoom: 15, mb: 33, bbox: [42.2, 36.5, 44.3, 37.4] },
-    { id: 'kirkuk', name: 'كركوك', url: 'packs/kirkuk.pmtiles', maxZoom: 15, mb: 20, bbox: [43.2, 34.8, 44.9, 35.9] },
-    { id: 'diyala', name: 'ديالى', url: 'packs/diyala.pmtiles', maxZoom: 15, mb: 29, bbox: [44.3, 33.2, 46.2, 34.7] },
-    { id: 'salahaddin', name: 'صلاح الدين', url: 'packs/salahaddin.pmtiles', maxZoom: 15, mb: 15, bbox: [42.9, 33.7, 44.5, 35.3] },
-    { id: 'anbar', name: 'الأنبار', url: 'packs/anbar.pmtiles', maxZoom: 14, mb: 31, bbox: [38.8, 30.6, 44.3, 34.8] },
-    { id: 'babil', name: 'بابل', url: 'packs/babil.pmtiles', maxZoom: 15, mb: 23, bbox: [44.0, 32.0, 45.1, 33.3] },
-    { id: 'karbala', name: 'كربلاء', url: 'packs/karbala.pmtiles', maxZoom: 15, mb: 14, bbox: [43.2, 32.0, 44.5, 33.0] },
-    { id: 'najaf', name: 'النجف', url: 'packs/najaf.pmtiles', maxZoom: 15, mb: 21, bbox: [42.2, 29.5, 45.0, 32.5] },
-    { id: 'qadisiyah', name: 'القادسية', url: 'packs/qadisiyah.pmtiles', maxZoom: 15, mb: 11, bbox: [44.3, 31.5, 45.6, 32.4] },
-    { id: 'muthanna', name: 'المثنى', url: 'packs/muthanna.pmtiles', maxZoom: 15, mb: 12, bbox: [43.6, 29.0, 46.2, 31.6] },
-    { id: 'dhiqar', name: 'ذي قار', url: 'packs/dhiqar.pmtiles', maxZoom: 15, mb: 12, bbox: [45.6, 30.4, 47.2, 31.9] },
-    { id: 'maysan', name: 'ميسان', url: 'packs/maysan.pmtiles', maxZoom: 15, mb: 8, bbox: [46.5, 31.3, 47.9, 32.8] },
-    { id: 'wasit', name: 'واسط', url: 'packs/wasit.pmtiles', maxZoom: 15, mb: 10, bbox: [44.9, 32.0, 46.9, 33.5] },
+    { id: 'iraq', name: tr('العراق (خريطة عامة)'), url: 'packs/iraq.pmtiles', maxZoom: 12, mb: 61 },
+    { id: 'baghdad', name: tr('بغداد'), url: 'packs/baghdad.pmtiles', maxZoom: 15, mb: 19, bbox: [43.9, 32.8, 44.9, 33.8] },
+    { id: 'basra', name: tr('البصرة'), url: 'packs/basra.pmtiles', maxZoom: 15, mb: 36, bbox: [46.4, 29.05, 48.6, 31.2] },
+    { id: 'nineveh', name: tr('نينوى'), url: 'packs/nineveh.pmtiles', maxZoom: 15, mb: 81, bbox: [40.9, 35.2, 44.1, 37.4] },
+    { id: 'erbil', name: tr('أربيل'), url: 'packs/erbil.pmtiles', maxZoom: 15, mb: 47, bbox: [43.4, 35.7, 45.1, 37.2] },
+    { id: 'sulaymaniyah', name: tr('السليمانية'), url: 'packs/sulaymaniyah.pmtiles', maxZoom: 15, mb: 41, bbox: [44.5, 34.6, 46.3, 36.3] },
+    { id: 'duhok', name: tr('دهوك'), url: 'packs/duhok.pmtiles', maxZoom: 15, mb: 33, bbox: [42.2, 36.5, 44.3, 37.4] },
+    { id: 'kirkuk', name: tr('كركوك'), url: 'packs/kirkuk.pmtiles', maxZoom: 15, mb: 20, bbox: [43.2, 34.8, 44.9, 35.9] },
+    { id: 'diyala', name: tr('ديالى'), url: 'packs/diyala.pmtiles', maxZoom: 15, mb: 29, bbox: [44.3, 33.2, 46.2, 34.7] },
+    { id: 'salahaddin', name: tr('صلاح الدين'), url: 'packs/salahaddin.pmtiles', maxZoom: 15, mb: 15, bbox: [42.9, 33.7, 44.5, 35.3] },
+    { id: 'anbar', name: tr('الأنبار'), url: 'packs/anbar.pmtiles', maxZoom: 14, mb: 31, bbox: [38.8, 30.6, 44.3, 34.8] },
+    { id: 'babil', name: tr('بابل'), url: 'packs/babil.pmtiles', maxZoom: 15, mb: 23, bbox: [44.0, 32.0, 45.1, 33.3] },
+    { id: 'karbala', name: tr('كربلاء'), url: 'packs/karbala.pmtiles', maxZoom: 15, mb: 14, bbox: [43.2, 32.0, 44.5, 33.0] },
+    { id: 'najaf', name: tr('النجف'), url: 'packs/najaf.pmtiles', maxZoom: 15, mb: 21, bbox: [42.2, 29.5, 45.0, 32.5] },
+    { id: 'qadisiyah', name: tr('القادسية'), url: 'packs/qadisiyah.pmtiles', maxZoom: 15, mb: 11, bbox: [44.3, 31.5, 45.6, 32.4] },
+    { id: 'muthanna', name: tr('المثنى'), url: 'packs/muthanna.pmtiles', maxZoom: 15, mb: 12, bbox: [43.6, 29.0, 46.2, 31.6] },
+    { id: 'dhiqar', name: tr('ذي قار'), url: 'packs/dhiqar.pmtiles', maxZoom: 15, mb: 12, bbox: [45.6, 30.4, 47.2, 31.9] },
+    { id: 'maysan', name: tr('ميسان'), url: 'packs/maysan.pmtiles', maxZoom: 15, mb: 8, bbox: [46.5, 31.3, 47.9, 32.8] },
+    { id: 'wasit', name: tr('واسط'), url: 'packs/wasit.pmtiles', maxZoom: 15, mb: 10, bbox: [44.9, 32.0, 46.9, 33.5] },
   ];
   const PACK_KEY = 'daliny-packs';
   let packsInstalled = [];
@@ -1133,7 +1970,7 @@
   function packDefs(p, fl) {
     const src = 'pm-' + p.id, base = p.id === 'iraq';
     const layers = [];
-    basemaps.layers(src, basemaps.namedFlavor(fl), { lang: 'ar' }).forEach((l) => {
+    basemaps.layers(src, basemaps.namedFlavor(fl), { lang: MAP_LANG }).forEach((l) => {
       if (l.type === 'background') return;
       const o = Object.assign({}, l, { id: src + '-' + l.id, source: src });
       if (!base) o.minzoom = Math.max(l.minzoom || 0, 13);
@@ -1702,13 +2539,13 @@
     const now = Date.now();
     if (now - geoFailAt < 20000) return;
     geoFailAt = now;
-    toast((err.code === 1 ? 'اسمح للتطبيق باستخدام موقعك من إعدادات الجوال'
-      : (err.code === 3 ? 'تحديد الموقع بطيء، جرّب قرب شباك أو برا البيت' : 'الموقع غير متاح حالياً')) + ' (' + err.code + ')'
+    toast((err.code === 1 ? tr('اسمح للتطبيق باستخدام موقعك من إعدادات الجوال')
+      : (err.code === 3 ? tr('تحديد الموقع بطيء، جرّب قرب شباك أو برا البيت') : tr('الموقع غير متاح حالياً'))) + ' (' + err.code + ')'
       + (err.message ? '\n' + String(err.message).slice(0, 80) : ''), 6000);
   }
   function startWatch() {
     if (state.watchId !== null) return;
-    if (!navigator.geolocation) { toast('جهازك ما يدعم تحديد الموقع'); return; }
+    if (!navigator.geolocation) { toast(tr('جهازك ما يدعم تحديد الموقع')); return; }
     const hi = state.navigating || state.geoMode !== 'lo';
     state.watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -1739,7 +2576,7 @@
     state.follow = true;
     $('btnLocate').classList.add('on');
     if (state.user) followCam({ zoom: Math.max(map.getZoom(), 16), duration: wantTilt() ? 600 : 0 });
-    else toast('جاري تحديد موقعك...');
+    else toast(tr('جاري تحديد موقعك...'));
     startWatch();
   };
 
@@ -1756,19 +2593,19 @@
     if (Array.isArray(raw)) {
       favs = raw.filter((f) => f && typeof f === 'object' && okLL(f.lat, f.lng)).slice(0, 200).map((f, i) => ({
         id: String(f.id == null ? Date.now() + '' + i : f.id).slice(0, 30),
-        name: String(f.name == null ? '' : f.name).slice(0, 60) || 'مكان محفوظ',
+        name: String(f.name == null ? '' : f.name).slice(0, 60) || tr('مكان محفوظ'),
         lat: f.lat, lng: f.lng
       }));
     }
   } catch (e) {}
   function saveFavs() {
     try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); return true; }
-    catch (e) { toast('ما كدرت أحفظ، مساحة التخزين بالجهاز ممتلئة'); return false; }
+    catch (e) { toast(tr('ما كدرت أحفظ، مساحة التخزين بالجهاز ممتلئة')); return false; }
   }
   function findFav(lat, lng) { return favs.find((f) => haversine([f.lat, f.lng], [lat, lng]) < 30); }
   function addFav(d) {
     if (findFav(d.lat, d.lng)) return false;
-    favs.unshift({ id: String(Date.now()), name: d.name || 'مكان محفوظ', lat: d.lat, lng: d.lng });
+    favs.unshift({ id: String(Date.now()), name: d.name || tr('مكان محفوظ'), lat: d.lat, lng: d.lng });
     if (!saveFavs()) { favs.shift(); return false; }
     return true;
   }
@@ -1778,12 +2615,12 @@
   $('favBtn').onclick = () => {
     if (!state.dest) return;
     const f = findFav(state.dest.lat, state.dest.lng);
-    if (f) { favs = favs.filter((x) => x !== f); saveFavs(); toast('انحذف من المفضلة'); }
-    else if (addFav(state.dest)) toast('انحفظ بالمفضلة');
+    if (f) { favs = favs.filter((x) => x !== f); saveFavs(); toast(tr('انحذف من المفضلة')); }
+    else if (addFav(state.dest)) toast(tr('انحفظ بالمفضلة'));
     syncFavUI(); renderFavList();
   };
   function goFav(f) {
-    if (state.navigating) { toast('أنهِ الملاحة الحالية أول'); return; }
+    if (state.navigating) { toast(tr('أنهِ الملاحة الحالية أول')); return; }
     $('settings').hidden = true; hideResults();
     setView(f.lat, f.lng, 15);
     chooseDest({ lat: f.lat, lng: f.lng, name: f.name });
@@ -1795,7 +2632,7 @@
     if (!favs.length) {
       const p = document.createElement('p');
       p.className = 'set-note';
-      p.textContent = 'ما اكو أماكن محفوظة. ابحث عن مكان واضغط النجمة جنب اسمه حتى تحفظه.';
+      p.textContent = tr('ما اكو أماكن محفوظة. ابحث عن مكان واضغط النجمة جنب اسمه حتى تحفظه.');
       box.appendChild(p);
       return;
     }
@@ -1805,9 +2642,9 @@
       if (favEditing === f.id) {
         const inp = document.createElement('input');
         inp.className = 'fav-input'; inp.value = f.name; inp.maxLength = 40;
-        inp.setAttribute('aria-label', 'اسم المكان');
+        inp.setAttribute('aria-label', tr('اسم المكان'));
         const ok = document.createElement('button');
-        ok.className = 'favact'; ok.textContent = 'حفظ';
+        ok.className = 'favact'; ok.textContent = tr('حفظ');
         const save = () => {
           const v = inp.value.trim();
           if (v) { f.name = v; saveFavs(); }
@@ -1823,10 +2660,10 @@
       const go = document.createElement('button');
       go.className = 'favgo'; go.textContent = f.name; go.onclick = () => goFav(f);
       const ed = document.createElement('button');
-      ed.className = 'favact'; ed.textContent = 'تعديل';
+      ed.className = 'favact'; ed.textContent = tr('تعديل');
       ed.onclick = () => { favEditing = f.id; renderFavList(); };
       const del = document.createElement('button');
-      del.className = 'favact danger'; del.textContent = 'حذف';
+      del.className = 'favact danger'; del.textContent = tr('حذف');
       del.onclick = () => { favs = favs.filter((x) => x !== f); saveFavs(); renderFavList(); syncFavUI(); };
       row.append(go, ed, del);
       box.appendChild(row);
@@ -1839,7 +2676,7 @@
     favs.slice(0, 6).forEach((f) => {
       const li = document.createElement('li');
       const b = document.createElement('b'); b.textContent = f.name;
-      const s = document.createElement('small'); s.textContent = 'مكان محفوظ';
+      const s = document.createElement('small'); s.textContent = tr('مكان محفوظ');
       li.append(b, s);
       li.onclick = () => { hideResults(); chooseDest({ lat: f.lat, lng: f.lng, name: f.name }); };
       resultsEl.appendChild(li);
@@ -1851,7 +2688,7 @@
   });
 
   async function nominatim(q, iraqOnly) {
-    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=ar&q=' +
+    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=' + NOM_LANG + '&q=' +
       encodeURIComponent(q) + (iraqOnly ? '&countrycodes=iq' : '');
     const r = await fetch(url);
     if (!r.ok) throw new Error('search');
@@ -1867,18 +2704,18 @@
     $('q').blur();
     favDropdownOn = false;
     resultsEl.hidden = false;
-    resultsEl.innerHTML = '<li>جاري البحث...</li>';
+    resultsEl.innerHTML = tr('<li>جاري البحث...</li>');
     try {
       let data = await nominatim(q, true);
       if (!data.length) data = await nominatim(q, false);
-      if (!data.length) { resultsEl.innerHTML = '<li>ما لقيت شي. جرّب اسم ثاني أو اسم المنطقة.</li>'; return; }
+      if (!data.length) { resultsEl.innerHTML = tr('<li>ما لقيت شي. جرّب اسم ثاني أو اسم المنطقة.</li>'); return; }
       resultsEl.innerHTML = '';
       data.forEach((it) => {
-        const parts = String(it.display_name || '').split('،');
+        const parts = String(it.display_name || '').split(NOM_SPLIT);
         const nm = String(it.name || parts[0] || '').slice(0, 80);
         const li = document.createElement('li');
         const b = document.createElement('b'); b.textContent = nm;
-        const s = document.createElement('small'); s.textContent = parts.slice(1, 4).join('،');
+        const s = document.createElement('small'); s.textContent = parts.slice(1, 4).join(tr('،'));
         li.append(b, s);
         li.onclick = () => {
           hideResults();
@@ -1887,7 +2724,7 @@
         resultsEl.appendChild(li);
       });
     } catch (err) {
-      resultsEl.innerHTML = '<li>صار خلل بالبحث. تأكد من الإنترنت وجرّب مرة ثانية.</li>';
+      resultsEl.innerHTML = tr('<li>صار خلل بالبحث. تأكد من الإنترنت وجرّب مرة ثانية.</li>');
     }
   });
 
@@ -1903,15 +2740,15 @@
     if (state.navigating) return;
     const html = document.createElement('div');
     const btn = document.createElement('button');
-    btn.textContent = 'اذهب إلى هنا';
+    btn.textContent = tr('اذهب إلى هنا');
     const btnFav = document.createElement('button');
-    btnFav.textContent = 'حفظ بالمفضلة';
-    btnFav.style.marginRight = '6px';
+    btnFav.textContent = tr('حفظ بالمفضلة');
+    btnFav.style.marginInlineStart = '6px';
     const btnHz = document.createElement('button');
-    btnHz.textContent = 'بلاغ هنا';
-    btnHz.style.marginRight = '6px';
+    btnHz.textContent = tr('بلاغ هنا');
+    btnHz.style.marginInlineStart = '6px';
     const btnNo = document.createElement('button');
-    btnNo.textContent = 'إلغاء';
+    btnNo.textContent = tr('إلغاء');
     btnNo.className = 'popcancel';
     const rowNo = document.createElement('div');
     rowNo.style.marginTop = '4px';
@@ -1924,7 +2761,7 @@
     btnNo.onclick = () => closeGoPop();
     btn.onclick = () => {
       pop.remove();
-      chooseDest({ lat: e.lngLat.lat, lng: e.lngLat.lng, name: 'نقطة على الخريطة' });
+      chooseDest({ lat: e.lngLat.lat, lng: e.lngLat.lng, name: tr('نقطة على الخريطة') });
     };
     btnHz.onclick = () => {
       pop.remove();
@@ -1933,9 +2770,9 @@
     };
     btnFav.onclick = () => {
       pop.remove();
-      if (addFav({ lat: e.lngLat.lat, lng: e.lngLat.lng, name: 'نقطة على الخريطة' })) {
-        toast('انحفظ. تكدر تغيّر اسمه من الإعدادات، الأماكن المفضلة', 4000);
-      } else toast('هذا المكان محفوظ من قبل');
+      if (addFav({ lat: e.lngLat.lat, lng: e.lngLat.lng, name: tr('نقطة على الخريطة') })) {
+        toast(tr('انحفظ. تكدر تغيّر اسمه من الإعدادات، الأماكن المفضلة'), 4000);
+      } else toast(tr('هذا المكان محفوظ من قبل'));
     };
   });
 
@@ -2045,7 +2882,7 @@
     syncFavUI();
     $('sumTime').textContent = fmtTime(r.duration);
     $('sumDist').textContent = fmtDist(r.distance);
-    $('sumEta').textContent = 'الوصول ' + fmtClock(r.duration);
+    $('sumEta').textContent = tr('الوصول {0}', fmtClock(r.duration));
     const ol = $('steps'); ol.innerHTML = '';
     r.legs[0].steps.forEach((s) => {
       const li = document.createElement('li');
@@ -2058,8 +2895,8 @@
   async function planRoute() {
     let from;
     if (state.user) from = [state.user.lat, state.user.lng];
-    else { const c = map.getCenter(); from = [c.lat, c.lng]; toast('ما اكو موقعك الحالي، المسار من مركز الخريطة'); }
-    toast('جاري حساب الطريق...');
+    else { const c = map.getCenter(); from = [c.lat, c.lng]; toast(tr('ما اكو موقعك الحالي، المسار من مركز الخريطة')); }
+    toast(tr('جاري حساب الطريق...'));
     try {
       const route = await fetchRoute(from, [state.dest.lat, state.dest.lng]);
       drawRoute(route);
@@ -2072,7 +2909,7 @@
       state.coords.forEach((c) => rb.extend([c[1], c[0]]));
       map.fitBounds(rb, { padding: { top: 120, bottom: 260, left: 30, right: 30 }, maxZoom: 18, duration: 600, pitch: 0, bearing: 0 });
     } catch (e) {
-      toast('ما كدرت ألقى طريق لهذا المكان', 4000);
+      toast(tr('ما كدرت ألقى طريق لهذا المكان'), 4000);
     }
   }
 
@@ -2086,37 +2923,57 @@
   }
 
   /* ================= تعليمات عربية ================= */
-  const DIR = {
-    'right': 'يميناً', 'left': 'يساراً',
-    'slight right': 'قليلاً يميناً', 'slight left': 'قليلاً يساراً',
-    'sharp right': 'بحدة يميناً', 'sharp left': 'بحدة يساراً'
+  // نصوص الاتجاهات (مفاتيح ترجمة، تُترجم وقت الاستعمال حسب لغة الواجهة أو لغة الصوت)
+  const DIR_K = {
+    'right': K('يميناً'), 'left': K('يساراً'),
+    'slight right': K('قليلاً يميناً'), 'slight left': K('قليلاً يساراً'),
+    'sharp right': K('بحدة يميناً'), 'sharp left': K('بحدة يساراً')
   };
   const ROT = { 'straight': 0, 'slight right': 45, 'right': 90, 'sharp right': 135, 'uturn': 180,
                 'sharp left': -135, 'left': -90, 'slight left': -45 };
 
-  function arInstr(s) {
-    const m = s.maneuver, t = m.type, mod = m.modifier;
-    const name = s.name ? ' إلى ' + s.name : '';
-    if (t === 'depart') return 'انطلق' + (s.name ? ' على ' + s.name : '');
-    if (t === 'arrive') return 'وجهتك أمامك';
+  // نص التعليمة: T = دالة الترجمة (الافتراضي لغة الواجهة tr، ولنطق الصوت نمرّر trv).
+  // كل جملة مفتاح كامل (مع اسم الشارع وبدونه) حتى تنترجم بترتيب كلمات سليم لكل لغة.
+  function arInstr(s, T) {
+    T = T || tr;
+    const m = s.maneuver, t = m.type, mod = m.modifier, nm = s.name;
+    const dir = (dflt) => (DIR_K[mod] ? T(DIR_K[mod]) : (dflt ? T(dflt) : ''));
+    if (t === 'depart') return nm ? T('انطلق على {0}', nm) : T('انطلق');
+    if (t === 'arrive') return T('وجهتك أمامك');
     if (t === 'roundabout' || t === 'rotary' || t === 'roundabout turn')
-      return 'ادخل الدوّار وخذ المخرج رقم ' + (m.exit || 1) + name;
-    if (t === 'exit roundabout' || t === 'exit rotary') return 'اخرج من الدوّار' + name;
-    if (mod === 'uturn') return 'استدر للخلف';
-    if (t === 'merge') return 'اندمج ' + (DIR[mod] || 'للأمام') + name;
-    if (t === 'fork') return 'خذ المسار ' + (mod === 'left' || mod === 'slight left' ? 'الأيسر' : mod === 'right' || mod === 'slight right' ? 'الأيمن' : 'الأوسط') + name;
-    if (t === 'on ramp' || t === 'off ramp') return 'اتجه ' + (DIR[mod] || 'للأمام') + ' إلى المنحدر' + name;
-    if (!mod || mod === 'straight') return 'استمر للأمام' + name;
-    return 'انعطف ' + (DIR[mod] || '') + name;
+      return nm ? T('ادخل الدوّار وخذ المخرج رقم {0} إلى {1}', m.exit || 1, nm) : T('ادخل الدوّار وخذ المخرج رقم {0}', m.exit || 1);
+    if (t === 'exit roundabout' || t === 'exit rotary') return nm ? T('اخرج من الدوّار إلى {0}', nm) : T('اخرج من الدوّار');
+    if (mod === 'uturn') return T('استدر للخلف');
+    if (t === 'merge') return nm ? T('اندمج {0} إلى {1}', dir(K('للأمام')), nm) : T('اندمج {0}', dir(K('للأمام')));
+    if (t === 'fork') {
+      const side = T(mod === 'left' || mod === 'slight left' ? K('الأيسر') : mod === 'right' || mod === 'slight right' ? K('الأيمن') : K('الأوسط'));
+      return nm ? T('خذ المسار {0} إلى {1}', side, nm) : T('خذ المسار {0}', side);
+    }
+    if (t === 'on ramp' || t === 'off ramp') return nm ? T('اتجه {0} إلى المنحدر إلى {1}', dir(K('للأمام')), nm) : T('اتجه {0} إلى المنحدر', dir(K('للأمام')));
+    if (!mod || mod === 'straight') return nm ? T('استمر للأمام إلى {0}', nm) : T('استمر للأمام');
+    return nm ? T('انعطف {0} إلى {1}', dir(''), nm) : T('انعطف {0}', dir(''));
   }
 
   /* ================= الصوت ================= */
+  // لغة الصوت: عربي/إنكليزي حسب لغة التطبيق. الكردي: إذا عند الجهاز صوت كردي (سوراني) نستعمله، وإلا نقرأ التعليمات بالعربي والمكتوب على الشاشة يبقى كردي.
+  // النص المنطوق لازم يجي بلغة الصوت: نبنيه بـ trv(...) مو tr(...).
+  function voiceList(lg) {
+    try {
+      return window.speechSynthesis.getVoices().filter((v) => {
+        const l = (v.lang || '').toLowerCase();
+        return lg === 'ckb' ? (l.startsWith('ckb') || /^ku[-_](iq|arab)/.test(l)) : l.startsWith(lg);
+      });
+    } catch (e) { return []; }
+  }
+  function voiceLang() { return LANG === 'ckb' ? (voiceList('ckb').length ? 'ckb' : 'ar') : LANG; }
+  const trv = (k, ...a) => trFor(voiceLang(), true)(k, ...a);
   function speak(text, force) {
     if ((!settings.voice && !force) || !('speechSynthesis' in window)) return;
     try {
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'ar-SA';
-      const chosen = settings.voiceURI && window.speechSynthesis.getVoices().find((v) => v.voiceURI === settings.voiceURI);
+      const vl = voiceLang();
+      u.lang = { ar: 'ar-SA', en: 'en-US', ckb: 'ckb-IQ' }[vl];
+      const chosen = settings.voiceURI && voiceList(vl).find((v) => v.voiceURI === settings.voiceURI);
       if (chosen) { u.voice = chosen; u.lang = chosen.lang; }
       u.volume = settings.volume;
       window.speechSynthesis.cancel();
@@ -2126,16 +2983,17 @@
   $('voiceBtn').onclick = () => {
     settings.voice = !settings.voice;
     saveSettings(); syncSettingsUI();
-    if (settings.voice) speak('تم تشغيل الصوت');
+    if (settings.voice) speak(trv('تم تشغيل الصوت'));
   };
 
   /* ================= شاشة الإعدادات ================= */
-  const SET_TITLES = { main: 'الإعدادات', sound: 'الصوت', display: 'العرض', hazards: 'البلاغات', favs: 'الأماكن المفضلة', places: 'أماكن مهمة', offline: 'الخرائط بدون إنترنت', traffic: 'الزحام', weather: 'الطقس', about: 'حول البرنامج' };
+  const SET_TITLES = { main: tr('الإعدادات'), language: tr('اللغة'), sound: tr('الصوت'), display: tr('العرض'), hazards: tr('البلاغات'), favs: tr('الأماكن المفضلة'), places: tr('أماكن مهمة'), offline: tr('الخرائط بدون إنترنت'), traffic: tr('الزحام'), weather: tr('الطقس'), about: tr('حول البرنامج') };
   let setPage = 'main';
   function showSetPage(p) {
     setPage = p;
     $('setTitle').textContent = SET_TITLES[p];
     $('setMain').hidden = p !== 'main';
+    $('setLanguage').hidden = p !== 'language';
     $('setSound').hidden = p !== 'sound';
     $('setDisplay').hidden = p !== 'display';
     $('setHazards').hidden = p !== 'hazards';
@@ -2150,21 +3008,40 @@
     if (p === 'offline') refreshTileStats();
     if (p === 'display') bldKeepShow();
     if (p === 'places') poiOpen();
+    if (p === 'language') syncLangUI();
   }
+  // اختيار اللغة: نحفظ الاختيار ونعيد تشغيل التطبيق حتى تنطبق على كل شي (أثناء الملاحة ننتظر لحد ما تنتهي)
+  function syncLangUI() {
+    document.querySelectorAll('#setLanguage [data-lang]').forEach((b) => {
+      const on = b.dataset.lang === settings.lang;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  document.querySelectorAll('#setLanguage [data-lang]').forEach((b) => {
+    b.onclick = () => {
+      const l = b.dataset.lang;
+      if (!Object.prototype.hasOwnProperty.call(LANGS, l) || l === settings.lang) return;
+      settings.lang = l; saveSettings(); syncLangUI();
+      if (l === LANG) return; // رجعت للغة الجلسة الحالية: ما يحتاج إعادة تشغيل
+      if (state.navigating) { toast(tr('اللغة الجديدة تشتغل بعد ما تنهي الملاحة'), 5000); return; }
+      try { location.reload(); } catch (e) {}
+    };
+  });
 
   /* ================= أماكن مهمة ================= */
   const POI_CATS = [
-    { id: 'hospital', name: 'مستشفيات', one: 'مستشفى', q: ['nwr["amenity"="hospital"]'], nq: ['hospital','مستشفى'] },
-    { id: 'pharmacy', name: 'صيدليات', one: 'صيدلية', q: ['nwr["amenity"="pharmacy"]'], nq: ['pharmacy','صيدلية'] },
-    { id: 'police', name: 'شرطة', one: 'مركز شرطة', q: ['nwr["amenity"="police"]'], nq: ['police','مركز شرطة'] },
-    { id: 'fuel', name: 'محطات وقود', one: 'محطة وقود', q: ['nwr["amenity"="fuel"]'], nq: ['fuel station','محطة وقود'] },
-    { id: 'mosque', name: 'جوامع', one: 'جامع', q: ['nwr["amenity"="place_of_worship"]["religion"="muslim"]', 'nwr["building"="mosque"]'], exclude: /حسيني|husse?ini|husain|hussain/i, nq: ['mosque','جامع'] },
-    { id: 'husseiniya', name: 'حسينيات', one: 'حسينية', q: ['nwr["amenity"="place_of_worship"]["name"~"حسينية|حسينيه|husseiniya|hussainiya|husainiya|hussainia|husseiniyah",i]', 'nwr["name:ar"~"حسينية"]'], nq: ['حسينية'] },
-    { id: 'shrine', name: 'مراقد ومقامات', one: 'مرقد', q: ['nwr["amenity"="place_of_worship"]["name"~"مرقد|مقام|ضريح|حرم"]', 'nwr["historic"~"^(shrine|tomb)$"]'], nq: ['مرقد','مقام'] },
-    { id: 'tourist', name: 'أماكن سياحية', one: 'مكان سياحي', q: ['nwr["tourism"~"^(attraction|museum|zoo|theme_park|gallery|viewpoint)$"]', 'nwr["historic"~"^(monument|archaeological_site|castle|ruins|memorial|fort)$"]'], nq: ['tourist attraction','museum','متحف'] },
-    { id: 'mall', name: 'مولات', one: 'مول', q: ['nwr["shop"="mall"]'], nq: ['mall','مول'] },
-    { id: 'hotel', name: 'فنادق', one: 'فندق', q: ['nwr["tourism"~"^(hotel|motel|guest_house)$"]'], nq: ['hotel','فندق'] },
-    { id: 'food', name: 'مطاعم ومقاهي', one: 'مطعم', q: ['nwr["amenity"~"^(restaurant|fast_food|cafe)$"]'], nq: ['restaurant','cafe'] }
+    { id: 'hospital', name: tr('مستشفيات'), one: tr('مستشفى'), q: ['nwr["amenity"="hospital"]'], nq: ['hospital','مستشفى'] },
+    { id: 'pharmacy', name: tr('صيدليات'), one: tr('صيدلية'), q: ['nwr["amenity"="pharmacy"]'], nq: ['pharmacy','صيدلية'] },
+    { id: 'police', name: tr('شرطة'), one: tr('مركز شرطة'), q: ['nwr["amenity"="police"]'], nq: ['police','مركز شرطة'] },
+    { id: 'fuel', name: tr('محطات وقود'), one: tr('محطة وقود'), q: ['nwr["amenity"="fuel"]'], nq: ['fuel station','محطة وقود'] },
+    { id: 'mosque', name: tr('جوامع'), one: tr('جامع'), q: ['nwr["amenity"="place_of_worship"]["religion"="muslim"]', 'nwr["building"="mosque"]'], exclude: /حسيني|husse?ini|husain|hussain/i, nq: ['mosque','جامع'] },
+    { id: 'husseiniya', name: tr('حسينيات'), one: tr('حسينية'), q: ['nwr["amenity"="place_of_worship"]["name"~"حسينية|حسينيه|husseiniya|hussainiya|husainiya|hussainia|husseiniyah",i]', 'nwr["name:ar"~"حسينية"]'], nq: ['حسينية'] },
+    { id: 'shrine', name: tr('مراقد ومقامات'), one: tr('مرقد'), q: ['nwr["amenity"="place_of_worship"]["name"~"مرقد|مقام|ضريح|حرم"]', 'nwr["historic"~"^(shrine|tomb)$"]'], nq: ['مرقد','مقام'] },
+    { id: 'tourist', name: tr('أماكن سياحية'), one: tr('مكان سياحي'), q: ['nwr["tourism"~"^(attraction|museum|zoo|theme_park|gallery|viewpoint)$"]', 'nwr["historic"~"^(monument|archaeological_site|castle|ruins|memorial|fort)$"]'], nq: ['tourist attraction','museum','متحف'] },
+    { id: 'mall', name: tr('مولات'), one: tr('مول'), q: ['nwr["shop"="mall"]'], nq: ['mall','مول'] },
+    { id: 'hotel', name: tr('فنادق'), one: tr('فندق'), q: ['nwr["tourism"~"^(hotel|motel|guest_house)$"]'], nq: ['hotel','فندق'] },
+    { id: 'food', name: tr('مطاعم ومقاهي'), one: tr('مطعم'), q: ['nwr["amenity"~"^(restaurant|fast_food|cafe)$"]'], nq: ['restaurant','cafe'] }
   ];
   const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
   let poiCat = null, poiRadius = 5000, poiReq = 0, poiMarker = null;
@@ -2193,13 +3070,13 @@
       });
     }
     $('poiWhere').textContent = state.user
-      ? 'الأقرب إلى موقعك الحالي. اختر نوع المكان:'
-      : 'موقعك غير معروف حالياً، فالبحث حول مركز الخريطة. اختر نوع المكان:';
+      ? tr('الأقرب إلى موقعك الحالي. اختر نوع المكان:')
+      : tr('موقعك غير معروف حالياً، فالبحث حول مركز الخريطة. اختر نوع المكان:');
     poiSyncUI();
   }
   function poiMsg(t) {
     const p = document.createElement('p');
-    p.className = 'set-note'; p.textContent = t; p.style.whiteSpace = 'pre-wrap'; p.style.direction = 'rtl';
+    p.className = 'set-note'; p.textContent = t; p.style.whiteSpace = 'pre-wrap'; p.style.direction = LANGS[LANG].dir;
     const box = $('poiList'); box.innerHTML = ''; box.appendChild(p);
   }
   // يطلب من كل الخوادم بنفس الوقت ويأخذ أول رد صالح
@@ -2218,12 +3095,12 @@
           clearTimeout(to);
           if (!r.ok) throw new Error('HTTP ' + r.status);
           let j;
-          try { j = JSON.parse(txt); } catch (_) { throw new Error('رد غير مفهوم'); }
+          try { j = JSON.parse(txt); } catch (_) { throw new Error(tr('رد غير مفهوم')); }
           if (j.remark && !(j.elements && j.elements.length)) throw new Error(String(j.remark).slice(0, 60));
           if (!done) { done = true; resolve(j); }
         } catch (e) {
           clearTimeout(to);
-          errs.push(host + ': ' + (e && e.name === 'AbortError' ? 'انتهى الوقت' : (e && e.message) || e));
+          errs.push(host + ': ' + (e && e.name === 'AbortError' ? tr('انتهى الوقت') : (e && e.message) || e));
         }
         if (--left === 0 && !done) { const err = new Error('overpass'); err.detail = errs.join('\n'); reject(err); }
       });
@@ -2238,7 +3115,7 @@
     const out = [], seen = {};
     for (let i = 0; i < cat.nq.length; i++) {
       if (i) await new Promise((r) => setTimeout(r, 1100));
-      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=40&addressdetails=1&extratags=1&accept-language=ar&bounded=1&viewbox=' + vb + '&q=' + encodeURIComponent(cat.nq[i]);
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=40&addressdetails=1&extratags=1&accept-language=' + NOM_LANG + '&bounded=1&viewbox=' + vb + '&q=' + encodeURIComponent(cat.nq[i]);
       const ctrl = new AbortController();
       const to = setTimeout(() => ctrl.abort(), 15000);
       try {
@@ -2253,7 +3130,7 @@
           out.push({
             id, lat: parseFloat(it.lat), lng: parseFloat(it.lon),
             tags: {
-              name: it.name || (it.display_name || '').split('،')[0],
+              name: it.name || (it.display_name || '').split(NOM_SPLIT)[0],
               phone: x.phone || x['contact:phone'],
               'addr:street': a.road, 'addr:suburb': a.suburb || a.neighbourhood || a.city_district,
               'addr:city': a.city || a.town || a.village || a.state
@@ -2280,7 +3157,7 @@
       try { return await nominatimPlaces(cat, o); }
       catch (e2) {
         const err = new Error('poi');
-        err.detail = (e1.detail || String(e1.message || e1)) + '\nnominatim: ' + (e2 && e2.name === 'AbortError' ? 'انتهى الوقت' : (e2 && e2.message) || e2);
+        err.detail = (e1.detail || String(e1.message || e1)) + '\nnominatim: ' + (e2 && e2.name === 'AbortError' ? tr('انتهى الوقت') : (e2 && e2.message) || e2);
         throw err;
       }
     }
@@ -2288,13 +3165,13 @@
   async function poiLoad() {
     const cat = POI_CATS.find((c) => c.id === poiCat);
     if (!cat) return;
-    if (!navigator.onLine) { poiMsg('هذي الميزة تحتاج إنترنت. وصّل بالإنترنت وجرّب مرة ثانية.'); return; }
+    if (!navigator.onLine) { poiMsg(tr('هذي الميزة تحتاج إنترنت. وصّل بالإنترنت وجرّب مرة ثانية.')); return; }
     const o = poiOrigin();
     const key = cat.id + '|' + poiRadius + '|' + o.lat.toFixed(2) + '|' + o.lng.toFixed(2);
     const my = ++poiReq;
     let items = poiCache[key];
     if (!items) {
-      poiMsg('جاري البحث عن ' + cat.name + '...');
+      poiMsg(tr('جاري البحث عن {0}...', cat.name));
       try {
         const els = await poiFetchEls(cat, o);
         if (my !== poiReq) return;
@@ -2308,24 +3185,24 @@
           const d = haversine([o.lat, o.lng], [lat, lng]);
           if (d > poiRadius * 1.05) return;
           if (items.some((x) => x.name === named && named && haversine([x.lat, x.lng], [lat, lng]) < 80)) return;
-          items.push({ id: el.id, lat, lng, name: named || (cat.one + ' (بدون اسم)'), d, tags: t });
+          items.push({ id: el.id, lat, lng, name: named || (tr('{0} (بدون اسم)', cat.one)), d, tags: t });
         });
         items.sort((a, b) => a.d - b.d);
         items = items.slice(0, 40);
         poiCache[key] = items;
       } catch (e) {
         if (my !== poiReq) return;
-        poiMsg('ما كدرت أجيب النتائج الآن. جرّب مرة ثانية بعد شوية.' + (e && e.detail ? '\n\nالسبب:\n' + e.detail : ''));
+        poiMsg(tr('ما كدرت أجيب النتائج الآن. جرّب مرة ثانية بعد شوية.{0}', e && e.detail ? tr('\n\nالسبب:\n{0}', e.detail) : ''));
         return;
       }
     }
     if (my !== poiReq) return;
-    if (!items.length) { poiMsg('ما لقيت ' + cat.name + ' ضمن هذي المسافة. جرّب مسافة أكبر.'); return; }
+    if (!items.length) { poiMsg(tr('ما لقيت {0} ضمن هذي المسافة. جرّب مسافة أكبر.', cat.name)); return; }
     renderPoi(items);
   }
   function poiTagAddr(t) {
     const parts = [t['addr:street'], t['addr:housenumber'], t['addr:suburb'] || t['addr:neighbourhood'] || t['addr:district'], t['addr:city']].filter(Boolean);
-    return parts.join('، ');
+    return parts.join(tr('، '));
   }
   function renderPoi(items) {
     const box = $('poiList');
@@ -2340,25 +3217,25 @@
       top.append(nm, ds);
       const ad = document.createElement('small');
       const tagAddr = poiTagAddr(it.tags);
-      ad.textContent = poiAddr[it.id] || tagAddr || 'اضغط على الاسم لعرض العنوان';
+      ad.textContent = poiAddr[it.id] || tagAddr || tr('اضغط على الاسم لعرض العنوان');
       top.onclick = async () => {
         if (poiAddr[it.id] || tagAddr) return;
-        if (!navigator.onLine) { toast('تحتاج إنترنت لعرض العنوان'); return; }
-        ad.textContent = 'جاري جلب العنوان...';
+        if (!navigator.onLine) { toast(tr('تحتاج إنترنت لعرض العنوان')); return; }
+        ad.textContent = tr('جاري جلب العنوان...');
         try {
-          const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17&accept-language=ar&lat=' + it.lat + '&lon=' + it.lng);
+          const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17&accept-language=' + NOM_LANG + '&lat=' + it.lat + '&lon=' + it.lng);
           if (!r.ok) throw new Error('rev');
           const j = await r.json();
-          const a = (j.display_name || '').split('،').slice(0, 4).join('،').trim();
-          poiAddr[it.id] = a || 'ما لقيت عنوان لهذا المكان';
-        } catch (e) { poiAddr[it.id] = ''; ad.textContent = 'ما كدرت أجيب العنوان. جرّب مرة ثانية'; return; }
+          const a = (j.display_name || '').split(NOM_SPLIT).slice(0, 4).join(tr('،')).trim();
+          poiAddr[it.id] = a || tr('ما لقيت عنوان لهذا المكان');
+        } catch (e) { poiAddr[it.id] = ''; ad.textContent = tr('ما كدرت أجيب العنوان. جرّب مرة ثانية'); return; }
         ad.textContent = poiAddr[it.id];
       };
       const acts = document.createElement('div');
       acts.className = 'acts';
-      const go = document.createElement('button'); go.className = 'go'; go.textContent = 'دلّني';
+      const go = document.createElement('button'); go.className = 'go'; go.textContent = tr('دلّني');
       go.onclick = () => goFav({ lat: it.lat, lng: it.lng, name: it.name });
-      const onMap = document.createElement('button'); onMap.textContent = 'على الخريطة';
+      const onMap = document.createElement('button'); onMap.textContent = tr('على الخريطة');
       onMap.onclick = () => {
         $('settings').hidden = true;
         setView(it.lat, it.lng, 16);
@@ -2372,13 +3249,13 @@
         poiMarker = mkMarker(pe, it.lat, it.lng, { anchor: 'center' });
         setTimeout(() => { if (poiMarker) { poiMarker.remove(); poiMarker = null; } }, 60000);
       };
-      const sv = document.createElement('button'); sv.textContent = 'حفظ ★';
-      sv.onclick = () => { if (addFav({ lat: it.lat, lng: it.lng, name: it.name })) toast('انحفظ بالمفضلة'); else toast('هذا المكان محفوظ من قبل'); };
+      const sv = document.createElement('button'); sv.textContent = tr('حفظ ★');
+      sv.onclick = () => { if (addFav({ lat: it.lat, lng: it.lng, name: it.name })) toast(tr('انحفظ بالمفضلة')); else toast(tr('هذا المكان محفوظ من قبل')); };
       acts.append(go, onMap, sv);
       const ph = it.tags.phone || it.tags['contact:phone'] || it.tags['phone:mobile'];
       if (ph) {
         const a = document.createElement('a');
-        a.textContent = 'اتصال';
+        a.textContent = tr('اتصال');
         a.href = 'tel:' + String(ph).split(/[;,]/)[0].replace(/[^\d+]/g, '');
         acts.appendChild(a);
       }
@@ -2541,16 +3418,16 @@
     if (!el) return;
     const nm = (id) => (bldIdx[id] && bldIdx[id].name) || id;
     let t;
-    if (settings.bldAll === false) t = 'الحالة: مطفأة.';
-    else if (!Object.keys(bldIdx).length) t = 'الحالة: ما وصلت قائمة المباني بعد. تحتاج إنترنت (أول مرة بس).';
+    if (settings.bldAll === false) t = tr('الحالة: مطفأة.');
+    else if (!Object.keys(bldIdx).length) t = tr('الحالة: ما وصلت قائمة المباني بعد. تحتاج إنترنت (أول مرة بس).');
     else {
       const act = Object.keys(bldAct), good = act.filter((id) => bldOk[id]), wait = act.filter((id) => !bldOk[id]);
       const bad = Object.keys(bldBad).filter((id) => !bldAct[id]);
-      t = 'الحالة: جاهزة (' + Object.keys(bldIdx).length + ' محافظة).';
-      if (good.length) t += ' شغّالة هنا: ' + good.map(nm).join('، ') + '.';
-      if (wait.length) t += ' جاري التحميل: ' + wait.map(nm).join('، ') + '.';
-      if (bad.length) t += ' تعذّر فتح: ' + bad.map((id) => nm(id) + (bldErr[id] ? ' (' + bldErr[id] + ')' : '')).join('، ') + '.';
-      if (!act.length && !bad.length) t += ' قرّب الخريطة (مستوى 13 وفوق) حتى تظهر.';
+      t = tr('الحالة: جاهزة ({0} محافظة).', Object.keys(bldIdx).length);
+      if (good.length) t += tr(' شغّالة هنا: {0}.', good.map(nm).join(tr('، ')));
+      if (wait.length) t += tr(' جاري التحميل: {0}.', wait.map(nm).join(tr('، ')));
+      if (bad.length) t += tr(' تعذّر فتح: {0}.', bad.map((id) => nm(id) + (bldErr[id] ? ' (' + bldErr[id] + ')' : '')).join(tr('، ')));
+      if (!act.length && !bad.length) t += tr(' قرّب الخريطة (مستوى 13 وفوق) حتى تظهر.');
     }
     el.textContent = t;
   }
@@ -2637,7 +3514,7 @@
     setTimeout(() => { urls.forEach((u) => fetch(u).then((r) => r.arrayBuffer()).catch(() => {})); }, 4000);
   }
 
-  function fmtMB(n) { return (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' ميغا'; }
+  function fmtMB(n) { return tr('{0} ميغا', (n / 1048576).toFixed(n > 1e8 ? 0 : 1)); }
 
   /* ---- حفظ مباني أماكنك على الجوال ----
      الـ service worker هو اللي يحفظ أجزاء ملفات المباني اللي تطلبها الخريطة (حد أقصى 100 ميغا، والأقدم ينحذف أول).
@@ -2666,8 +3543,8 @@
     const my = ++bldKeepSeq;
     bldKeepStat().then((s) => {
       if (my !== bldKeepSeq) return;                           // وصل طلب أحدث
-      if (!s) { el.textContent = 'المحفوظ هسه: ما نقدر نعرف'; btn.disabled = true; return; }
-      el.textContent = 'المحفوظ هسه: ' + (!s.n ? 'ما محفوظ شي بعد' : s.bytes < 52429 ? 'أقل من 0.1 ميغا' : fmtMB(s.bytes));
+      if (!s) { el.textContent = tr('المحفوظ هسه: ما نقدر نعرف'); btn.disabled = true; return; }
+      el.textContent = tr('المحفوظ هسه: {0}', !s.n ? tr('ما محفوظ شي بعد') : s.bytes < 52429 ? tr('أقل من 0.1 ميغا') : fmtMB(s.bytes));
       btn.disabled = !s.n;
     });
   }
@@ -2679,7 +3556,7 @@
     const s = await bldKeepStat();
     try { await caches.delete(BLD_KEEP_CACHE); } catch (e) {}
     swPost({ t: 'bld-reset' });                                // الـ worker يعيد حساب الحجم من الصفر
-    toast('انمسحت المباني المحفوظة' + (s && s.bytes >= 52429 ? ' (' + fmtMB(s.bytes) + ')' : ''), 3500);
+    toast(tr('انمسحت المباني المحفوظة{0}', s && s.bytes >= 52429 ? ' (' + fmtMB(s.bytes) + ')' : ''), 3500);
     bldKeepShow();
   };
 
@@ -2709,10 +3586,10 @@
 
   async function downloadPack(p) {
     if (!('caches' in window) || !navigator.serviceWorker || !navigator.serviceWorker.controller) {
-      toast('أغلق التطبيق وافتحه مرة ثانية، وبعدها جرّب التنزيل', 5000); return;
+      toast(tr('أغلق التطبيق وافتحه مرة ثانية، وبعدها جرّب التنزيل'), 5000); return;
     }
     const ctrl = new AbortController();
-    const busy = { ctrl, pct: 0, text: 'جاري البدء...' };
+    const busy = { ctrl, pct: 0, text: tr('جاري البدء...') };
     packBusy[p.id] = busy;
     renderPacks();
     const key = packKey(p);
@@ -2726,7 +3603,7 @@
         lastUi = now;
         const cur = got + (extra || 0);
         busy.pct = total ? Math.min(1, cur / total) : 0;
-        busy.text = fmtMB(cur) + (total ? ' من ' + fmtMB(total) : '');
+        busy.text = total ? tr('{0} من {1}', fmtMB(cur), fmtMB(total)) : fmtMB(cur);
         updatePackProgress(p);
       };
       // ينزّل قطعة واحدة (Range) ويرجعها كـ Blob، مع إعادة المحاولة عند انقطاع الشبكة
@@ -2785,10 +3662,10 @@
       if (!packsInstalled.includes(p.id)) packsInstalled.push(p.id);
       savePacks();
       addPackLayer(p);
-      toast('تم تنزيل خريطة ' + p.name);
+      toast(tr('تم تنزيل خريطة {0}', p.name));
     } catch (e) {
-      if (e && e.name === 'AbortError') toast('انوقف التنزيل. إذا نزّلت مرة ثانية يكمل من نفس المكان');
-      else toast('فشل التنزيل. تأكد من الإنترنت والمساحة وجرّب مرة ثانية (يكمل من نفس المكان)', 5000);
+      if (e && e.name === 'AbortError') toast(tr('انوقف التنزيل. إذا نزّلت مرة ثانية يكمل من نفس المكان'));
+      else toast(tr('فشل التنزيل. تأكد من الإنترنت والمساحة وجرّب مرة ثانية (يكمل من نفس المكان)'), 5000);
     }
     delete packBusy[p.id];
     renderPacks();
@@ -2805,7 +3682,7 @@
     delete packSizes[p.id];
     savePacks();
     removePackLayer(p);
-    toast('انحذفت خريطة ' + p.name);
+    toast(tr('انحذفت خريطة {0}', p.name));
     renderPacks();
   }
   function renderPacks() {
@@ -2817,9 +3694,9 @@
       row.className = 'set-row pack-row';
       const busy = packBusy[p.id];
       const has = packsInstalled.includes(p.id);
-      let sub = 'غير منزّلة • حوالي ' + p.mb + ' ميغا';
+      let sub = tr('غير منزّلة • حوالي {0} ميغا', p.mb);
       if (busy) sub = busy.text;
-      else if (has) sub = 'منزّلة' + (packSizes[p.id] ? ' • ' + fmtMB(packSizes[p.id]) : '');
+      else if (has) sub = tr('منزّلة{0}', packSizes[p.id] ? ' • ' + fmtMB(packSizes[p.id]) : '');
       const info = document.createElement('div');
       info.className = 'pack-info';
       info.innerHTML = '<b></b><small></small>';
@@ -2836,9 +3713,9 @@
       }
       const btn = document.createElement('button');
       btn.className = 'set-btn';
-      if (busy) { btn.textContent = 'إلغاء'; btn.onclick = () => busy.ctrl.abort(); }
-      else if (has) { btn.textContent = 'حذف'; btn.onclick = () => deletePack(p); }
-      else { btn.textContent = 'تنزيل'; btn.onclick = () => downloadPack(p); }
+      if (busy) { btn.textContent = tr('إلغاء'); btn.onclick = () => busy.ctrl.abort(); }
+      else if (has) { btn.textContent = tr('حذف'); btn.onclick = () => deletePack(p); }
+      else { btn.textContent = tr('تنزيل'); btn.onclick = () => downloadPack(p); }
       row.appendChild(info);
       row.appendChild(btn);
       box.appendChild(row);
@@ -2846,8 +3723,8 @@
   }
   loadPackSizes();
   function refreshTileStats() { renderPacks(); }
-  window.addEventListener('offline', () => toast('انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت', 5000));
-  window.addEventListener('online', () => toast('رجع الإنترنت'));
+  window.addEventListener('offline', () => toast(tr('انقطع الإنترنت. الخريطة المحفوظة تظهر، بس البحث والمسارات تحتاج إنترنت'), 5000));
+  window.addEventListener('online', () => toast(tr('رجع الإنترنت')));
   function syncSettingsUI() {
     const pct = Math.round(settings.volume * 100);
     $('voiceSwitch').checked = settings.voice;
@@ -3066,11 +3943,11 @@
   document.querySelectorAll('#setMain [data-page]').forEach((b) => { b.onclick = () => showSetPage(b.dataset.page); });
 
   /* ================= حول البرنامج ================= */
-  $('verNote').textContent = ''; $('verNote').appendChild(verEl('رقم الإصدار: '));
+  $('verNote').textContent = ''; $('verNote').appendChild(verEl(tr('رقم الإصدار: ')));
   // ✏️ بيانات الجهة المصممة والتواصل تنكتب هنا فقط (القسم الفاضي ما يظهر)
   const ABOUT = {
-    desc: 'دليني: تطبيق ملاحة عراقي. خرائط تشتغل بدون إنترنت، توجيه صوتي بالعربي، وتنبيهات الحوادث والزحام من المستخدمين نفسهم.',
-    designer: 'مركز الذكاء للمعلوماتية والحلول البرمجية\nبابل - العراق',   // السطر الأول اسم الجهة (خط عريض) وبعده التفاصيل
+    desc: tr('دليني: تطبيق ملاحة عراقي. خرائط تشتغل بدون إنترنت، توجيه صوتي بالعربي، وتنبيهات الحوادث والزحام من المستخدمين نفسهم.'),
+    designer: tr('مركز الذكاء للمعلوماتية والحلول البرمجية\nبابل - العراق'),   // السطر الأول اسم الجهة (خط عريض) وبعده التفاصيل
     emails: ['amiq367@gmail.com', 'nonaameer8@gmail.com']
   };
   function aboutLine(text, links) {
@@ -3087,7 +3964,7 @@
     return row;
   }
   function renderAbout() {
-    $('abVer').textContent = ''; $('abVer').appendChild(verEl('الإصدار '));
+    $('abVer').textContent = ''; $('abVer').appendChild(verEl(tr('الإصدار ')));
     $('abDesc').textContent = ABOUT.desc || ''; $('abDesc').hidden = !ABOUT.desc;
     const des = String(ABOUT.designer || '').trim();
     const dbox = $('abDesigner'); dbox.textContent = '';
@@ -3097,14 +3974,14 @@
     $('abDesignerSec').hidden = !des;
     const em = $('abEmails');
     em.textContent = '';
-    ABOUT.emails.forEach((e) => em.appendChild(aboutLine(e, [{ t: 'راسلنا', href: 'mailto:' + e + '?subject=' + encodeURIComponent('دليني - ملاحظة') }])));
+    ABOUT.emails.forEach((e) => em.appendChild(aboutLine(e, [{ t: tr('راسلنا'), href: 'mailto:' + e + '?subject=' + encodeURIComponent(tr('دليني - ملاحظة')) }])));
     $('abContactSec').hidden = !ABOUT.emails.length;
     fbHint(); fbNote('');
   }
 
   // نموذج الاقتراحات والمشاكل: يُحفظ بقاعدة Firebase (المسار /feedback) وتقراه من لوحة Firebase
   let fbKind = 'idea', fbBusy = false;
-  const FB_HINT = { idea: 'اكتب اقتراحك لتحسين دليني...', bug: 'اشرح المشكلة: شنو صار؟ وين؟ وبأي خطوة؟' };
+  const FB_HINT = { idea: tr('اكتب اقتراحك لتحسين دليني...'), bug: tr('اشرح المشكلة: شنو صار؟ وين؟ وبأي خطوة؟') };
   function fbHint() { $('fbText').placeholder = FB_HINT[fbKind]; }
   function fbPlatform() {
     const ua = navigator.userAgent || '';
@@ -3140,12 +4017,12 @@
   $('fbSend').onclick = async () => {
     if (fbBusy) return;
     const text = $('fbText').value.trim();
-    if (text.length < 5) { fbNote('err', 'اكتب رسالة أوضح شوي (5 أحرف على الأقل)'); return; }
+    if (text.length < 5) { fbNote('err', tr('اكتب رسالة أوضح شوي (5 أحرف على الأقل)')); return; }
     const q = fbQuota();
-    if (q.n >= 5) { fbNote('err', 'وصلت للحد اليومي للرسائل، جرّب باجر'); return; }
+    if (q.n >= 5) { fbNote('err', tr('وصلت للحد اليومي للرسائل، جرّب باجر')); return; }
     const wait = 60000 - (Date.now() - q.last);
-    if (wait > 0) { fbNote('wait', 'انتظر ' + Math.ceil(wait / 1000) + ' ثانية قبل ما ترسل رسالة ثانية'); return; }
-    fbBusy = true; $('fbSend').disabled = true; $('fbSend').textContent = 'جاري الإرسال...'; fbNote('wait', 'جاري الإرسال...');
+    if (wait > 0) { fbNote('wait', tr('انتظر {0} ثانية قبل ما ترسل رسالة ثانية', Math.ceil(wait / 1000))); return; }
+    fbBusy = true; $('fbSend').disabled = true; $('fbSend').textContent = tr('جاري الإرسال...'); fbNote('wait', tr('جاري الإرسال...'));
     try {
       const body = { t: fbKind, m: text.slice(0, 1000), v: APP_BUILD, p: fbPlatform(), ts: { '.sv': 'timestamp' } };
       const contact = $('fbContact').value.trim().slice(0, 80);
@@ -3160,11 +4037,11 @@
       try { localStorage.setItem('daliny-fb', JSON.stringify(q)); } catch (e) {}
       $('fbText').value = ''; $('fbCount').textContent = '0 / 1000';
       try { $('fbText').blur(); } catch (e) {}
-      fbNote('ok', 'وصلت رسالتك، شكراً لك ✓');
+      fbNote('ok', tr('وصلت رسالتك، شكراً لك ✓'));
     } catch (e) {
-      fbNote('err', 'تعذّر الإرسال، تأكد من الإنترنت وجرّب مرة ثانية (' + String(e && e.message || e).slice(0, 60) + ')');
+      fbNote('err', tr('تعذّر الإرسال، تأكد من الإنترنت وجرّب مرة ثانية ({0})', String(e && e.message || e).slice(0, 60)));
     } finally {
-      fbBusy = false; $('fbSend').disabled = false; $('fbSend').textContent = 'إرسال';
+      fbBusy = false; $('fbSend').disabled = false; $('fbSend').textContent = tr('إرسال');
     }
   };
   $('voiceSwitch').onchange = () => { settings.voice = $('voiceSwitch').checked; saveSettings(); syncSettingsUI(); };
@@ -3173,16 +4050,17 @@
     $('volVal').textContent = Math.round(settings.volume * 100) + '%';
     saveSettings();
   };
-  $('testVoice').onclick = () => speak('هذا اختبار للصوت. دليني يوجّهك بالطريق.', true);
+  $('testVoice').onclick = () => speak(trv('هذا اختبار للصوت. دليني يوجّهك بالطريق.'), true);
 
-  // قائمة الأصوات العربية الموجودة بالجهاز
+  // قائمة الأصوات الموجودة بالجهاز بلغة الصوت (عربي/إنكليزي/كردي)
   function loadVoices() {
     if (!('speechSynthesis' in window)) return;
     const sel = $('voiceSel');
-    const arVoices = window.speechSynthesis.getVoices().filter((v) => (v.lang || '').toLowerCase().startsWith('ar'));
+    const vlang = voiceLang();
+    const arVoices = voiceList(vlang);
     sel.innerHTML = '';
     const auto = document.createElement('option');
-    auto.value = ''; auto.textContent = 'تلقائي (حسب الجهاز)';
+    auto.value = ''; auto.textContent = tr('تلقائي (حسب الجهاز)');
     sel.appendChild(auto);
     arVoices.forEach((v) => {
       const o = document.createElement('option');
@@ -3193,8 +4071,12 @@
     const note = $('voiceNote');
     note.hidden = false;
     note.textContent = arVoices.length
-      ? 'جرّب كل صوت بزر الاختبار حتى تلقى الذكوري. المتصفح ما يعرض نوع الصوت، فالاسم هو الدليل.'
-      : 'ما لقيت أصوات عربية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم العربية، وحمّل صوت.';
+      ? tr('جرّب كل صوت بزر الاختبار حتى تلقى الذكوري. المتصفح ما يعرض نوع الصوت، فالاسم هو الدليل.')
+      : vlang === 'en'
+        ? tr('ما لقيت أصوات إنكليزية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم الإنكليزية، وحمّل صوت.')
+        : tr('ما لقيت أصوات عربية على هذا الجهاز. بالايفون: الإعدادات ثم تسهيلات الاستخدام ثم المحتوى المنطوق ثم الأصوات ثم العربية، وحمّل صوت.');
+    // الكردي بدون صوت كردي: التعليمات الصوتية بالعربي (والقائمة أعلاه أصوات عربية)
+    if (LANG === 'ckb' && vlang === 'ar') note.textContent += ' ' + tr('ما فيه صوت كردي على هذا الجهاز، فالتعليمات الصوتية تنقرأ بالعربي (والنص المكتوب كردي).');
   }
   $('voiceSel').onchange = () => { settings.voiceURI = $('voiceSel').value; saveSettings(); };
   if ('speechSynthesis' in window) {
@@ -3225,8 +4107,8 @@
     keepAwake();
     if (simulate) startSim();
     else { if (state.geoMode === 'lo') { geoStop(); state.geoMode = 'hi'; } startWatch(); }
-    if (!simulate && !state.user) toast('جاري تحديد موقعك...');
-    speak(arInstr(steps[0]));
+    if (!simulate && !state.user) toast(tr('جاري تحديد موقعك...'));
+    speak(arInstr(steps[0], trv));
     if (state.user) {
       followCam({ zoom: 17, duration: wantTilt() ? 800 : 0 });
       if (wantTilt()) { const hd = routeHeading([state.user.lat, state.user.lng]); if (hd !== null) CAM.bt = hd; } // نبدأ والخريطة باتجاه المسار
@@ -3246,6 +4128,7 @@
     try { if (state.wake) { state.wake.release(); state.wake = null; } } catch (e) {}
     try { window.speechSynthesis.cancel(); } catch (e) {}
     if (msg) toast(msg, 4000);
+    if (settings.lang !== LANG) setTimeout(() => { try { location.reload(); } catch (e) {} }, 2500); // اختار لغة أثناء الملاحة: تنطبق هسه
   }
 
   function setArrow(step) {
@@ -3273,7 +4156,7 @@
       trimRoute(p);
       if (!(r && r.off)) idx = state.stepIdx = stepFor(mo, nv.s, idx);
       if (!steps[idx + 1]) return;
-      if (idx + 1 >= steps.length - 1 && mo.total - nv.s < ARRIVE_M) { speak('وصلت إلى وجهتك'); endNav('وصلت إلى وجهتك'); return; }
+      if (idx + 1 >= steps.length - 1 && mo.total - nv.s < ARRIVE_M) { speak(trv('وصلت إلى وجهتك')); endNav(tr('وصلت إلى وجهتك')); return; }
       d = Math.max(0, mo.start[idx + 1] - nv.s);
       remD = Math.max(0, mo.total - nv.s);
       remT = remainingTime(mo, nv.s, idx);
@@ -3284,7 +4167,7 @@
       if (!up0) return;
       d = haversine(p, [up0.maneuver.location[1], up0.maneuver.location[0]]);
       if (d < 25) {
-        if (idx + 1 >= steps.length - 1) { speak('وصلت إلى وجهتك'); endNav('وصلت إلى وجهتك'); return; }
+        if (idx + 1 >= steps.length - 1) { speak(trv('وصلت إلى وجهتك')); endNav(tr('وصلت إلى وجهتك')); return; }
         state.stepIdx = ++idx;
         up0 = steps[idx + 1];
         d = haversine(p, [up0.maneuver.location[1], up0.maneuver.location[0]]);
@@ -3302,14 +4185,14 @@
     // تنبيه صوتي قبل المنعطف
     if (d < 300 && !up._said) {
       up._said = true;
-      speak('بعد ' + spokenDist(d) + '، ' + arInstr(up));
+      speak(trv('بعد {0}، {1}', spokenDist(d), arInstr(up, trv)));
     }
 
     // المتبقي
     state.remT = remT;
     $('sumTime').textContent = fmtTime(remT || 60);
     $('sumDist').textContent = fmtDist(remD);
-    $('sumEta').textContent = 'الوصول ' + fmtClock(remT);
+    $('sumEta').textContent = tr('الوصول {0}', fmtClock(remT));
 
     // خروج عن المسار: 3 تحديثات متتالية بعيدة أكثر من 70 م، وبعد آخر إعادة حساب بأكثر من 20 ثانية
     if (!state.sim && r && r.off && state.offCount >= 3 && !state.rerouting && nowMs() - state.reAt > 20000) reroute();
@@ -3328,8 +4211,8 @@
 
   async function reroute() {
     state.rerouting = true; state.offCount = 0; state.reAt = nowMs();
-    toast('طلعت عن الطريق، أعيد الحساب...');
-    speak('أعيد حساب الطريق');
+    toast(tr('طلعت عن الطريق، أعيد الحساب...'));
+    speak(trv('أعيد حساب الطريق'));
     try {
       const route = await fetchRoute([state.user.lat, state.user.lng], [state.dest.lat, state.dest.lng]);
       if (!state.navigating) { state.rerouting = false; return; } // انتهت الملاحة وأنا أنتظر الرد
@@ -3337,7 +4220,7 @@
       drawRoute(route);
       state.stepIdx = 0;
       navTick();
-    } catch (e) { toast('ما كدرت أعيد حساب الطريق'); }
+    } catch (e) { toast(tr('ما كدرت أعيد حساب الطريق')); }
     state.rerouting = false;
   }
 
@@ -3369,14 +4252,14 @@
   // هذا النص هو نفسه اللي يظهر بالنافذة وبالإعدادات، وكل نقطة فيه لازم تطابق شغل trShare فعلاً؛ إذا تغيّر الإرسال لازم يتغيّر النص ويرتفع TR_CONSENT_V.
   const TR_MIN_KMH = 15; // حد السرعة قبل ما نبدأ نرسل (المشاة والركض أقل منه). النص تحت يقرأه من هنا حتى ما يختلف عن الشغل
   const TR_PRIVACY = {
-    lead: 'أثناء الملاحة، يكدر دليني يرسل سرعتك واتجاهك وموقعك (بدقة حوالي 10 أمتار) حتى يظهر الزحام لباقي السواق.',
+    lead: tr('أثناء الملاحة، يكدر دليني يرسل سرعتك واتجاهك وموقعك (بدقة حوالي 10 أمتار) حتى يظهر الزحام لباقي السواق.'),
     points: [
-      'بدون اسمك أو رقمك أو حسابك، وبهوية عشوائية جديدة لكل رحلة.',
-      'ما يرسل إلا أثناء الملاحة، وبعد ما تتجاوز سرعتك ' + TR_MIN_KMH + ' كم/س (يعني بالسيارة، مو ماشي).',
-      'ما يرسل أول 300 متر ولا آخر 300 متر من رحلتك، حتى ما ينكشف بيتك أو شغلك.',
-      'يبقى آخر موقع بس (مو سجل لتنقلاتك)، ويتمسح لما تنتهي الملاحة.'
+      tr('بدون اسمك أو رقمك أو حسابك، وبهوية عشوائية جديدة لكل رحلة.'),
+      tr('ما يرسل إلا أثناء الملاحة، وبعد ما تتجاوز سرعتك {0} كم/س (يعني بالسيارة، مو ماشي).', TR_MIN_KMH),
+      tr('ما يرسل أول 300 متر ولا آخر 300 متر من رحلتك، حتى ما ينكشف بيتك أو شغلك.'),
+      tr('يبقى آخر موقع بس (مو سجل لتنقلاتك)، ويتمسح لما تنتهي الملاحة.')
     ],
-    foot: 'إذا ما وافقت، الملاحة وعرض الزحام يشتغلون عادي. وتكدر تغيّر رأيك بأي وقت من الإعدادات ← الزحام. وكل التفاصيل بـ«سياسة الخصوصية» داخل الإعدادات ← حول البرنامج.'
+    foot: tr('إذا ما وافقت، الملاحة وعرض الزحام يشتغلون عادي. وتكدر تغيّر رأيك بأي وقت من الإعدادات ← الزحام. وكل التفاصيل بـ«سياسة الخصوصية» داخل الإعدادات ← حول البرنامج.')
   };
   function trFillPrivacy(ul) {
     ul.textContent = '';
@@ -3405,15 +4288,16 @@
   $('startBtn').onclick = () => trAskConsent(() => startNav(false));
   $('simBtn').onclick = () => startNav(true);
   $('cancelBtn').onclick = () => { clearRoute(); if (settings.mapView === '3d') applyMapView(); };
-  $('endBtn').onclick = () => endNav('انتهت الملاحة');
+  $('endBtn').onclick = () => endNav(tr('انتهت الملاحة'));
 
   /* ================= البلاغات (مثل Waze) ================= */
   const HZ = {
-    traffic:  { label: 'زحمة سير',      color: '#e8590c', glyph: '≋' },
-    accident: { label: 'حادث',          color: '#c92a2a', glyph: '!' },
-    police:   { label: 'نقطة تفتيش',    color: '#1971c2', glyph: '★' },
-    pothole:  { label: 'حفرة أو مطب',   color: '#6f5b3e', glyph: '◆' },
-    closed:   { label: 'طريق مغلق',     color: '#212529', glyph: '✕' }
+    // label = بلغة الواجهة (للعرض)، key = المفتاح العربي (ننطقه بلغة الصوت بـ trv)
+    traffic:  { label: tr('زحمة سير'),      key: K('زحمة سير'),    color: '#e8590c', glyph: '≋' },
+    accident: { label: tr('حادث'),          key: K('حادث'),        color: '#c92a2a', glyph: '!' },
+    police:   { label: tr('نقطة تفتيش'),    key: K('نقطة تفتيش'),  color: '#1971c2', glyph: '★' },
+    pothole:  { label: tr('حفرة أو مطب'),   key: K('حفرة أو مطب'), color: '#6f5b3e', glyph: '◆' },
+    closed:   { label: tr('طريق مغلق'),     key: K('طريق مغلق'),   color: '#212529', glyph: '✕' }
   };
   let hazMarkers = [];
   let hazards = [];
@@ -3512,7 +4396,7 @@
       const sig = list.map((h) => h.id).sort().join(',');
       if (sig !== lastSig) { lastSig = sig; hazards = list; drawHazards(); }
     } catch (e) {
-      if (!silent) toast('ما كدرت أحمّل بلاغات الآخرين، تأكد من الإنترنت', 4000);
+      if (!silent) toast(tr('ما كدرت أحمّل بلاغات الآخرين، تأكد من الإنترنت'), 4000);
     }
   }
 
@@ -3532,9 +4416,9 @@
         const box = document.createElement('div');
         const mins = Math.max(1, Math.round((Date.now() - h.t) / 60000));
         const bt = document.createElement('b'); bt.textContent = def.label;
-        const sm = document.createElement('small'); sm.textContent = 'قبل ' + mins + ' دقيقة';
+        const sm = document.createElement('small'); sm.textContent = tr('قبل {0} دقيقة', mins);
         box.append(bt, document.createElement('br'), sm, document.createElement('br'));
-        const del = document.createElement('button'); del.textContent = 'انتهى / حذف';
+        const del = document.createElement('button'); del.textContent = tr('انتهى / حذف');
         del.onclick = async () => {
           pop.remove();
           try {
@@ -3542,7 +4426,7 @@
             if (!r.ok) throw new Error('http ' + r.status);
             hazards = hazards.filter((x) => x.id !== h.id);
             drawHazards();
-          } catch (e) { toast('ما كدرت أحذف البلاغ، جرّب مرة ثانية'); }
+          } catch (e) { toast(tr('ما كدرت أحذف البلاغ، جرّب مرة ثانية')); }
         };
         box.appendChild(del);
         pop.setDOMContent(box);
@@ -3560,15 +4444,15 @@
       const pos = state.reportAt || (state.user ? [state.user.lat, state.user.lng] : [map.getCenter().lat, map.getCenter().lng]);
       state.reportAt = null;
       $('reportPanel').hidden = true;
-      if (!okLL(pos[0], pos[1])) { toast('ما كدرت أحدد مكان البلاغ'); return; }
+      if (!okLL(pos[0], pos[1])) { toast(tr('ما كدرت أحدد مكان البلاغ')); return; }
       const rec = { type: k, lat: +pos[0].toFixed(5), lng: +pos[1].toFixed(5), t: Date.now() };
       try {
         const r = await dbFetch('/hazards.json', { method: 'POST', body: JSON.stringify(rec) });
         if (!r.ok) throw new Error('http ' + r.status);
         const j = await r.json();
         if (j && typeof j.name === 'string' && HZ_KEY_RE.test(j.name)) { rec.id = j.name; hazards.push(rec); drawHazards(); }
-        toast('انرسل البلاغ للجميع: ' + HZ[k].label);
-      } catch (e) { toast('ما انرسل البلاغ، تأكد من الإنترنت', 4000); }
+        toast(tr('انرسل البلاغ للجميع: {0}', HZ[k].label));
+      } catch (e) { toast(tr('ما انرسل البلاغ، تأكد من الإنترنت'), 4000); }
     };
     grid.appendChild(b);
   });
@@ -3772,14 +4656,14 @@
     if (cd) { WX.data = cd; WX.key = typeof c.key === 'string' ? c.key.slice(0, 30) : ''; WX.t = wxNum(c.t) || 0; }
   } catch (e) {}
   const WX_CODES = {
-    0: ['☀️', 'صحو'], 1: ['🌤️', 'غالباً صحو'], 2: ['⛅', 'غائم جزئياً'], 3: ['☁️', 'غائم'],
-    45: ['🌫️', 'ضباب'], 48: ['🌫️', 'ضباب صقيعي'],
-    51: ['🌦️', 'رذاذ خفيف'], 53: ['🌦️', 'رذاذ'], 55: ['🌧️', 'رذاذ كثيف'], 56: ['🌧️', 'رذاذ متجمد'], 57: ['🌧️', 'رذاذ متجمد'],
-    61: ['🌧️', 'مطر خفيف'], 63: ['🌧️', 'مطر'], 65: ['🌧️', 'مطر غزير'], 66: ['🌧️', 'مطر متجمد'], 67: ['🌧️', 'مطر متجمد غزير'],
-    71: ['🌨️', 'ثلج خفيف'], 73: ['🌨️', 'ثلج'], 75: ['❄️', 'ثلج كثيف'], 77: ['🌨️', 'حبيبات ثلج'],
-    80: ['🌦️', 'زخات مطر'], 81: ['🌧️', 'زخات مطر قوية'], 82: ['⛈️', 'زخات مطر غزيرة'],
-    85: ['🌨️', 'زخات ثلج'], 86: ['❄️', 'زخات ثلج كثيفة'],
-    95: ['⛈️', 'عاصفة رعدية'], 96: ['⛈️', 'عاصفة رعدية وبَرَد'], 99: ['⛈️', 'عاصفة رعدية وبَرَد قوي']
+    0: ['☀️', tr('صحو')], 1: ['🌤️', tr('غالباً صحو')], 2: ['⛅', tr('غائم جزئياً')], 3: ['☁️', tr('غائم')],
+    45: ['🌫️', tr('ضباب')], 48: ['🌫️', tr('ضباب صقيعي')],
+    51: ['🌦️', tr('رذاذ خفيف')], 53: ['🌦️', tr('رذاذ')], 55: ['🌧️', tr('رذاذ كثيف')], 56: ['🌧️', tr('رذاذ متجمد')], 57: ['🌧️', tr('رذاذ متجمد')],
+    61: ['🌧️', tr('مطر خفيف')], 63: ['🌧️', tr('مطر')], 65: ['🌧️', tr('مطر غزير')], 66: ['🌧️', tr('مطر متجمد')], 67: ['🌧️', tr('مطر متجمد غزير')],
+    71: ['🌨️', tr('ثلج خفيف')], 73: ['🌨️', tr('ثلج')], 75: ['❄️', tr('ثلج كثيف')], 77: ['🌨️', tr('حبيبات ثلج')],
+    80: ['🌦️', tr('زخات مطر')], 81: ['🌧️', tr('زخات مطر قوية')], 82: ['⛈️', tr('زخات مطر غزيرة')],
+    85: ['🌨️', tr('زخات ثلج')], 86: ['❄️', tr('زخات ثلج كثيفة')],
+    95: ['⛈️', tr('عاصفة رعدية')], 96: ['⛈️', tr('عاصفة رعدية وبَرَد')], 99: ['⛈️', tr('عاصفة رعدية وبَرَد قوي')]
   };
   function wxCode(c, day) {
     const w = WX_CODES[c] || ['🌡️', '—'];
@@ -3793,13 +4677,14 @@
   }
   function wxT(c) { return typeof c === 'number' && isFinite(c) ? Math.round(settings.wxUnit === 'f' ? c * 9 / 5 + 32 : c) : '–'; }
   function wxIdx(d) { const hh = String(d.cur.time || '').slice(0, 13) + ':00'; const i = d.hourly.time.indexOf(hh); return i < 0 ? 0 : i; }
-  function wxAlerts(d) { // قائمة تحذيرات نصية للطقس الحالي
+  function wxAlerts(d, T) { // قائمة تحذيرات نصية للطقس الحالي (T: دالة الترجمة، الافتراضي لغة الواجهة؛ للنطق نمرّر trv)
+    T = T || tr;
     const out = [], c = d.cur, i = wxIdx(d), vis = d.hourly.visibility ? d.hourly.visibility[i] : null;
-    if ([95, 96, 99].indexOf(c.weather_code) >= 0) out.push('عاصفة رعدية');
-    else if ([65, 67, 82, 75, 86].indexOf(c.weather_code) >= 0) out.push(c.weather_code === 75 || c.weather_code === 86 ? 'ثلج كثيف' : 'مطر غزير');
-    if (c.weather_code === 45 || c.weather_code === 48 || (typeof vis === 'number' && vis < 1000)) out.push('ضباب ورؤية ضعيفة');
-    if (typeof d.pm10 === 'number' && d.pm10 >= 250) out.push('غبار كثيف');
-    if (typeof c.wind_gusts_10m === 'number' && c.wind_gusts_10m >= 60) out.push('رياح قوية');
+    if ([95, 96, 99].indexOf(c.weather_code) >= 0) out.push(T('عاصفة رعدية'));
+    else if ([65, 67, 82, 75, 86].indexOf(c.weather_code) >= 0) out.push(c.weather_code === 75 || c.weather_code === 86 ? T('ثلج كثيف') : T('مطر غزير'));
+    if (c.weather_code === 45 || c.weather_code === 48 || (typeof vis === 'number' && vis < 1000)) out.push(T('ضباب ورؤية ضعيفة'));
+    if (typeof d.pm10 === 'number' && d.pm10 >= 250) out.push(T('غبار كثيف'));
+    if (typeof c.wind_gusts_10m === 'number' && c.wind_gusts_10m >= 60) out.push(T('رياح قوية'));
     return out;
   }
   function wxRender() {
@@ -3817,30 +4702,30 @@
     for (let k = i + 1; k <= i + 6 && k < d.hourly.time.length; k++) {
       const h = Number(String(d.hourly.time[k]).slice(11, 13)) || 0, hw = wxCode(d.hourly.weather_code[k], d.hourly.is_day ? d.hourly.is_day[k] : 1);
       const pp = d.hourly.precipitation_probability ? Math.round(Math.min(100, Math.max(0, Number(d.hourly.precipitation_probability[k]) || 0))) : 0; // دائماً رقم
-      hoursHtml.push('<div class="wxh">' + ((h % 12) || 12) + (h < 12 ? 'ص' : 'م') + '<br>' + hw[0] + '<b>' + wxT(d.hourly.temperature_2m[k]) + '°</b>' + (pp ? '💧' + pp + '%' : '&nbsp;') + '</div>');
+      hoursHtml.push('<div class="wxh">' + ((h % 12) || 12) + (h < 12 ? tr('ص') : tr('م')) + '<br>' + hw[0] + '<b>' + wxT(d.hourly.temperature_2m[k]) + '°</b>' + (pp ? '💧' + pp + '%' : '&nbsp;') + '</div>');
     }
-    const dust = typeof d.pm10 === 'number' ? (d.pm10 >= 250 ? 'كثيف' : d.pm10 >= 150 ? 'متوسط' : d.pm10 >= 80 ? 'خفيف' : 'لا يوجد') : '—';
-    const stale = (Date.now() - WX.t) > 60 * 60000 ? ' (قديم)' : '';
-    card.innerHTML = '<div class="wxhead"><div class="wxbig">' + w[0] + '</div><div><div class="wxtemp">' + wxT(c.temperature_2m) + '°' + (settings.wxUnit === 'f' ? 'F' : 'C') + '</div><div class="wxdesc">' + w[1] + stale + '</div></div><button class="wxclose" id="wxClose" aria-label="إغلاق">✕</button></div>'
-      + (al.length ? '<div class="wxwarn">⚠️ ' + al.join(' • ') + ' — قُد بحذر</div>' : '')
-      + '<div class="wxgrid"><div><span>المحسوسة</span> <bdi dir="ltr">' + wxT(c.apparent_temperature) + '°</bdi></div>'
-      + '<div><span>الرياح</span> ' + Math.round(windV) + (mi ? ' ميل/س' : ' كم/س') + '</div>'
-      + '<div><span>الرطوبة</span> ' + Math.round(c.relative_humidity_2m) + '%</div>'
-      + '<div><span>هبّات الرياح</span> ' + Math.round(gustV) + (mi ? ' ميل/س' : ' كم/س') + '</div>'
-      + '<div><span>الرؤية</span> ' + (visV === null ? '—' : visV.toFixed(1) + (mi ? ' ميل' : ' كم')) + '</div>'
-      + '<div><span>الغبار</span> ' + dust + '</div>'
-      + (d.daily && d.daily.temperature_2m_max ? '<div><span>العظمى</span> <bdi dir="ltr">' + wxT(d.daily.temperature_2m_max[0]) + '°</bdi></div><div><span>الصغرى</span> <bdi dir="ltr">' + wxT(d.daily.temperature_2m_min[0]) + '°</bdi></div>' : '')
+    const dust = typeof d.pm10 === 'number' ? (d.pm10 >= 250 ? tr('كثيف') : d.pm10 >= 150 ? tr('متوسط') : d.pm10 >= 80 ? tr('خفيف') : tr('لا يوجد')) : '—';
+    const stale = (Date.now() - WX.t) > 60 * 60000 ? tr(' (قديم)') : '';
+    card.innerHTML = '<div class="wxhead"><div class="wxbig">' + w[0] + '</div><div><div class="wxtemp">' + wxT(c.temperature_2m) + '°' + (settings.wxUnit === 'f' ? 'F' : 'C') + '</div><div class="wxdesc">' + w[1] + stale + '</div></div><button class="wxclose" id="wxClose" aria-label="' + tr('إغلاق') + '">✕</button></div>'
+      + (al.length ? '<div class="wxwarn">' + tr('⚠️ {0} — قُد بحذر', al.join(' • ')) + '</div>' : '')
+      + '<div class="wxgrid"><div><span>' + tr('المحسوسة') + '</span> <bdi dir="ltr">' + wxT(c.apparent_temperature) + '°</bdi></div>'
+      + '<div><span>' + tr('الرياح') + '</span> ' + Math.round(windV) + ' ' + speedUnitLabel() + '</div>'
+      + '<div><span>' + tr('الرطوبة') + '</span> ' + Math.round(c.relative_humidity_2m) + '%</div>'
+      + '<div><span>' + tr('هبّات الرياح') + '</span> ' + Math.round(gustV) + ' ' + speedUnitLabel() + '</div>'
+      + '<div><span>' + tr('الرؤية') + '</span> ' + (visV === null ? '—' : (mi ? tr('{0} ميل', visV.toFixed(1)) : tr('{0} كم', visV.toFixed(1)))) + '</div>'
+      + '<div><span>' + tr('الغبار') + '</span> ' + dust + '</div>'
+      + (d.daily && d.daily.temperature_2m_max ? '<div><span>' + tr('العظمى') + '</span> <bdi dir="ltr">' + wxT(d.daily.temperature_2m_max[0]) + '°</bdi></div><div><span>' + tr('الصغرى') + '</span> <bdi dir="ltr">' + wxT(d.daily.temperature_2m_min[0]) + '°</bdi></div>' : '')
       + '</div><div class="wxhours">' + hoursHtml.join('') + '</div><small>Open-Meteo.com</small>';
     const cl = $('wxClose'); if (cl) cl.onclick = () => wxOpen(false);
   }
   function wxNavAlert() {
     if (!state.navigating || settings.wxAlert === false || !WX.data || !WX.data.cur) return;
     const al = wxAlerts(WX.data); if (!al.length) return;
-    const txt = al.join(' و '), now = Date.now();
+    const txt = al.join(tr(' و ')), now = Date.now();
     if (txt === WX.lastAlert && now - WX.lastAlertAt < 30 * 60000) return;
     WX.lastAlert = txt; WX.lastAlertAt = now;
-    toast('⚠️ ' + txt + ' — قُد بحذر', 5000);
-    speak('تنبيه طقس: ' + txt + '. قُد بحذر');
+    toast(tr('⚠️ {0} — قُد بحذر', txt), 5000);
+    speak(trv('تنبيه طقس: {0}. قُد بحذر', wxAlerts(WX.data, trv).join(trv(' و '))));
   }
   async function wxLoad(force) {
     if (settings.wxShow === false || !navigator.onLine) return;
@@ -3899,8 +4784,8 @@
       const d = haversine(p, [h.lat, h.lng]);
       if (d < settings.hazDist && distToRoute([h.lat, h.lng]) < 60) {
         hazardAlerted[h.id] = true;
-        const msg = HZ[h.type].label + ' أمامك بعد ' + spokenDist(d);
-        toast(msg, 4500); speak(msg);
+        toast(tr('{0} أمامك بعد {1}', HZ[h.type].label, spokenDist(d, tr)), 4500);
+        speak(trv('{0} أمامك بعد {1}', trv(HZ[h.type].key), spokenDist(d)));
         if (settings.hazAlt !== false && (ALT_TYPES.indexOf(h.type) >= 0 || (h.type === 'police' && settings.hazAltPolice !== false))) offerAlternative(h);
       }
     });
@@ -3969,25 +4854,26 @@
       info.good.forEach((r) => { if (!best || r.duration < best.duration) best = r; });
       const label0 = HZ[h.type].label;
       if (!best) {
-        toast('ما لقيت مسار بديل يتجنب ' + label0 + ' (جربت ' + info.tried + ' مسار، أبعدها ' + Math.round(info.bestGap) + ' م من البلاغ والمطلوب ' + info.need + ' م' + (info.failed ? '، فشل ' + info.failed + ' طلب' : '') + ')', 7000);
+        toast(tr('ما لقيت مسار بديل يتجنب {0} (جربت {1} مسار، أبعدها {2} م من البلاغ والمطلوب {3} م{4})', label0, info.tried, Math.round(info.bestGap), info.need, info.failed ? tr('، فشل {0} طلب', info.failed) : ''), 7000);
         return;
       }
       const extra = best.duration - (state.remT || 0);
       if (h.type !== 'closed' && extra > 1200) {
-        toast('البديل يزيد ' + Math.round(extra / 60) + ' دقيقة، ما اقترحته. كمّل على نفس الطريق بحذر', 5000);
+        toast(tr('البديل يزيد {0} دقيقة، ما اقترحته. كمّل على نفس الطريق بحذر', Math.round(extra / 60)), 5000);
         return;
       }
       const label = HZ[h.type].label;
       const mins = Math.round(Math.abs(extra) / 60);
-      const diff = extra >= 60 ? 'يزيد ' + mins + ' دقيقة' : extra <= -60 ? 'أسرع بـ ' + mins + ' دقيقة' : 'بنفس الوقت تقريباً';
+      const mkDiff = (T) => (extra >= 60 ? T('يزيد {0} دقيقة', mins) : extra <= -60 ? T('أسرع بـ {0} دقيقة', mins) : T('بنفس الوقت تقريباً'));
+      const diff = mkDiff(tr);
       altOffer = { route: best };
-      $('altTitle').textContent = 'مسار بديل يتجنب ' + label;
+      $('altTitle').textContent = tr('مسار بديل يتجنب {0}', label);
       $('altSub').textContent = diff + ' • ' + fmtDist(best.distance);
       $('altBox').hidden = false;
-      speak('في مسار بديل يتجنب ' + label + '، ' + diff + '. اضغط تغيير المسار إذا تريد.');
+      speak(trv('في مسار بديل يتجنب {0}، {1}. اضغط تغيير المسار إذا تريد.', trv(HZ[h.type].key), mkDiff(trv)));
       clearTimeout(altTimer);
       altTimer = setTimeout(hideAlt, 45000);
-    } catch (e) { toast('ما كدرت أبحث عن مسار بديل الآن (تأكد من الإنترنت)', 4000); }
+    } catch (e) { toast(tr('ما كدرت أبحث عن مسار بديل الآن (تأكد من الإنترنت)'), 4000); }
     finally { state.altBusy = false; }
   }
   $('altNo').onclick = hideAlt;
@@ -3999,8 +4885,8 @@
     drawRoute(route);
     state.stepIdx = 0; state.offCount = 0;
     if (state.sim) { stopSim(); startSim(); }
-    speak('تم تغيير المسار');
-    toast('تم تغيير المسار');
+    speak(trv('تم تغيير المسار'));
+    toast(tr('تم تغيير المسار'));
     navTick();
   };
 

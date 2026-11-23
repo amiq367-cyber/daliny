@@ -1,5 +1,5 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت، ويحفظ قطع المباني اللي يفتحها المستخدم
-const CACHE = 'daliny-v16';
+const CACHE = 'daliny-v17';
 const LIBS = 'daliny-libs-v2';
 const PACK_CACHE = 'daliny-packs-v1';
 const BLD_CACHE = 'daliny-bld-v1'; // قطع مباني Overture اللي فتحها المستخدم (انظر قسم المباني تحت)

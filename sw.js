@@ -1,5 +1,8 @@
 // يحفظ ملفات التطبيق والمكتبات، ويخدم حزم الخرائط (الدول) المنزّلة بدون إنترنت، ويحفظ قطع المباني اللي يفتحها المستخدم
-const CACHE = 'daliny-v17';
+const CACHE = 'daliny-v19';
+// مسار نطاق الـ worker (مثلاً /daliny/): «الصفحة الرئيسية» = هذا المسار أو هذا المسار + index.html (مو أي مسار ينتهي بـ /)
+let SCOPE_PATH = '/';
+try { SCOPE_PATH = new URL('./', self.location.href).pathname; } catch (err) {}
 const LIBS = 'daliny-libs-v2';
 const PACK_CACHE = 'daliny-packs-v1';
 const BLD_CACHE = 'daliny-bld-v1'; // قطع مباني Overture اللي فتحها المستخدم (انظر قسم المباني تحت)
@@ -10,7 +13,8 @@ const EXTRA = ['privacy.html', 'mapbox-gl-rtl-text.js'];
 // ملفات ثابتة ما تتغير بين نسخة ونسخة (الأيقونات + إضافة الكتابة العربية): تنخدم من الذاكرة أول، حتى شاشة البداية والخريطة ما تنتظر الشبكة.
 // إذا تغيّر واحد منها لازم نرفع رقم CACHE فوق.
 const STATIC_RE = /\/(icon-[\w-]+\.png|mapbox-gl-rtl-text\.js)$/;
-// باقي ملفات التطبيق (الصفحة نفسها...): الشبكة أول حتى يوصل التحديث فوراً، لكن لو الشبكة بطيئة أكثر من هالمدة نفتح من الذاكرة
+// الصفحة الرئيسية (index.html و './'): من الذاكرة فوراً بدون انتظار الشبكة (هذا أكبر توفير بزمن التشغيل)، والتحديث ينزل بعد ما تظهر الخريطة (رسالة refresh-shell من الصفحة) ويشتغل بالفتحة الجاية.
+// باقي الملفات (privacy.html، فهرس المباني...): الشبكة أول حتى يوصل التحديث فوراً، لكن لو الشبكة بطيئة أكثر من هالمدة نفتح من الذاكرة
 // (والتحديث يكمل بالخلفية للمرة الجاية) بدل ما يظل المستخدم يطالع شاشة فاضية.
 const NET_WAIT_MS = 3000;
 
@@ -25,8 +29,9 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     Promise.all([
       caches.open(CACHE).then(async (c) => {
-        await c.addAll(SHELL);
-        await Promise.all(EXTRA.map((u) => c.add(u).catch(() => {})));
+        // cache: 'reload' = نجيب من السيرفر مباشرة (مو من كاش المتصفح اللي ممكن يمسك نسخة قديمة 10 دقائق بعد الرفع)
+        await c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })));
+        await Promise.all(EXTRA.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
       }),
       // نحفظ مكتبات التطبيق من البداية حتى يشتغل بدون إنترنت حتى لو انفتح أول مرة بعد التحديث
       caches.open(LIBS).then((c) => Promise.all(LIB_URLS.map(async (u) => {
@@ -64,8 +69,31 @@ self.addEventListener('message', (e) => {
     e.waitUntil(bldSetKeep(d.on !== false));          // المستخدم شغّل/طفّى حفظ المباني من الإعدادات
   } else if (d && d.t === 'bld-reset') {
     bldSizesP = null; bldTotal = 0;                    // الصفحة مسحت كاش المباني: نعيد حساب الحجم من الصفر
+  } else if (d && d.t === 'refresh-shell') {
+    e.waitUntil(refreshShell());                       // الصفحة ظهرت: نتأكد إذا فيه نسخة أحدث ونحفظها للفتحة الجاية
   }
 });
+
+// تحديث الصفحة الرئيسية بالخلفية: نجيبها من السيرفر (طلب شرطي ETag بدون كاش المتصفح)، وإذا تغيّرت عن المحفوظة نحفظها ونخبر الصفحة المفتوحة.
+async function refreshShell() {
+  let changed = false;
+  try {
+    const c = await caches.open(CACHE);
+    const res = await fetch(new Request('index.html', { cache: 'no-cache' }));
+    if (!res || !res.ok) return;
+    const old = await c.match('index.html');
+    if (old) {
+      const [a, b] = await Promise.all([old.clone().text(), res.clone().text()]);
+      if (a === b) return;                 // نفس النسخة: ما نكتب شي
+      changed = true;
+    }
+    // نسخة جديدة (أو الاثنتين كانت ناقصة): نحفظها بالمفتاحين (الصفحة تنفتح بـ ./ أو index.html)
+    await Promise.all([c.put('index.html', res.clone()), c.put('./', res.clone())]);
+  } catch (err) { return; }                // بدون إنترنت: نبقى على المحفوظة
+  if (!changed) return;
+  const all = await self.clients.matchAll();
+  all.forEach((cl) => { try { cl.postMessage({ t: 'shell-updated' }); } catch (err) {} });
+}
 
 async function getMeta(cache, key) {
   if (chunkMeta[key]) return chunkMeta[key];
@@ -318,6 +346,19 @@ self.addEventListener('fetch', (e) => {
       if (res && res.ok) c.put(req, res.clone());
       return res;
     }));
+    return;
+  }
+
+  // الصفحة الرئيسية: من الذاكرة فوراً (التحديث بالخلفية عبر refresh-shell). أول مرة بالجهاز (ما فيه نسخة) تنزل من الشبكة وتنحفظ.
+  if (url.pathname === SCOPE_PATH || url.pathname === SCOPE_PATH + 'index.html') {
+    e.respondWith((async () => {
+      const c = await caches.open(CACHE);
+      const hit = (await c.match(req, { ignoreSearch: true, ignoreVary: true })) || (await c.match('./'));
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res && res.ok) { const copy = res.clone(); c.put('./', copy); }
+      return res;
+    })());
     return;
   }
 

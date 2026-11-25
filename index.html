@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- سياج الحماية (CSP): يسمح فقط بسكربت التطبيق نفسه (بصمة SHA-256) ومكتبات الخرائط بنسخ ثابتة، ويمنع أي سكربت أو معالج مدمج ثاني.
      ⚠️ البصمة sha256 تُحسب من نص السكربت الرئيسي حرفياً: أي تعديل بالسكربت لازم تتحدث البصمة (أداة build-csp.js)، وإلا ما يشتغل التطبيق. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-1xbhc4jHH7RAeL1FjWpzumiPIIKtK67/RdwSKxOyg/o=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-zB5R8iU8KMEpMjJqWOnmnkUGU9Dne7FeOoBV5Jm+XVQ=' https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://tile.openstreetmap.org https://protomaps.github.io; connect-src 'self' blob: data: https://amiq367-cyber.github.io https://unpkg.com https://protomaps.github.io https://tile.openstreetmap.org https://router.project-osrm.org https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://api.open-meteo.com https://air-quality-api.open-meteo.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://daliny-map-default-rtdb.asia-southeast1.firebasedatabase.app; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>دليني</title>
@@ -599,6 +599,7 @@
       <p class="set-note">الأحمر = حركة شبه واقفة، والبرتقالي = حركة بطيئة. يظهر الزحام لما سيارتين أو أكثر (من مستخدمي دليني) تمشي ببطء بنفس المنطقة وبنفس الاتجاه، وإذا كان على طريقك يتلوّن خط المسار نفسه. إذا جهازك لحاله ما يطلع شي.</p>
       <div id="trDev" hidden>
         <p class="set-note">أدوات المطوّر (للتجربة فقط)</p>
+        <p class="set-note" id="bootRep" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
       <label class="set-row" for="trafficWalkSwitch"><span>وضع الاختبار: اقبل المشي (للتجربة فقط، أطفئه بعدها)</span><input type="checkbox" id="trafficWalkSwitch" class="switch"></label>
       <div class="set-row"><span>اختبار الإرسال لقاعدة البيانات</span><button id="trafficSend" class="set-btn">اختبار</button></div>
       <p class="set-note" id="trLive" style="direction:ltr;text-align:left;font-family:monospace;white-space:pre-wrap"></p>
@@ -1057,6 +1058,7 @@
     "ميل": "Miles",
     "ميل/س": "mph",
     "نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك. وإذا كتبت رقمك أو إيميلك بالخانة الاختيارية نرسله معها حتى نرد عليك.": "We send only the app version and device type with your message, never your location. If you enter your number or email in the optional field, we send it along so we can reply to you.",
+    "نزل تحديث جديد. سكّر التطبيق وافتحه من جديد حتى يشتغل": "A new update has been downloaded. Close the app and reopen it to use it.",
     "نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.": "Download the general Iraq map once (it covers the whole country with little detail), then download the governorates you need so streets, names and buildings appear in detail. All of them work without internet. It is best to download while on Wi-Fi.",
     "نقطة تفتيش": "Checkpoint",
     "نقطة على الخريطة": "Point on the map",
@@ -1427,6 +1429,7 @@
     "ميل": "میل",
     "ميل/س": "میل/ک",
     "نرسل مع رسالتك رقم الإصدار ونوع الجهاز فقط، بدون موقعك. وإذا كتبت رقمك أو إيميلك بالخانة الاختيارية نرسله معها حتى نرد عليك.": "تەنها ژمارەی وەشان و جۆری ئامێر لەگەڵ نامەکەت دەنێرین، بەبێ شوێنەکەت. ئەگەر ژمارە یان ئیمەیڵەکەت لە خانەی ئارەزوومەندانە بنووسیت لەگەڵیدا دەینێرین بۆ ئەوەی وەڵامت بدەینەوە.",
+    "نزل تحديث جديد. سكّر التطبيق وافتحه من جديد حتى يشتغل": "نوێکارییەکی نوێ دابەزێنرا. ئەپەکە دابخە و دووبارە بیکەرەوە بۆ ئەوەی کار بکات.",
     "نزّل خريطة العراق العامة مرة وحدة (تغطي كل البلد بتفاصيل قليلة)، وبعدها نزّل المحافظات اللي تحتاجها حتى تظهر الشوارع والأسماء والمباني بالتفصيل. كلها تشتغل بدون إنترنت. يفضل التنزيل وأنت على شبكة Wi-Fi.": "نەخشەی گشتی عێراق جارێک دابگرە (هەموو وڵات دادەپۆشێت بە وردەکاری کەم)، پاشان ئەو پارێزگایانە دابگرە کە پێویستتن بۆ ئەوەی شەقام و ناو و باڵەخانەکان بە وردی دەربکەون. هەموویان بێ ئینتەرنێت کار دەکەن. باشترە لەکاتی بەکارهێنانی Wi-Fi دایبگریت.",
     "نقطة تفتيش": "خاڵی پشکنین",
     "نقطة على الخريطة": "خاڵێک لەسەر نەخشە",
@@ -1526,9 +1529,14 @@
     } catch (e) {}
   })();
   /*@@I18N-CORE-END@@*/
+  // قياس أزمنة التشغيل (يظهر بوضع المطوّر بالإعدادات): كل رقم = ميلي ثانية من بداية فتح الصفحة
+  const BT = {}; let btWhy = '', bootRepFn = null;
+  function mark(k) { if (!(k in BT)) { BT[k] = Math.round(performance.now()); if (bootRepFn) bootRepFn(); } }
+  mark('script');
   // كل التطبيق داخل boot (بدون إزاحة الأسطر): مكتبات الخريطة تتحمّل بوضع defer حتى ما توقف أول رسمة (شاشة البداية)،
   // فنبدأ بعد نهاية قراءة الصفحة (وصلت المكتبات) وبعد أول رسمة. الاستدعاء بآخر السكربت (whenReady).
   function boot() {
+  mark('boot');
   // ملفات الستايل (الخطوط + ستايل الخريطة) تتحمّل بالخلفية بدون ما توقف ظهور الصفحة، وهنا نفعّلها (كانت تتفعّل بوسم onload، وهذا ممنوع بسياج الحماية)
   try { const fc = document.getElementById('fontcss'); if (fc) fc.media = 'all'; } catch (e) {}
   try { const mc = document.getElementById('mlcss'); if (mc) mc.media = 'all'; } catch (e) {}
@@ -1539,15 +1547,31 @@
   const SPLASH_MAX_MS = 12000, SPLASH_TAP_MS = 5000;
   const splashEl = document.getElementById('splash');
   let splashGone = false, splashIdxWait = false;
-  function splashHide() {
+  // الطلبات الثانوية (البلاغات، الزحام، الطقس، الدخول المجهول، فهرس المباني، تسجيل الـ worker...) تنتظر لين تظهر الخريطة،
+  // حتى ما تنافس قطع الخريطة على الإنترنت أثناء شاشة البداية. afterReveal(fn, ms): تشتغل بعد الظهور بـ ms ميلي ثانية.
+  const lateQ = []; let lateOn = false;
+  function afterReveal(fn, ms) {
+    const run = () => { try { fn(); } catch (e) { console.warn('late', e); } };
+    if (lateOn) setTimeout(run, ms || 0); else lateQ.push({ run: run, ms: ms || 0 });
+  }
+  function lateRun() {
+    if (lateOn) return;
+    lateOn = true;
+    lateQ.splice(0).forEach((q) => setTimeout(q.run, q.ms));
+  }
+  setTimeout(lateRun, 6000); // احتياط: لو الخريطة تأخرت كثير، البلاغات والزحام ما يتعطلون أكثر من 6 ثواني
+  function splashHide(why) {
     if (splashGone) return;
     splashGone = true;
+    btWhy = typeof why === 'string' ? why : 'max'; // سبب الإخفاء (للقياس): idle / base / tap / max
+    mark('hide');
+    setTimeout(lateRun, 200);
     if (!splashEl) return;
     splashEl.classList.add('out');
     setTimeout(() => { try { splashEl.remove(); } catch (e) {} }, 800);
   }
-  setTimeout(splashHide, Math.max(2500, SPLASH_MAX_MS - performance.now())); // بحد أدنى 2.5 ثانية بعد ما يبدأ التطبيق (لو المكتبات تأخرت كثير بأول تشغيل)
-  if (splashEl) splashEl.addEventListener('click', () => { if (performance.now() >= SPLASH_TAP_MS) splashHide(); });
+  setTimeout(() => splashHide('max'), Math.max(2500, SPLASH_MAX_MS - performance.now())); // بحد أدنى 2.5 ثانية بعد ما يبدأ التطبيق (لو المكتبات تأخرت كثير بأول تشغيل)
+  if (splashEl) splashEl.addEventListener('click', () => { if (performance.now() >= SPLASH_TAP_MS) splashHide('tap'); });
 
   /* ================= أدوات مساعدة ================= */
   const $ = (id) => document.getElementById(id);
@@ -1596,9 +1620,26 @@
   const TILT = 50;
   // رقم الإصدار بثلاث خانات: رئيسي.فرعي.إصلاح (MAJOR.MINOR.PATCH) ويظهر بالإعدادات وبصفحة حول البرنامج
   //   الأول (رئيسي): تغيير كبير بالبرنامج. الثاني (فرعي): ميزة جديدة. الثالث (إصلاح): تصليح صغير بدون ميزة جديدة.
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.3.2';
   // نفس الرقم بصيغة رقمية تنرسل مع رسائل الاقتراحات: 1.0.0 => 10000 ، 1.2.3 => 10203 (تقبلها قواعد القاعدة القديمة والجديدة)
   const APP_BUILD = APP_VERSION.split('.').reduce((n, p, i) => n + (parseInt(p, 10) || 0) * [10000, 100, 1][i], 0);
+  // سطور قياس التشغيل بوضع المطوّر (إعدادات ← الزحام): نوع الفتح، هل الـ worker يخدم الصفحة، أزمنة الشبكة، وأزمنة مراحل الخريطة
+  function bootReport() {
+    if (!devMode) return;
+    const el = document.getElementById('bootRep');
+    if (!el) return;
+    try {
+      let nav = null; try { nav = performance.getEntriesByType('navigation')[0] || null; } catch (e) {}
+      const r = (v) => (typeof v === 'number' && isFinite(v) ? Math.round(v) : '-');
+      const L = [];
+      L.push('v' + APP_VERSION + ' | sw:' + (navigator.serviceWorker && navigator.serviceWorker.controller ? 'yes' : 'no') + ' | ' + (nav ? nav.type : '?') + ' | osm:' + (iraqHas ? 'off' : 'on') + ' packs:' + packsInstalled.length);
+      if (nav) L.push('worker ' + r(nav.workerStart) + ' | resp ' + r(nav.responseStart) + '-' + r(nav.responseEnd) + ' | dcl ' + r(nav.domContentLoadedEventEnd));
+      L.push(['script', 'boot', 'map', 'style', 'render', 'base', 'idle', 'hide'].map((k) => k + ' ' + (k in BT ? BT[k] : '-')).join(' | ') + (btWhy ? ' [' + btWhy + ']' : ''));
+      try { L.push('iq: minZ ' + (typeof iqMin === 'number' ? iqMin.toFixed(2) : '-') + ' | z ' + map.getZoom().toFixed(2) + ' | veil ' + (map.getLayer('iq-veil') ? 'on' : 'off') + ' | ' + (state.follow ? 'follow' : (state.navigating ? 'nav' : (state.dest ? 'dest' : 'free')))); } catch (e) {}
+      el.textContent = L.join('\n');
+    } catch (e) {}
+  }
+  bootRepFn = bootReport;
   function verEl(prefix) { // «v1.0.0» تنكتب من اليسار لليمين حتى لو النص عربي
     const f = document.createDocumentFragment();
     f.append(prefix);
@@ -1979,7 +2020,8 @@
     return { src: src, source: { type: 'vector', url: 'pmtiles://' + packKey(p) }, layers: layers };
   }
   function withPacks(st, fl) {
-    let at = st.layers.findIndex((l) => l.id === 'traffic-glow');
+    let at = st.layers.findIndex((l) => l.id === 'iq-veil');
+    if (at < 0) at = st.layers.findIndex((l) => l.id === 'traffic-glow');
     PACKS.filter((q) => packsInstalled.includes(q.id)).sort((a, b) => (a.id === 'iraq' ? -1 : 0) - (b.id === 'iraq' ? -1 : 0)).forEach((q) => {
       const d = packDefs(q, fl);
       st.sources[d.src] = d.source;
@@ -2210,6 +2252,150 @@
     if (!trLines.length && trTimer) { clearInterval(trTimer); trTimer = null; trLast = 0; }
   }
   setInterval(trRefresh, 30000);
+  /* ================= حدود العراق (IRAQLOCK) ================= */
+  // الفكرة: العراق بس هو اللي ينعرض. اللي برّا الحدود يتغطى بلون الخلفية (ويخف تدريجياً كلما قرّبت)، والكاميرا ما تبعد أكثر من «العراق كله بالشاشة»
+  // وما يطلع مركزها برّا الحدود (إلا بمسافة قليلة لبلدات الحدود والمعابر).
+  // الحدود: Natural Earth 10m (ملك عام بلا حقوق)، مبسّطة لحد ~0.4 كم، نقاط [طول، عرض] باتجاه عقارب الساعة.
+  const IQ = [
+    [44.766,37.142], [44.753,37.113], [44.767,37.079], [44.788,37.07], [44.802,37.044], [44.841,37.047],
+    [44.881,37.025], [44.887,37.016], [44.886,37.005], [44.875,36.994], [44.869,36.967],
+    [44.889,36.911], [44.883,36.887], [44.834,36.834], [44.823,36.809], [44.831,36.792],
+    [44.851,36.781], [44.877,36.776], [44.923,36.776], [44.955,36.752], [44.996,36.742],
+    [45.046,36.668], [45.044,36.649], [45.014,36.579], [45.013,36.558], [44.993,36.55], [44.991,36.534],
+    [45.038,36.494], [45.039,36.48], [45.062,36.455], [45.072,36.423], [45.084,36.413], [45.111,36.403],
+    [45.14,36.404], [45.196,36.422], [45.221,36.421], [45.239,36.403], [45.254,36.355], [45.257,36.312],
+    [45.264,36.294], [45.283,36.275], [45.259,36.262], [45.264,36.25], [45.297,36.227], [45.305,36.14],
+    [45.348,36.088], [45.344,36.067], [45.32,36.031], [45.314,36.01], [45.32,35.994], [45.338,35.979],
+    [45.36,35.977], [45.453,36.012], [45.479,36.012], [45.54,35.994], [45.577,35.966], [45.617,35.955],
+    [45.647,35.933], [45.693,35.88], [45.719,35.828], [45.731,35.815], [45.749,35.811], [45.787,35.82],
+    [45.814,35.809], [45.835,35.811], [45.878,35.835], [45.909,35.831], [45.941,35.84], [46.005,35.838],
+    [46.06,35.857], [46.115,35.846], [46.129,35.816], [46.164,35.798], [46.227,35.806], [46.281,35.828],
+    [46.303,35.827], [46.32,35.817], [46.327,35.803], [46.325,35.788], [46.313,35.772], [46.267,35.744],
+    [46.238,35.716], [46.178,35.715], [46.128,35.694], [46.107,35.69], [46.037,35.692], [46.016,35.686],
+    [46.004,35.674], [45.992,35.641], [46.002,35.586], [45.999,35.572], [45.959,35.579],
+    [45.985,35.531], [45.966,35.511], [45.964,35.494], [45.977,35.465], [46.041,35.382], [46.12,35.319],
+    [46.127,35.289], [46.099,35.25], [46.101,35.234], [46.115,35.226], [46.154,35.227], [46.169,35.216],
+    [46.165,35.19], [46.13,35.131], [46.151,35.112], [46.143,35.1], [46.132,35.095], [46.095,35.086],
+    [46.067,35.089], [46.025,35.064], [46.009,35.061], [45.979,35.072], [45.966,35.071], [45.92,35.09],
+    [45.913,35.087], [45.899,35.069], [45.899,35.047], [45.872,35.041], [45.857,35.021],
+    [45.869,34.968], [45.85,34.907], [45.835,34.89], [45.778,34.911], [45.755,34.91], [45.749,34.891],
+    [45.745,34.841], [45.718,34.825], [45.677,34.818], [45.667,34.807], [45.663,34.763],
+    [45.635,34.737], [45.627,34.721], [45.667,34.69], [45.688,34.653], [45.694,34.599], [45.709,34.579],
+    [45.702,34.551], [45.574,34.567], [45.54,34.582], [45.501,34.592], [45.497,34.564], [45.505,34.524],
+    [45.503,34.494], [45.479,34.467], [45.427,34.458], [45.417,34.444], [45.461,34.34], [45.479,34.329],
+    [45.499,34.342], [45.522,34.343], [45.542,34.332], [45.558,34.312], [45.563,34.289],
+    [45.561,34.265], [45.548,34.216], [45.527,34.179], [45.545,34.151], [45.545,34.139], [45.455,34.07],
+    [45.42,33.994], [45.38,33.974], [45.401,33.949], [45.424,33.939], [45.486,33.939], [45.575,33.804],
+    [45.617,33.769], [45.645,33.698], [45.674,33.669], [45.721,33.641], [45.728,33.626], [45.728,33.59],
+    [45.735,33.583], [45.752,33.587], [45.798,33.619], [45.816,33.626], [45.886,33.631], [45.882,33.6],
+    [45.921,33.573], [45.928,33.551], [45.916,33.536], [45.868,33.512], [45.853,33.494], [45.87,33.482],
+    [45.899,33.476], [45.93,33.48], [45.953,33.497], [45.974,33.491], [46.019,33.438], [46.036,33.368],
+    [46.07,33.341], [46.11,33.294], [46.155,33.26], [46.164,33.243], [46.158,33.206], [46.162,33.196],
+    [46.174,33.19], [46.167,33.168], [46.105,33.118], [46.05,33.115], [46.03,33.106], [46.029,33.094],
+    [46.043,33.083], [46.087,33.079], [46.12,33.062], [46.126,33.048], [46.119,33.031], [46.076,32.994],
+    [46.097,32.954], [46.156,32.948], [46.273,32.959], [46.38,32.932], [46.479,32.892], [46.507,32.868],
+    [46.604,32.821], [46.65,32.789], [46.716,32.756], [46.757,32.716], [47.091,32.475], [47.121,32.461],
+    [47.153,32.455], [47.188,32.458], [47.251,32.485], [47.265,32.485], [47.343,32.459],
+    [47.384,32.413], [47.411,32.395], [47.418,32.376], [47.396,32.342], [47.402,32.324],
+    [47.437,32.294], [47.463,32.262], [47.479,32.252], [47.485,32.239], [47.504,32.227],
+    [47.509,32.214], [47.508,32.2], [47.492,32.17], [47.491,32.149], [47.527,32.133], [47.544,32.115],
+    [47.578,32.106], [47.595,32.085], [47.618,32.042], [47.633,32.027], [47.668,32.012],
+    [47.683,31.977], [47.718,31.922], [47.751,31.898], [47.765,31.864], [47.821,31.824],
+    [47.834,31.806], [47.837,31.784], [47.831,31.762], [47.679,31.408], [47.673,30.995],
+    [48.002,30.995], [48.012,30.989], [48.014,30.464], [48.131,30.447], [48.158,30.426], [48.17,30.407],
+    [48.188,30.341], [48.2,30.324], [48.223,30.318], [48.284,30.323], [48.306,30.313], [48.326,30.283],
+    [48.397,30.221], [48.409,30.202], [48.408,30.181], [48.383,30.156], [48.381,30.145],
+    [48.396,30.115], [48.424,30.084], [48.453,30.001], [48.464,29.989], [48.493,29.972],
+    [48.531,29.961], [48.531,29.956], [48.555,29.956], [48.559,29.947], [48.547,29.935],
+    [48.521,29.929], [48.412,29.938], [48.335,29.961], [48.3,29.985], [48.265,29.994], [48.209,30.024],
+    [48.166,30.038], [48.119,30.045], [48.076,30.046], [48.038,30.037], [47.969,30.004],
+    [47.952,30.088], [47.935,30.107], [47.947,30.075], [47.941,30.027], [47.948,30.018],
+    [47.948,29.994], [47.731,30.089], [47.674,30.098], [47.416,30.098], [47.358,30.092],
+    [47.197,30.034], [47.145,30.003], [47.11,29.961], [47.025,29.772], [46.989,29.713], [46.977,29.658],
+    [46.958,29.62], [46.883,29.513], [46.853,29.445], [46.774,29.364], [46.712,29.271], [46.532,29.096],
+    [46.357,29.063], [44.717,29.193], [44.692,29.202], [42.859,30.495], [42.075,31.08], [40.424,31.921],
+    [40.37,31.938], [40.029,31.994], [39.158,32.121], [39.146,32.118], [39.146,32.126], [39.266,32.213],
+    [39.292,32.245], [39.271,32.312], [39.256,32.343], [39.236,32.353], [39.046,32.308],
+    [39.036,32.313], [38.978,32.475], [39.057,32.497], [38.775,33.372], [40.69,34.331], [40.936,34.386],
+    [40.965,34.402], [40.988,34.429], [41.024,34.494], [41.196,34.768], [41.207,34.819],
+    [41.192,35.182], [41.201,35.243], [41.243,35.367], [41.252,35.464], [41.261,35.494],
+    [41.342,35.594], [41.358,35.624], [41.364,35.655], [41.355,35.826], [41.344,35.858],
+    [41.241,36.043], [41.237,36.077], [41.269,36.328], [41.277,36.355], [41.365,36.494],
+    [41.385,36.516], [41.415,36.527], [41.79,36.589], [41.817,36.6], [42.282,36.994], [42.377,37.062],
+    [42.377,37.077], [42.357,37.11], [42.402,37.114], [42.459,37.129], [42.561,37.147], [42.577,37.179],
+    [42.702,37.325], [42.716,37.355], [42.772,37.375], [42.792,37.374], [42.801,37.369],
+    [42.805,37.352], [42.814,37.347], [42.897,37.325], [42.937,37.32], [42.98,37.332], [43.005,37.347],
+    [43.044,37.36], [43.115,37.371], [43.27,37.309], [43.288,37.309], [43.306,37.32], [43.336,37.32],
+    [43.48,37.243], [43.53,37.254], [43.594,37.229], [43.747,37.231], [43.771,37.226], [43.809,37.2],
+    [43.822,37.202], [43.84,37.217], [43.894,37.225], [43.954,37.287], [43.99,37.313], [44.036,37.318],
+    [44.088,37.311], [44.184,37.279], [44.223,37.254], [44.235,37.237], [44.249,37.192], [44.248,37.17],
+    [44.24,37.158], [44.206,37.147], [44.189,37.129], [44.181,37.109], [44.18,37.088], [44.234,36.984],
+    [44.243,36.978], [44.285,36.969], [44.297,36.97], [44.307,36.977], [44.343,37.042], [44.428,37.065],
+    [44.454,37.076], [44.539,37.144], [44.578,37.166], [44.61,37.178], [44.734,37.167], [44.754,37.159]
+  ];
+  const IQ_BB = [38.775, 29.063, 48.559, 37.375];                  // غرب، جنوب، شرق، شمال
+  const IQ_MARGIN_KM = 12;                                           // مركز الشاشة يكدر يطلع برّا الحدود لهالمسافة
+  const IQ_BG = { light: '#e6ecef', dark: '#10181c' };              // نفس لون خلفية الخريطة، حتى يبين المحجوب فاضي
+  const iqMx = (lng) => (lng + 180) / 360;                           // إحداثيات ميركاتور (0..1)
+  const iqMy = (lat) => { const s = Math.sin(lat * Math.PI / 180); return 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI); };
+  const iqLat = (y) => 360 / Math.PI * Math.atan(Math.exp((0.5 - y) * 2 * Math.PI)) - 90;
+  // المساحة اللي تغطيها الأزرار فوق وتحت: أبعد تصغير يخلي العراق كله بين الأزرار
+  const iqPad = (h) => ({ top: Math.min(90, h * 0.14), bottom: Math.min(70, h * 0.1), left: 12, right: 12 });
+  // أبعد تصغير (زوم) يظهر العراق كله داخل الشاشة، حسب حجمها
+  function iqMinZoom(w, h) {
+    const p = iqPad(h), aw = Math.max(60, w - p.left - p.right), ah = Math.max(60, h - p.top - p.bottom);
+    const bw = (iqMx(IQ_BB[2]) - iqMx(IQ_BB[0])) * 512, bh = (iqMy(IQ_BB[1]) - iqMy(IQ_BB[3])) * 512;
+    return Math.log2(Math.min(aw / bw, ah / bh));
+  }
+  // أقرب نقطة على الحدود لنقطة (طول، عرض): المسافة بالكيلومتر، وهل النقطة داخل العراق
+  function iqNear(lng, lat) {
+    const kx = 111.32 * Math.cos(lat * Math.PI / 180), ky = 110.574;
+    let best = Infinity, bx = lng, by = lat, inside = false;
+    for (let i = 0, j = IQ.length - 1; i < IQ.length; j = i++) {
+      const A = IQ[j], B = IQ[i];
+      if ((B[1] > lat) !== (A[1] > lat) && lng < (A[0] - B[0]) * (lat - B[1]) / (A[1] - B[1]) + B[0]) inside = !inside;
+      const ax = (A[0] - lng) * kx, ay = (A[1] - lat) * ky, dx = (B[0] - A[0]) * kx, dy = (B[1] - A[1]) * ky, L = dx * dx + dy * dy;
+      let t = L > 0 ? -(ax * dx + ay * dy) / L : 0; t = t < 0 ? 0 : (t > 1 ? 1 : t);
+      const px = ax + t * dx, py = ay + t * dy, d = px * px + py * py;
+      if (d < best) { best = d; bx = A[0] + t * (B[0] - A[0]); by = A[1] + t * (B[1] - A[1]); }
+    }
+    return { d: Math.sqrt(best), inside: inside, p: [bx, by] };
+  }
+  // أقرب مركز مسموح للكاميرا (null = المركز الحالي مقبول).
+  // أولاً: لو العراق كله يكفي بالشاشة (بالعرض أو بالطول) نخليه بنص الشاشة على هذا المحور. ثانياً: المركز لازم يكون داخل العراق أو أقل من IQ_MARGIN_KM برّاه
+  function iqCenter(lng, lat, z, w, h) {
+    if (![lng, lat, z, w, h].every((v) => typeof v === 'number' && isFinite(v))) return null;
+    const S = 512 * Math.pow(2, z), p = iqPad(h);
+    const x0 = iqMx(IQ_BB[0]), x1 = iqMx(IQ_BB[2]), y0 = iqMy(IQ_BB[3]), y1 = iqMy(IQ_BB[1]);
+    let x = iqMx(lng), y = iqMy(lat);
+    if ((x1 - x0) * S <= w - p.left - p.right + 1) x = (x0 + x1) / 2 + (p.right - p.left) / (2 * S);
+    if ((y1 - y0) * S <= h - p.top - p.bottom + 1) y = (y0 + y1) / 2 + (p.bottom - p.top) / (2 * S);
+    let cx = x * 360 - 180, cy = iqLat(y);
+    const n = iqNear(cx, cy);
+    if (!n.inside && n.d > IQ_MARGIN_KM) { // بعيد برّا الحدود: نرجّعه لنص المسافة المسموحة من أقرب نقطة حدودية (بمقياس خطوط الطول عند تلك النقطة)، حتى ما نرجع نحسبه بعد التحريك
+      const kx = 111.32 * Math.cos(n.p[1] * Math.PI / 180), dx = (cx - n.p[0]) * kx, dy = (cy - n.p[1]) * 110.574, k = IQ_MARGIN_KM * 0.5 / (Math.hypot(dx, dy) || 1);
+      cx = n.p[0] + (cx - n.p[0]) * k; cy = n.p[1] + (cy - n.p[1]) * k;
+    }
+    return Math.abs(cx - lng) < 1e-6 && Math.abs(cy - lat) < 1e-6 ? null : [cx, cy];
+  }
+  // مصدر الحجب: مضلّع العالم وفيه ثقب بشكل العراق (للتغطية)، وخط الحدود نفسه
+  const IQ_GEO = (function () {
+    const ring = IQ.concat([IQ[0]]);
+    return { type: 'FeatureCollection', features: [
+      { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[[-180, -85.0511], [180, -85.0511], [180, 85.0511], [-180, 85.0511], [-180, -85.0511]], ring] } },
+      { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: ring } }
+    ] };
+  })();
+  // طبقتا الحجب: الغطاء (كامل لحد زوم 8، ويخف ويختفي عند 12: بعدها الحدود الحقيقية بالخريطة أدق من حدودنا) وخط الحدود (يختفي عند 11.5)
+  function iqLayers(dark) {
+    return [
+      { id: 'iq-veil', type: 'fill', source: 'iqmask', maxzoom: 12, filter: ['==', '$type', 'Polygon'],
+        paint: { 'fill-color': dark ? IQ_BG.dark : IQ_BG.light, 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 1, 10, 0.8, 11, 0.4, 12, 0] } },
+      { id: 'iq-edge', type: 'line', source: 'iqmask', maxzoom: 11.6, filter: ['==', '$type', 'LineString'], layout: { 'line-join': 'round' },
+        paint: { 'line-color': dark ? '#6f8a97' : '#7d8f99', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1.1, 9, 1.8], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.9, 11.5, 0] } }
+    ];
+  }
+  /* ================= /IRAQLOCK ================= */
   function baseStyle(fl) {
     const dark = fl === 'dark';
     return withPacks({
@@ -2218,6 +2404,7 @@
       sprite: FONT_BASE + 'sprites/v4/' + fl,
       sources: {
         osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 19, attribution: '© OpenStreetMap' },
+        iqmask: { type: 'geojson', data: IQ_GEO, maxzoom: 10 },
         route: { type: 'geojson', data: routeGeo() },
         traffic: { type: 'geojson', data: trGeo() },
         trarrows: { type: 'geojson', data: EMPTY_FC },
@@ -2225,7 +2412,8 @@
       },
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': dark ? '#10181c' : '#e6ecef' } },
-        { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: iraqHas ? 'none' : 'visible' }, paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6 } : {} },
+        { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: iraqHas ? 'none' : 'visible' }, paint: dark ? { 'raster-brightness-max': 0.35, 'raster-saturation': -0.6, 'raster-fade-duration': 0 } : { 'raster-fade-duration': 0 } },
+        ...iqLayers(dark), // الغطاء فوق الخريطة وحزمها (الحزم تنحط قبله) وتحت الزحام والمسار
         { id: 'traffic-glow', type: 'line', source: 'traffic', layout: { 'line-cap': 'butt', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.22, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, ['*', 2, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 14, ['*', 5, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 16, ['*', 11, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 18, ['*', 17, ['-', 1.15, ['*', 0.3, ['get', 'o']]]], 20, ['*', 34, ['-', 1.15, ['*', 0.3, ['get', 'o']]]]], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, ['*', 0.6, ['get', 'o']], 14, ['*', 1.5, ['get', 'o']], 16, ['*', 3.3, ['get', 'o']], 18, ['*', 5.1, ['get', 'o']], 20, ['*', 10.2, ['get', 'o']]] } },
         { id: 'traffic-line', type: 'line', source: 'traffic', layout: { 'line-cap': 'butt', 'line-join': 'round' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': 0.9, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, ['*', 2, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 14, ['*', 5, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 16, ['*', 11, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 18, ['*', 17, ['-', 0.85, ['*', 0.3, ['get', 'o']]]], 20, ['*', 34, ['-', 0.85, ['*', 0.3, ['get', 'o']]]]], 'line-offset': ['interpolate', ['linear'], ['zoom'], 10, ['*', 0.6, ['get', 'o']], 14, ['*', 1.5, ['get', 'o']], 16, ['*', 3.3, ['get', 'o']], 18, ['*', 5.1, ['get', 'o']], 20, ['*', 10.2, ['get', 'o']]] } },
         { id: 'traffic-arrows', type: 'symbol', source: 'trarrows', minzoom: 14.5, layout: { 'icon-image': 'tr-arrow', 'icon-rotate': ['get', 'b'], 'icon-rotation-alignment': 'map', 'icon-allow-overlap': true, 'icon-ignore-placement': true, 'icon-size': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 0.85, 18, 1.4, 20, 2.2] } },
@@ -2238,15 +2426,62 @@
   let lastView = null;
   try { lastView = JSON.parse(localStorage.getItem('daliny-view') || 'null'); } catch (e) {}
   if (!(lastView && isFinite(lastView.lng) && isFinite(lastView.lat) && isFinite(lastView.z))) lastView = null;
+  // حدود الكاميرا على العراق: أبعد تصغير حسب حجم الشاشة، والعرض المحفوظ لو كان أبعد من اللازم أو برّا الحدود نرجّعه لأقرب مكان مسموح
+  const iqBox = $('map'), iqW0 = iqBox.clientWidth || window.innerWidth, iqH0 = iqBox.clientHeight || window.innerHeight;
+  const iqMin0 = iqMinZoom(iqW0, iqH0);
+  if (lastView) {
+    lastView.z = Math.max(lastView.z, iqMin0);
+    const t0 = iqCenter(lastView.lng, lastView.lat, lastView.z, iqW0, iqH0);
+    if (t0) { lastView.lng = t0[0]; lastView.lat = t0[1]; }
+  }
   const map = new maplibregl.Map({
     container: 'map', style: baseStyle(curFlavor),
-    center: lastView ? [lastView.lng, lastView.lat] : [44.3661, 33.3152], zoom: lastView ? lastView.z : 13, maxZoom: 20,
+    center: lastView ? [lastView.lng, lastView.lat] : [44.3661, 33.3152], zoom: lastView ? lastView.z : 13, minZoom: iqMin0, maxZoom: 20,
     attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false,
     pitch: settings.mapView === '3d' ? TILT : 0
   });
-  // الخريطة جاهزة = ما بقى شي يتحمّل (idle بعد أول load) وما ننتظر فهرس المباني (أول تشغيل فقط) → تذوب شاشة البداية
-  function splashCheck() { if (!splashGone && !splashIdxWait && map.loaded()) splashHide(); }
-  map.on('idle', splashCheck);
+  mark('map');
+  // حدود الكاميرا: أبعد تصغير يتغير مع حجم الشاشة، ولو انسحبت الخريطة برّا الحدود ترجع بنعومة لأقرب مكان مسموح (بعد ما ترفع إصبعك).
+  // ما نتدخل أثناء متابعة موقعي (الكاميرا لنا) ولا الملاحة ولا وجود وجهة/مسار (الكاميرا تعرض المسار كله)
+  let iqMin = iqMin0, iqRT = null;
+  const iqSize = () => { const cv = map.getContainer(); return [cv.clientWidth || window.innerWidth, cv.clientHeight || window.innerHeight]; };
+  window.addEventListener('resize', () => {
+    clearTimeout(iqRT);
+    iqRT = setTimeout(() => {
+      try { const s = iqSize(), z = iqMinZoom(s[0], s[1]); if (isFinite(z) && Math.abs(z - iqMin) > 0.005) { iqMin = z; map.setMinZoom(z); } } catch (e) {}
+    }, 200);
+  });
+  map.on('moveend', (e) => {
+    if ((e && (e.dalFollow || e.dalIq)) || state.follow || state.navigating || state.dest) return;
+    try {
+      const c = map.getCenter(), s = iqSize(), t = iqCenter(c.lng, c.lat, map.getZoom(), s[0], s[1]);
+      if (t) map.easeTo({ center: t, duration: 350 }, { dalIq: true });
+    } catch (err) {}
+  });
+  // الخريطة جاهزة للعرض = الخريطة الأساسية (الشوارع) انرسمت، بدون ما ننتظر المباني ولا أي شي ثانوي → تذوب شاشة البداية.
+  //  «idle» (كل شي تحمّل) يبقى الطريق الأول لو وصل، و«base» طريق أسرع: كل قطع المصادر الأساسية (osm وحزم pm-*) وصلت ورُسمت.
+  //  ما نقيّم إلا بعد style.load وبحدث render (القطع تنطلب داخل الرسمة قبل الحدث)، وإلا المصدر الفاضي يبين «محمّل» بالغلط.
+  let styleOnce = false, baseHit = false;
+  function baseDrawn() {
+    if (!styleOnce) return false;
+    try {
+      const ids = ['osm'].concat(PACKS.filter((p) => packsInstalled.includes(p.id)).map((p) => 'pm-' + p.id));
+      return ids.every((id) => !map.getSource(id) || map.isSourceLoaded(id) !== false); // isSourceLoaded يعطي خطأ للمصدر غير الموجود، فنتأكد قبل
+    } catch (e) { return false; }
+  }
+  function splashCheck() {
+    if (splashGone || splashIdxWait) return;
+    if (map.loaded()) splashHide('idle'); else if (baseHit) splashHide('base');
+  }
+  function onRenderBase() {
+    if (splashGone) { map.off('render', onRenderBase); return; }
+    if (!styleOnce) return;
+    mark('render');
+    if (!baseHit && baseDrawn()) { baseHit = true; mark('base'); setTimeout(splashCheck, 150); } // 150 مل ث: حتى تنرسم آخر قطعة فعلياً قبل ما تنشال الأيقونة
+  }
+  map.on('style.load', () => { styleOnce = true; mark('style'); });
+  map.on('render', onRenderBase);
+  map.on('idle', () => { mark('idle'); splashCheck(); });
   // تدوير الخريطة بإصبعين (مع التكبير) شغّال: touchZoomRotate الافتراضي، وما نستدعي disableRotation
   function trArrowImg() {
     const sz = 48, cv = document.createElement('canvas'); cv.width = cv.height = sz;
@@ -3278,7 +3513,7 @@
       const g = map.getStyle().layers.find((l) => /^pm-/.test(l.id) && !/^pm-iraq-/.test(l.id));
       if (g) return g.id;
     }
-    return 'traffic-glow';
+    return map.getLayer('iq-veil') ? 'iq-veil' : 'traffic-glow';
   }
   function addPackLayer(p) {
     const go = () => {
@@ -3502,7 +3737,7 @@
   });
   try { const j = JSON.parse(localStorage.getItem(BLD_IDX_KEY) || 'null'); if (j && j.shards) bldIdx = bldClean(j.shards); } catch (e) {}
   if (!Object.keys(bldIdx).length) splashIdxWait = true; // أول تشغيل بدون فهرس محفوظ: شاشة البداية تنتظر فهرس المباني حتى تظهر المباني خلفها
-  bldLoadIdx();
+  if (splashIdxWait) bldLoadIdx(); else afterReveal(bldLoadIdx, 1200); // عندنا فهرس محفوظ: تحديثه ينتظر ظهور الخريطة
 
   // نحفظ الخطوط والرموز للعمل بدون إنترنت (يحفظها الـ service worker)
   if (navigator.onLine) {
@@ -3511,7 +3746,7 @@
     const urls = [];
     ['light', 'dark'].forEach((f) => ['.json', '.png', '@2x.json', '@2x.png'].forEach((x) => urls.push(FONT_BASE + 'sprites/v4/' + f + x)));
     stacks.forEach((st) => ranges.forEach((r) => urls.push(FONT_BASE + 'fonts/' + encodeURIComponent(st) + '/' + r + '.pbf')));
-    setTimeout(() => { urls.forEach((u) => fetch(u).then((r) => r.arrayBuffer()).catch(() => {})); }, 4000);
+    afterReveal(() => { urls.forEach((u) => fetch(u).then((r) => r.arrayBuffer()).catch(() => {})); }, 4000);
   }
 
   function fmtMB(n) { return tr('{0} ميغا', (n / 1048576).toFixed(n > 1e8 ? 0 : 1)); }
@@ -3770,7 +4005,7 @@
     settings.trafficShare = sw.checked; saveSettings(); if (!settings.trafficShare) trUnshare();
   };
   $('trafficShowSwitch').onchange = () => { settings.trafficShow = $('trafficShowSwitch').checked; saveSettings(); trRefresh(); };
-  function applyDev() { const d = $('trDev'); if (d) d.hidden = !devMode; }
+  function applyDev() { const d = $('trDev'); if (d) d.hidden = !devMode; bootReport(); }
   applyDev();
   let verTaps = 0, verTapAt = 0;
   $('verNote').onclick = () => {
@@ -4337,7 +4572,7 @@
     return fetch(DB_URL + path + (t ? (path.indexOf('?') < 0 ? '?' : '&') + 'auth=' + encodeURIComponent(t) : ''), opts);
   }
   function myTrId() { return dbAuth.uid || trUid; }
-  dbToken();
+  afterReveal(dbToken, 800); // الدخول المجهول يجي بعد ظهور الخريطة (الكتابة تطلبه بنفسها عند الحاجة)
   const HZ_TTL = 3 * 3600 * 1000; // البلاغ يبقى 3 ساعات
 
   // نتأكد من كل بلاغ جاي من القاعدة (ما نثق بأي بيانات خارجية): نوع معروف فقط، إحداثيات صحيحة، وقت منطقي
@@ -4458,7 +4693,7 @@
   });
   $('btnReport').onclick = () => { const pn = $('reportPanel'); pn.hidden = !pn.hidden; state.reportAt = null; };
   $('rpClose').onclick = () => { $('reportPanel').hidden = true; state.reportAt = null; };
-  loadHazards(false);
+  afterReveal(() => loadHazards(false));
   setInterval(() => { if (!document.hidden) loadHazards(true); }, 20000);
 
   /* ---- الزحام الحقيقي: إرسال سرعتي أثناء الملاحة + قراءة سرعات الآخرين (بدون هوية) ---- */
@@ -4572,10 +4807,10 @@
 
   map.on('moveend', () => {
     const c = map.getCenter();
-    if (Math.abs(c.lat - trLoadC.lat) > 0.08 || Math.abs(c.lng - trLoadC.lng) > 0.15) { clearTimeout(trLoadT); trLoadT = setTimeout(trLoad, 1500); }
+    if (Math.abs(c.lat - trLoadC.lat) > 0.08 || Math.abs(c.lng - trLoadC.lng) > 0.15) { clearTimeout(trLoadT); trLoadT = setTimeout(() => { if (lateOn) trLoad(); }, 1500); } // قبل ظهور الخريطة نتجاهل: تحميل الزحام المؤجّل (afterReveal) ياخذ مركز الخريطة وقتها
   });
   setInterval(trLoad, 30000);
-  trLoad();
+  afterReveal(trLoad, 150);
   // اختبار: يرسل عينة واحدة ويتأكد أن القاعدة قبلتها، ثم يمسحها بعد 20 ثانية
   $('trafficSend').onclick = async () => {
     if (!trShareOn()) { $('trLive').textContent = 'شغّل مفتاح مشاركة السرعة أولاً (يحتاج موافقتك)'; return; }
@@ -4759,7 +4994,7 @@
   $('wxAlertSwitch').onchange = () => { settings.wxAlert = $('wxAlertSwitch').checked; saveSettings(); };
   document.querySelectorAll('#wxUnitSeg button').forEach((b) => { b.onclick = () => { settings.wxUnit = b.dataset.u; saveSettings(); syncSettingsUI(); wxRender(); }; });
   wxRender();
-  setTimeout(() => wxLoad(false), 2500);
+  afterReveal(() => wxLoad(false), 400);
   setInterval(() => { if (!document.hidden) wxLoad(false); }, 5 * 60000);
 
   // أسطر إعدادات أنواع البلاغات (تظهر بشاشة الإعدادات)
@@ -4894,9 +5129,15 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideResults(); });
   if ('serviceWorker' in navigator) {
     const regSW = () => { navigator.serviceWorker.register('sw.js').catch(() => {}); };
-    if (document.readyState === 'complete') regSW(); else window.addEventListener('load', regSW); // ممكن حدث load قبل ما نبدأ (نبدأ بعد أول رسمة)
+    afterReveal(regSW, 600);                                                // تسجيل/تحديث الـ worker بعد ظهور الخريطة (ما ينافس قطعها)
+    afterReveal(() => swPost({ t: 'refresh-shell' }), 2500);                // الـ worker يجيب آخر نسخة من الصفحة بالخلفية للفتحة الجاية
     bldKeepSend();                                                          // نخبر الـ worker إذا حفظ المباني شغّال
     navigator.serviceWorker.addEventListener('controllerchange', bldKeepSend); // وإذا تحدّث الـ worker نخبره من جديد
+    navigator.serviceWorker.addEventListener('message', (ev) => {           // الـ worker نزّل نسخة أحدث من التطبيق (تشتغل بالفتحة الجاية)
+      const d = ev && ev.data;
+      if (ev && ev.origin && ev.origin !== location.origin) return;
+      if (d && d.t === 'shell-updated' && !state.navigating) toast(tr('نزل تحديث جديد. سكّر التطبيق وافتحه من جديد حتى يشتغل'), 6000);
+    });
   }
   // لو المستخدم سمح بالموقع سابقاً نبدأ بدون ما نزعجه
   if (navigator.permissions && navigator.permissions.query) {
